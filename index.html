@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Box3d Character Controler — E1-A1</title>
+  </head>
+  <body>
+    <canvas id="app"></canvas>
+    <section id="hud">
+      <div class="eyebrow">E1-A1 · FIRST PHYSICAL CONTACT BASELINE</div>
+      <h1>Controller-owned embodiment</h1>
+      <p class="controls"><strong>WASD</strong> move · <strong>R</strong> reset</p>
+      <p id="status">Loading Box3D…</p>
+      <dl id="telemetry">
+        <div><dt>character speed</dt><dd id="speed">—</dd></div>
+        <div><dt>desired speed</dt><dd id="desired">—</dd></div>
+        <div><dt>dynamic contact</dt><dd id="contact">—</dd></div>
+        <div><dt>push impulse</dt><dd id="impulse">—</dd></div>
+        <div><dt>box speed</dt><dd id="box-speed">—</dd></div>
+      </dl>
+      <p class="note">This character intentionally owns its position. The box receives physics impulses; the character does not inherit equal-and-opposite recoil. That asymmetry is part of the baseline being tested.</p>
+    </section>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
