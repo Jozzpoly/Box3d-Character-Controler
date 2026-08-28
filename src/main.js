@@ -5,54 +5,57 @@ import './style.css';
 const canvas = document.querySelector('#app');
 const statusEl = document.querySelector('#status');
 const speedEl = document.querySelector('#speed');
+const verticalEl = document.querySelector('#vertical-speed');
 const desiredEl = document.querySelector('#desired');
-const contactEl = document.querySelector('#contact');
-const impulseEl = document.querySelector('#impulse');
-const boxSpeedEl = document.querySelector('#box-speed');
+const supportedEl = document.querySelector('#supported');
+const supportTypeEl = document.querySelector('#support-type');
+const planesEl = document.querySelector('#planes');
 
 const FIXED_DT = 1 / 60;
 const SUBSTEPS = 4;
+const GRAVITY = 10.0;
 const CHARACTER_RADIUS = 0.35;
 const CHARACTER_HALF_SEGMENT = 0.55;
-const CHARACTER_Y = CHARACTER_RADIUS + CHARACTER_HALF_SEGMENT + 0.02;
-const CHARACTER_START = [0, CHARACTER_Y, 3];
-const BOX_START = [0, 0.68, -1.6];
-const BOX_HALF = 0.65;
+const CHARACTER_HALF_HEIGHT = CHARACTER_RADIUS + CHARACTER_HALF_SEGMENT;
+const CHARACTER_START = [0, CHARACTER_HALF_HEIGHT + 0.02, 3.0];
 const MAX_SPEED = 4.0;
 const ACCELERATION = 14.0;
 const FRICTION = 8.0;
 const MIN_SPEED = 0.01;
 const STOP_SPEED = 0.8;
+const JUMP_SPEED = 4.6;
+const SUPPORT_NORMAL_MIN_Y = 0.55;
 const PUSH_LIMIT = 3.4e38;
 
 const keys = new Set();
+let jumpQueued = false;
+
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
   keys.add(key);
+  if (event.code === 'Space' && !event.repeat) jumpQueued = true;
   if (key === 'r') reset();
 });
 window.addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
-window.addEventListener('blur', () => keys.clear());
+window.addEventListener('blur', () => {
+  keys.clear();
+  jumpQueued = false;
+});
 
 let b3;
 let world;
-let boxBody;
-let boxShape;
 let characterPosition = [...CHARACTER_START];
 let characterVelocity = [0, 0, 0];
 let desiredSpeed = 0;
-let dynamicContact = false;
-let pushImpulse = 0;
+let supported = false;
+let supportType = 'none';
+let supportPlanes = 0;
 
 let renderer;
 let scene;
 let camera;
 let characterVisual;
-let boxVisual;
 
-const boxPosition = [0, 0, 0];
-const boxRotation = [0, 0, 0, 1];
-const boxVelocity = [0, 0, 0];
 const planeResultScratch = { current: null };
 
 const lengthXZ = (v) => Math.hypot(v[0], v[2]);
@@ -68,7 +71,7 @@ function setupThree() {
   scene.background = new THREE.Color(0x171d23);
 
   camera = new THREE.PerspectiveCamera(52, 1, 0.05, 100);
-  camera.position.set(7.2, 5.2, 8.5);
+  camera.position.set(7.5, 5.4, 8.8);
   camera.lookAt(0, 0.8, 0);
 
   const hemi = new THREE.HemisphereLight(0xdcecff, 0x4b4033, 1.8);
@@ -84,25 +87,16 @@ function setupThree() {
   sun.shadow.camera.bottom = -10;
   scene.add(sun);
 
-  const groundVisual = new THREE.Mesh(
-    new THREE.BoxGeometry(16, 0.5, 16),
-    new THREE.MeshStandardMaterial({ color: 0x454c53, roughness: 0.95 }),
-  );
-  groundVisual.position.y = -0.25;
-  groundVisual.receiveShadow = true;
-  scene.add(groundVisual);
+  addStaticBoxVisual([0, -0.25, 0], [8, 0.25, 8], 0x454c53);
+  addStaticBoxVisual([-2.6, 0.28, -0.6], [1.2, 0.28, 1.2], 0x587185);
 
   const grid = new THREE.GridHelper(16, 16, 0x6f7d87, 0x3d454b);
   grid.position.y = 0.005;
   scene.add(grid);
 
-  const lane = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.5, 9),
-    new THREE.MeshBasicMaterial({ color: 0x25313a, transparent: true, opacity: 0.38, side: THREE.DoubleSide }),
-  );
-  lane.rotation.x = -Math.PI / 2;
-  lane.position.set(0, 0.012, 0.8);
-  scene.add(lane);
+  const stepLabel = makeLabel('STATIC SUPPORT');
+  stepLabel.position.set(-2.6, 1.65, -0.6);
+  scene.add(stepLabel);
 
   characterVisual = new THREE.Group();
   const capsuleMesh = new THREE.Mesh(
@@ -121,19 +115,7 @@ function setupThree() {
   characterVisual.add(nose);
   scene.add(characterVisual);
 
-  boxVisual = new THREE.Mesh(
-    new THREE.BoxGeometry(BOX_HALF * 2, BOX_HALF * 2, BOX_HALF * 2),
-    new THREE.MeshStandardMaterial({ color: 0xd7a447, roughness: 0.7 }),
-  );
-  boxVisual.castShadow = true;
-  boxVisual.receiveShadow = true;
-  scene.add(boxVisual);
-
-  const boxLabel = makeLabel('DYNAMIC BOX');
-  boxLabel.position.set(0, 1.7, BOX_START[2]);
-  scene.add(boxLabel);
-
-  const startLabel = makeLabel('W → PUSH');
+  const startLabel = makeLabel('SPACE → JUMP');
   startLabel.position.set(0, 2.05, CHARACTER_START[2]);
   scene.add(startLabel);
 
@@ -146,6 +128,16 @@ function setupThree() {
   };
   window.addEventListener('resize', resize);
   resize();
+}
+
+function addStaticBoxVisual(position, halfExtents, color) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(halfExtents[0] * 2, halfExtents[1] * 2, halfExtents[2] * 2),
+    new THREE.MeshStandardMaterial({ color, roughness: 0.95 }),
+  );
+  mesh.position.set(position[0], position[1], position[2]);
+  mesh.receiveShadow = true;
+  scene.add(mesh);
 }
 
 function makeLabel(text) {
@@ -166,43 +158,34 @@ function makeLabel(text) {
   return sprite;
 }
 
+function createStaticBox(position, halfExtents) {
+  const bodyDef = b3.b3DefaultBodyDef();
+  bodyDef.position = [...position];
+  const body = b3.b3CreateBody(world, bodyDef);
+  b3.b3CreateBoxShape(body, b3.b3DefaultShapeDef(), halfExtents[0], halfExtents[1], halfExtents[2]);
+}
+
 function setupPhysics() {
   const worldDef = b3.b3DefaultWorldDef();
-  worldDef.gravity = [0, -10, 0];
+  worldDef.gravity = [0, -GRAVITY, 0];
   world = b3.b3CreateWorld(worldDef);
 
-  const groundDef = b3.b3DefaultBodyDef();
-  groundDef.position = [0, -0.25, 0];
-  const ground = b3.b3CreateBody(world, groundDef);
-  b3.b3CreateBoxShape(ground, b3.b3DefaultShapeDef(), 8, 0.25, 8);
-
-  const bodyDef = b3.b3DefaultBodyDef();
-  bodyDef.type = b3.b3BodyType.b3_dynamicBody;
-  bodyDef.position = [...BOX_START];
-  bodyDef.linearDamping = 0.12;
-  bodyDef.angularDamping = 0.2;
-  boxBody = b3.b3CreateBody(world, bodyDef);
-
-  const shapeDef = b3.b3DefaultShapeDef();
-  shapeDef.density = 25;
-  shapeDef.baseMaterial.friction = 0.75;
-  boxShape = b3.b3CreateBoxShape(boxBody, shapeDef, BOX_HALF, BOX_HALF, BOX_HALF);
+  createStaticBox([0, -0.25, 0], [8, 0.25, 8]);
+  createStaticBox([-2.6, 0.28, -0.6], [1.2, 0.28, 1.2]);
 
   planeResultScratch.current = b3.createPlaneResult();
 }
 
 function reset() {
-  if (!b3 || !world || !boxBody) return;
+  if (!b3 || !world) return;
 
   characterPosition = [...CHARACTER_START];
   characterVelocity = [0, 0, 0];
   desiredSpeed = 0;
-  dynamicContact = false;
-  pushImpulse = 0;
-
-  b3.b3Body_SetTransform(boxBody, [...BOX_START], [0, 0, 0, 1]);
-  b3.b3Body_SetLinearVelocity(boxBody, [0, 0, 0]);
-  b3.b3Body_SetAngularVelocity(boxBody, [0, 0, 0]);
+  supported = false;
+  supportType = 'none';
+  supportPlanes = 0;
+  jumpQueued = false;
 }
 
 function updateIntent(dt) {
@@ -245,6 +228,89 @@ function updateIntent(dt) {
       characterVelocity[2] += accel * dirZ;
     }
   }
+
+  if (jumpQueued && supported) {
+    characterVelocity[1] = JUMP_SPEED;
+    supported = false;
+    supportType = 'none';
+  }
+  jumpQueued = false;
+
+  characterVelocity[1] -= GRAVITY * dt;
+}
+
+function collectMoverPlanes(capsule) {
+  const filter = b3.b3DefaultQueryFilter();
+  const planes = [];
+  const extras = [];
+  const scratch = planeResultScratch.current;
+
+  b3.b3World_CollideMover(
+    world,
+    characterPosition,
+    capsule,
+    filter,
+    (shapeId, buffer) => {
+      const count = b3.getNumPlaneResults(buffer);
+      for (let i = 0; i < count; i++) {
+        b3.getPlaneResultAt(scratch, buffer, i);
+        const normal = scratch.plane.normal;
+        planes.push({
+          plane: {
+            normal: [normal[0], normal[1], normal[2]],
+            offset: scratch.plane.offset,
+          },
+          pushLimit: PUSH_LIMIT,
+          push: 0,
+          clipVelocity: true,
+        });
+        extras.push({
+          shapeId,
+          point: [
+            characterPosition[0] + scratch.point[0],
+            characterPosition[1] + scratch.point[1],
+            characterPosition[2] + scratch.point[2],
+          ],
+        });
+      }
+      return true;
+    },
+  );
+
+  return { filter, planes, extras };
+}
+
+function identifySupport(planes, extras) {
+  let bestIndex = -1;
+  let bestUp = SUPPORT_NORMAL_MIN_Y;
+
+  for (let i = 0; i < planes.length; i++) {
+    const up = planes[i].plane.normal[1];
+    if (up > bestUp) {
+      bestUp = up;
+      bestIndex = i;
+    }
+  }
+
+  if (bestIndex < 0 || characterVelocity[1] > 0.05) {
+    supported = false;
+    supportType = 'none';
+    supportPlanes = 0;
+    return;
+  }
+
+  supported = true;
+  supportPlanes = planes.filter((plane) => plane.plane.normal[1] > SUPPORT_NORMAL_MIN_Y).length;
+
+  const extra = extras[bestIndex];
+  if (!extra) {
+    supportType = 'unknown';
+    return;
+  }
+
+  const body = b3.b3Shape_GetBody(extra.shapeId);
+  const mass = b3.b3Body_GetMass(body);
+  supportType = Number.isFinite(mass) && mass > 0 ? 'DYNAMIC' : 'STATIC';
 }
 
 function solveCharacter(dt) {
@@ -253,11 +319,10 @@ function solveCharacter(dt) {
     center2: [0, CHARACTER_HALF_SEGMENT, 0],
     radius: CHARACTER_RADIUS,
   };
-  const filter = b3.b3DefaultQueryFilter();
 
   const target = [
     characterPosition[0] + dt * characterVelocity[0],
-    CHARACTER_Y,
+    characterPosition[1] + dt * characterVelocity[1],
     characterPosition[2] + dt * characterVelocity[2],
   ];
 
@@ -265,46 +330,8 @@ function solveCharacter(dt) {
   let lastExtras = [];
   const tolerance = 0.002;
 
-  dynamicContact = false;
-  pushImpulse = 0;
-
   for (let iteration = 0; iteration < 5; iteration++) {
-    const planes = [];
-    const extras = [];
-    const scratch = planeResultScratch.current;
-
-    b3.b3World_CollideMover(
-      world,
-      characterPosition,
-      capsule,
-      filter,
-      (shapeId, buffer) => {
-        const count = b3.getNumPlaneResults(buffer);
-        for (let i = 0; i < count; i++) {
-          b3.getPlaneResultAt(scratch, buffer, i);
-          const normal = scratch.plane.normal;
-          planes.push({
-            plane: {
-              normal: [normal[0], normal[1], normal[2]],
-              offset: scratch.plane.offset,
-            },
-            pushLimit: PUSH_LIMIT,
-            push: 0,
-            clipVelocity: true,
-          });
-          extras.push({
-            shapeId,
-            point: [
-              characterPosition[0] + scratch.point[0],
-              characterPosition[1] + scratch.point[1],
-              characterPosition[2] + scratch.point[2],
-            ],
-          });
-        }
-        return true;
-      },
-    );
-
+    const { filter, planes, extras } = collectMoverPlanes(capsule);
     const targetDelta = [
       target[0] - characterPosition[0],
       target[1] - characterPosition[1],
@@ -317,7 +344,7 @@ function solveCharacter(dt) {
 
     characterPosition = [
       characterPosition[0] + delta[0],
-      CHARACTER_Y,
+      characterPosition[1] + delta[1],
       characterPosition[2] + delta[2],
     ];
 
@@ -327,49 +354,10 @@ function solveCharacter(dt) {
     if (dot3(delta, delta) < tolerance * tolerance) break;
   }
 
-  applyDynamicPush(lastPlanes, lastExtras);
   characterVelocity = b3.b3ClipVector(characterVelocity, lastPlanes);
-  characterVelocity[1] = 0;
-}
+  identifySupport(lastPlanes, lastExtras);
 
-function applyDynamicPush(planes, extras) {
-  const bodyVelocity = [0, 0, 0];
-
-  for (let i = 0; i < planes.length; i++) {
-    const extra = extras[i];
-    if (!extra) continue;
-
-    const body = b3.b3Shape_GetBody(extra.shapeId);
-    const mass = b3.b3Body_GetMass(body);
-    if (!Number.isFinite(mass) || mass <= 0) continue;
-
-    dynamicContact = true;
-    b3.b3Body_GetLinearVelocity(bodyVelocity, body);
-
-    const planeNormal = planes[i].plane.normal;
-    const pushNormal = [-planeNormal[0], -planeNormal[1], -planeNormal[2]];
-    const relativeVelocity = [
-      bodyVelocity[0] - characterVelocity[0],
-      bodyVelocity[1] - characterVelocity[1],
-      bodyVelocity[2] - characterVelocity[2],
-    ];
-    const closingSpeed = dot3(relativeVelocity, pushNormal);
-
-    // First-order port of the native CharacterMover push step. The controller is
-    // intentionally treated as infinite-mass (invMassA = 0). For this first
-    // baseline we use the body's translational mass and let Box3D turn the
-    // off-center impulse into angular response at the application point.
-    const impulseMagnitude = Math.max(-mass * closingSpeed, 0);
-    if (impulseMagnitude <= 0) continue;
-
-    const impulse = [
-      impulseMagnitude * pushNormal[0],
-      impulseMagnitude * pushNormal[1],
-      impulseMagnitude * pushNormal[2],
-    ];
-    b3.b3Body_ApplyLinearImpulse(body, impulse, extra.point, true);
-    pushImpulse += impulseMagnitude;
-  }
+  if (supported && characterVelocity[1] < 0) characterVelocity[1] = 0;
 }
 
 function physicsTick(dt) {
@@ -381,17 +369,12 @@ function physicsTick(dt) {
 function syncVisuals() {
   characterVisual.position.set(characterPosition[0], characterPosition[1], characterPosition[2]);
 
-  b3.b3Body_GetPosition(boxPosition, boxBody);
-  b3.b3Body_GetRotation(boxRotation, boxBody);
-  b3.b3Body_GetLinearVelocity(boxVelocity, boxBody);
-  boxVisual.position.set(boxPosition[0], boxPosition[1], boxPosition[2]);
-  boxVisual.quaternion.set(boxRotation[0], boxRotation[1], boxRotation[2], boxRotation[3]);
-
   speedEl.textContent = `${lengthXZ(characterVelocity).toFixed(2)} m/s`;
+  verticalEl.textContent = `${characterVelocity[1].toFixed(2)} m/s`;
   desiredEl.textContent = `${desiredSpeed.toFixed(2)} m/s`;
-  contactEl.textContent = dynamicContact ? 'YES' : 'no';
-  impulseEl.textContent = `${pushImpulse.toFixed(1)} N·s`;
-  boxSpeedEl.textContent = `${Math.hypot(boxVelocity[0], boxVelocity[1], boxVelocity[2]).toFixed(2)} m/s`;
+  supportedEl.textContent = supported ? 'YES' : 'no';
+  supportTypeEl.textContent = supportType;
+  planesEl.textContent = String(supportPlanes);
 }
 
 async function main() {
@@ -400,7 +383,7 @@ async function main() {
   setupPhysics();
   reset();
 
-  statusEl.textContent = 'Ready. Hold W and drive into the box.';
+  statusEl.textContent = 'Gate 1: fall, land, jump, and use the static support block.';
 
   let previous = performance.now();
   let accumulator = 0;

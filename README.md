@@ -1,24 +1,21 @@
 # Box3d Character Controler
 
-Experimental Box3D character-embodiment laboratory.
+Experimental Box3D physical-player / embodiment laboratory.
 
-Current stage: **E1-A1 — First Physical Contact Baseline**.
+Current stage: **E1-A2 — Support Reciprocity Crucible**.
 
-The first experiment intentionally stays small: a controller-owned human-scale capsule can move on a flat plane and transfer contact impulse into one dynamic Box3D body. The goal is not to prove a final controller architecture; it is to obtain the first direct Owner evidence about whether this style of physical coupling already feels meaningful.
+## Current gate
 
-## Controls
+**Gate 1 — Gravity + static support.** The controller-owned capsule no longer has a fixed world Y. It integrates vertical velocity and gravity, uses mover collision planes as support evidence, can lose support, fall, land, and perform one bounded jump from support.
 
-- `WASD` — move
+Controls:
+
+- `WASD` — planar intent
+- `Space` — bounded jump intent while supported
 - `R` — reset
 
-## Current implementation boundary
+## Research boundary
 
-- browser runtime: `box3d.js@0.1.1` + Three.js + Vite;
-- character motion: Box3D mover collision/plane solving, restricted to the horizontal plane for this experiment;
-- dynamic coupling: a deliberately first-order port of the native CharacterMover push step — contacted dynamic bodies receive an impulse at the contact point;
-- controller authority: intentionally effectively infinite mass; no equal-and-opposite recoil is applied to the character in E1-A1;
-- deployment: GitHub Pages via GitHub Actions.
+This is not a finished vertical controller and not an architecture verdict. Gate 1 is intentionally limited to static support. Dynamic support, finite player mass, moving-platform inheritance, stairs, slopes, mantling, grabbing, articulation, and solver-owned root are not part of this gate.
 
-## Current non-claims
-
-This is not a locomotion system, active ragdoll, final character architecture, animation system, or reusable framework. Grounding, jumping, stairs, grabbing, solver-owned character motion and richer articulation are deliberately outside this stage.
+The previous E1-A1 planar-push baseline remains preserved in Git history at `cadb9405097ede149e64a64d8070c6127e8849a5`.

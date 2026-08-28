@@ -3,23 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Box3d Character Controler — E1-A1</title>
+    <title>Box3d Character Controler — E1-A2 Gate 1</title>
   </head>
   <body>
     <canvas id="app"></canvas>
     <section id="hud">
-      <div class="eyebrow">E1-A1 · FIRST PHYSICAL CONTACT BASELINE</div>
-      <h1>Controller-owned embodiment</h1>
-      <p class="controls"><strong>WASD</strong> move · <strong>R</strong> reset</p>
+      <div class="eyebrow">E1-A2 · SUPPORT RECIPROCITY · GATE 1</div>
+      <h1>Gravity + static support</h1>
+      <p class="controls"><strong>WASD</strong> move · <strong>Space</strong> jump · <strong>R</strong> reset</p>
       <p id="status">Loading Box3D…</p>
       <dl id="telemetry">
-        <div><dt>character speed</dt><dd id="speed">—</dd></div>
+        <div><dt>horizontal speed</dt><dd id="speed">—</dd></div>
+        <div><dt>vertical speed</dt><dd id="vertical-speed">—</dd></div>
         <div><dt>desired speed</dt><dd id="desired">—</dd></div>
-        <div><dt>dynamic contact</dt><dd id="contact">—</dd></div>
-        <div><dt>push impulse</dt><dd id="impulse">—</dd></div>
-        <div><dt>box speed</dt><dd id="box-speed">—</dd></div>
+        <div><dt>supported</dt><dd id="supported">—</dd></div>
+        <div><dt>support</dt><dd id="support-type">—</dd></div>
+        <div><dt>support planes</dt><dd id="planes">—</dd></div>
       </dl>
-      <p class="note">This character intentionally owns its position. The box receives physics impulses; the character does not inherit equal-and-opposite recoil. That asymmetry is part of the baseline being tested.</p>
+      <p class="note">Gate 1 deliberately tests only gravity, landing, jumping and static support. Dynamic support is not enabled until this mechanical gate passes.</p>
     </section>
     <script type="module" src="/src/main.js"></script>
   </body>
