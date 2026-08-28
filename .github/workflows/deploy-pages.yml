@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Smoke Box3D contact APIs
+        run: npm run smoke
+
       - name: Build experiment
         run: npm run build
 
