@@ -246,8 +246,6 @@ export class ControllerOwnedCharacter {
       const extra = extras[i];
       if (!extra) continue;
       const normal = planes[i].plane.normal;
-      // Only treat near-vertical opposing planes as a blocked walk. Walkable/upward
-      // support planes and the trailing side of a ledge must not suppress adhesion.
       if (Math.abs(normal[1]) > 0.45) continue;
       if (normal[0] * direction[0] + normal[2] * direction[2] > -0.25) continue;
       const body = this.b3.b3Shape_GetBody(extra.shapeId);
@@ -324,13 +322,16 @@ export class ControllerOwnedCharacter {
       if (dot3(delta, delta) < tolerance * tolerance) break;
     }
 
+    // CastMover can stop exactly at a new obstacle that was not present in the planes
+    // collected before the cast. Re-query the final position before classifying support,
+    // blockers, or impulses so those decisions use the actual end-of-tick contact state.
+    const finalContacts = this._collectPlanes(capsule);
+    lastPlanes = finalContacts.planes;
+    lastExtras = finalContacts.extras;
+
     const preClipVelocity = [...this.velocity];
     let support = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
 
-    // Earned from Foundation 02.1 descent evidence: preserve support across an ordinary
-    // stair-sized downward transition, but only from static ground and only while walking.
-    // A static vertical plane opposing motion means this is an ascent/block, not a drop.
-    // Jump clears currentSupport before this point, so deliberate upward launch cannot stick.
     if (
       !support &&
       previousSupport?.type === 'STATIC' &&
