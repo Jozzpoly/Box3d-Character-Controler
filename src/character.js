@@ -68,6 +68,7 @@ export class ControllerOwnedCharacter {
     this.landingSpeed = 0;
     this.coyoteRemaining = 0;
     this.jumpBufferRemaining = 0;
+    this._groundStickRetry = false;
 
     this.queryFilter = b3.b3DefaultQueryFilter();
     this.planeScratch = b3.createPlaneResult();
@@ -100,6 +101,7 @@ export class ControllerOwnedCharacter {
     this.landingSpeed = 0;
     this.coyoteRemaining = 0;
     this.jumpBufferRemaining = 0;
+    this._groundStickRetry = false;
   }
 
   preStep(dt, intent) {
@@ -172,6 +174,7 @@ export class ControllerOwnedCharacter {
       this.velocity[2] += supportVelocity[2];
       this.currentSupport = null;
       this._supportProbe = null;
+      this._groundStickRetry = false;
       this.jumpBufferRemaining = 0;
       this.coyoteRemaining = 0;
     }
@@ -295,6 +298,10 @@ export class ControllerOwnedCharacter {
   _solveMovement(dt) {
     const previousSupport = this.currentSupport;
     const wasSupported = Boolean(previousSupport);
+    const retryGroundStick = this._groundStickRetry;
+    this._groundStickRetry = false;
+
+    const startPosition = [...this.position];
     const capsule = {
       center1: [0, -this.halfSegment, 0],
       center2: [0, this.halfSegment, 0],
@@ -322,22 +329,27 @@ export class ControllerOwnedCharacter {
       if (dot3(delta, delta) < tolerance * tolerance) break;
     }
 
-    // CastMover can stop exactly at a new obstacle that was not present in the planes
-    // collected before the cast. Re-query the final position before classifying support,
-    // blockers, or impulses so those decisions use the actual end-of-tick contact state.
     const finalContacts = this._collectPlanes(capsule);
     lastPlanes = finalContacts.planes;
     lastExtras = finalContacts.extras;
 
+    const achievedDelta = sub3(this.position, startPosition);
+    const horizontalProgress = requestedHorizontal > 1e-6
+      ? (achievedDelta[0] * horizontalDelta[0] + achievedDelta[2] * horizontalDelta[2]) / requestedHorizontal
+      : 0;
     const preClipVelocity = [...this.velocity];
     let support = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
+    let adhesionApplied = false;
 
+    const eligibleFromStatic = previousSupport?.type === 'STATIC' || retryGroundStick;
+    const progressAllowsStick = horizontalProgress >= requestedHorizontal * 0.75;
     if (
       !support &&
-      previousSupport?.type === 'STATIC' &&
+      eligibleFromStatic &&
       this.desiredSpeed > 0.05 &&
       preClipVelocity[1] <= 0.20 &&
       requestedHorizontal > 0.001 &&
+      progressAllowsStick &&
       !this._hasStaticHorizontalBlocker(lastPlanes, lastExtras, horizontalDelta)
     ) {
       const adhesion = this._probeStaticGroundStick(capsule);
@@ -347,7 +359,21 @@ export class ControllerOwnedCharacter {
         lastExtras = adhesion.extras;
         this.lastGroundStickDistance = adhesion.distance;
         support = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
+        adhesionApplied = Boolean(support);
       }
+    }
+
+    // One retry tick is enough for a capsule that is still geometrically clearing the
+    // edge of a normal stair. It is intentionally not a timer: a true larger drop gets
+    // at most one failed extra probe and then remains ordinary airborne motion.
+    if (
+      !support &&
+      !adhesionApplied &&
+      previousSupport?.type === 'STATIC' &&
+      this.desiredSpeed > 0.05 &&
+      preClipVelocity[1] <= 0.20
+    ) {
+      this._groundStickRetry = true;
     }
 
     this.lastPlaneCount = lastPlanes.length;
