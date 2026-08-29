@@ -8,7 +8,7 @@ The working tension is **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**.
 
 ## Current foundation candidate
 
-`Foundation 02` is a quality/feel rebuild of the controller-owned baseline. It does **not** add a new embodiment architecture or a new headline capability. Its purpose is to make the existing representation fair enough to judge seriously.
+`Foundation 02.1` is the machine-qualified provisional capsule baseline awaiting final Owner free-play validation. It closes two basic quality debts reported after Foundation 02 without adding a new embodiment architecture or a general traversal subsystem.
 
 Current character representation:
 
@@ -22,13 +22,22 @@ Current character representation:
 - external horizontal recoil retained as a decaying motion component instead of being immediately overwritten by input;
 - buffered/coyote jump with early-release shaping;
 - smoothed orbit/follow camera with reduced vertical pumping during ordinary jumps;
-- visual-only character presentation for facing, landing and impact readability; physics authority remains the capsule.
+- visual-only character presentation for facing, landing and impact readability; physics authority remains the capsule;
+- explicit provisional visual-forward convention: local `-Z` is the character's face/forward direction.
 
-There is still no active ragdoll, IK, mantle, authored animation locomotion, grab system, stair special-case stack or universal framework.
+There is still no active ragdoll, IK, mantle, authored animation locomotion, grab system, explicit stair-step policy, ground-stick/adhesion system or universal framework.
 
 ## Playground
 
-The yard is intentionally open rather than a prescribed obstacle course. It contains ordinary rigid bodies with different mass/shape affordances, a loose stack, a slab, a beam, static elevation changes and one translating/rotating support. The goal is to preserve both causal tests and unscripted free play.
+The yard is intentionally open rather than a prescribed obstacle course. It contains ordinary rigid bodies with different mass/shape affordances, a loose stack, a slab, a beam, static elevation changes and one translating/rotating support.
+
+Foundation 02.1 also makes one traversal boundary explicit:
+
+- four ordinary static stair rises of `0.22 m`, which the existing rounded capsule can traverse without jump and without a stair special-case;
+- a nearby `0.52 m` ledge, which remains a jump boundary;
+- low dynamic props remain physical/pushable objects rather than being silently converted into traversal geometry.
+
+The goal remains to preserve both causal tests and unscripted free play.
 
 ## Controls
 
@@ -50,8 +59,10 @@ The current implementation is disposable; accepted observations are not.
 - `5fd2aabdff35e79944bd82901175a9f64e73578f` — E1-A2 static gravity/support gate.
 - `ee5bb1813ac691750359c1d8f6f3934c29d9426b` — E1-A2 dynamic-support specimen.
 - `1416c2b7dc618fa99e5a3916326414178414997f` — Foundation 01 open embodied-player playground; machine-qualified and Owner-tested, but Owner judged overall quality/feel too raw for the next serious phase.
+- `9d6e8ca77d024e784ed6aa5d71786ee3e223733d` — Foundation 02 quality/feel public baseline; Owner judged it better, then reported reversed visual facing and non-walkable stair fixtures.
+- `9e2608088a868a027b5e89e2159ee8fdb346adee` — Foundation 02.1 machine-qualified closure runtime/tests before documentation-only closure commits.
 
-See [`docs/RESEARCH.md`](docs/RESEARCH.md) for claims, non-claims and Owner observations.
+See [`docs/RESEARCH.md`](docs/RESEARCH.md) for claims, non-claims, failed traversal experiments and Owner observations.
 
 ## Runtime provenance
 
@@ -71,4 +82,4 @@ npm run smoke
 npm run build
 ```
 
-The Foundation 02 smoke gate preserves the existing physics claims while also checking jump shaping/buffering and that reverse physical perturbation survives the feel-layer changes.
+The broad smoke checks coexistence of Foundation 02 physics plus Foundation 02.1 facing/traversal outcomes. A second isolated closure smoke independently verifies that the original natural-push strength is preserved (`169.4 N·s` in qualification) and that stair descent actually recovers static support. Peak descent velocity remains telemetry for Owner judgement rather than an arbitrary machine quality threshold.
