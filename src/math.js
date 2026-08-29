@@ -48,6 +48,15 @@ export function mulMat3Vec3(matrix, v) {
   ];
 }
 
+// Visual convention used by the provisional capsule: local -Z is "forward".
+// Three.js positive yaw rotates local -Z toward world -X, so world +X is -90°.
+export function yawFromForwardXZ(direction) {
+  const x = direction[0] ?? 0;
+  const z = direction[2] ?? 0;
+  if (Math.hypot(x, z) < 1e-9) return 0;
+  return Math.atan2(-x, -z);
+}
+
 export function quatFromAxisAngle(axis, angle) {
   const n = normalize3(axis);
   const half = angle * 0.5;

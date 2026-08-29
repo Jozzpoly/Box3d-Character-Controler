@@ -26,6 +26,10 @@ function moveToward2(currentX, currentZ, targetX, targetZ, maxDelta) {
   return [currentX + dx * scale, currentZ + dz * scale];
 }
 
+function dotXZ(a, b) {
+  return a[0] * b[0] + a[2] * b[2];
+}
+
 export class ControllerOwnedCharacter {
   constructor(b3, world, options = {}) {
     this.b3 = b3;
@@ -48,6 +52,15 @@ export class ControllerOwnedCharacter {
     this.coyoteTime = options.coyoteTime ?? 0.11;
     this.jumpBufferTime = options.jumpBufferTime ?? 0.12;
     this.supportNormalMinY = options.supportNormalMinY ?? 0.58;
+
+    // Provisional capsule-only traversal policy. This is deliberately bounded and
+    // is not a claim about future articulated/dynamic character architectures.
+    this.maxStepHeight = options.maxStepHeight ?? 0.30;
+    this.stepLiftClearance = options.stepLiftClearance ?? 0.035;
+    this.stepDownProbe = options.stepDownProbe ?? 0.08;
+    this.stepWallNormalMaxY = options.stepWallNormalMaxY ?? 0.38;
+    this.stepMinProgress = options.stepMinProgress ?? 0.65;
+
     this.startPosition = [...(options.startPosition ?? [0, 1.0, 7])];
 
     this.position = [...this.startPosition];
@@ -60,6 +73,8 @@ export class ControllerOwnedCharacter {
     this.lastContactImpulse = 0;
     this.lastDynamicContacts = 0;
     this.lastPlaneCount = 0;
+    this.lastStepHeight = 0;
+    this.lastStepAccepted = false;
     this.justLanded = false;
     this.landingSpeed = 0;
     this.coyoteRemaining = 0;
@@ -91,6 +106,8 @@ export class ControllerOwnedCharacter {
     this.lastContactImpulse = 0;
     this.lastDynamicContacts = 0;
     this.lastPlaneCount = 0;
+    this.lastStepHeight = 0;
+    this.lastStepAccepted = false;
     this.justLanded = false;
     this.landingSpeed = 0;
     this.coyoteRemaining = 0;
@@ -100,6 +117,8 @@ export class ControllerOwnedCharacter {
   preStep(dt, intent) {
     this.justLanded = false;
     this.landingSpeed = 0;
+    this.lastStepHeight = 0;
+    this.lastStepAccepted = false;
     this._captureSupportTransport();
     this._integrateIntent(dt, intent);
   }
@@ -144,7 +163,11 @@ export class ControllerOwnedCharacter {
     ];
     this.desiredSpeed = lengthXZ(desiredVelocity);
     if (this.desiredSpeed > 1e-6) {
-      this.desiredDirection = [desiredVelocity[0] / this.desiredSpeed, 0, desiredVelocity[2] / this.desiredSpeed];
+      this.desiredDirection = [
+        desiredVelocity[0] / this.desiredSpeed,
+        0,
+        desiredVelocity[2] / this.desiredSpeed,
+      ];
     }
 
     const targetX = desiredVelocity[0] + this.externalVelocity[0];
@@ -152,7 +175,13 @@ export class ControllerOwnedCharacter {
     const acceleration = grounded
       ? (this.desiredSpeed > 0.01 ? this.groundAcceleration : this.groundDeceleration)
       : (this.desiredSpeed > 0.01 ? this.airAcceleration : this.airDeceleration);
-    const [nextX, nextZ] = moveToward2(this.velocity[0], this.velocity[2], targetX, targetZ, acceleration * dt);
+    const [nextX, nextZ] = moveToward2(
+      this.velocity[0],
+      this.velocity[2],
+      targetX,
+      targetZ,
+      acceleration * dt,
+    );
     this.velocity[0] = nextX;
     this.velocity[2] = nextZ;
 
@@ -172,7 +201,9 @@ export class ControllerOwnedCharacter {
 
     let gravityMultiplier = 1;
     if (this.velocity[1] < -0.05) gravityMultiplier = this.fallGravityMultiplier;
-    else if (this.velocity[1] > 0.05 && !intent.jumpHeld) gravityMultiplier = this.jumpReleaseGravityMultiplier;
+    else if (this.velocity[1] > 0.05 && !intent.jumpHeld) {
+      gravityMultiplier = this.jumpReleaseGravityMultiplier;
+    }
     this.velocity[1] -= this.gravity * gravityMultiplier * dt;
   }
 
@@ -199,32 +230,142 @@ export class ControllerOwnedCharacter {
     this.supportTransportDistance = length3(delta);
   }
 
-  _collectPlanes(capsule) {
+  _collectPlanesAt(position, capsule) {
     const planes = [];
     const extras = [];
-    this.b3.b3World_CollideMover(this.world, this.position, capsule, this.queryFilter, (shapeId, buffer) => {
-      const count = this.b3.getNumPlaneResults(buffer);
-      for (let i = 0; i < count; i++) {
-        this.b3.getPlaneResultAt(this.planeScratch, buffer, i);
-        const normal = this.planeScratch.plane.normal;
-        planes.push({
-          plane: { normal: [normal[0], normal[1], normal[2]], offset: this.planeScratch.plane.offset },
-          pushLimit: FLT_MAX,
-          push: 0,
-          clipVelocity: true,
-        });
-        extras.push({
-          shapeId,
-          point: [
-            this.position[0] + this.planeScratch.point[0],
-            this.position[1] + this.planeScratch.point[1],
-            this.position[2] + this.planeScratch.point[2],
-          ],
-        });
-      }
-      return true;
-    });
+    this.b3.b3World_CollideMover(
+      this.world,
+      position,
+      capsule,
+      this.queryFilter,
+      (shapeId, buffer) => {
+        const count = this.b3.getNumPlaneResults(buffer);
+        for (let i = 0; i < count; i++) {
+          this.b3.getPlaneResultAt(this.planeScratch, buffer, i);
+          const normal = this.planeScratch.plane.normal;
+          planes.push({
+            plane: {
+              normal: [normal[0], normal[1], normal[2]],
+              offset: this.planeScratch.plane.offset,
+            },
+            pushLimit: FLT_MAX,
+            push: 0,
+            clipVelocity: true,
+          });
+          extras.push({
+            shapeId,
+            point: [
+              position[0] + this.planeScratch.point[0],
+              position[1] + this.planeScratch.point[1],
+              position[2] + this.planeScratch.point[2],
+            ],
+          });
+        }
+        return true;
+      },
+    );
     return { planes, extras };
+  }
+
+  _collectPlanes(capsule) {
+    return this._collectPlanesAt(this.position, capsule);
+  }
+
+  _moveMover(startPosition, capsule, targetDelta, maxIterations = 5) {
+    const position = [...startPosition];
+    const target = add3(startPosition, targetDelta);
+    let lastPlanes = [];
+    let lastExtras = [];
+    const tolerance = 0.002;
+
+    for (let iteration = 0; iteration < maxIterations; iteration++) {
+      const { planes, extras } = this._collectPlanesAt(position, capsule);
+      const solved = this.b3.b3SolvePlanes(sub3(target, position), planes);
+      let delta = solved.delta;
+      const fraction = this.b3.b3World_CastMover(
+        this.world,
+        position,
+        capsule,
+        delta,
+        this.queryFilter,
+        () => true,
+      );
+      delta = scale3(delta, fraction);
+      position[0] += delta[0];
+      position[1] += delta[1];
+      position[2] += delta[2];
+      lastPlanes = planes;
+      lastExtras = extras;
+      if (dot3(delta, delta) < tolerance * tolerance) break;
+    }
+
+    return { position, planes: lastPlanes, extras: lastExtras };
+  }
+
+  _blockingKinds(planes, extras, horizontalDirection) {
+    let staticBlock = false;
+    let nonStaticBlock = false;
+
+    for (let i = 0; i < planes.length; i++) {
+      const extra = extras[i];
+      if (!extra) continue;
+      const normal = planes[i].plane.normal;
+      if (Math.abs(normal[1]) > this.stepWallNormalMaxY) continue;
+      if (dotXZ(normal, horizontalDirection) > -0.15) continue;
+
+      const body = this.b3.b3Shape_GetBody(extra.shapeId);
+      const type = bodyTypeValue(this.b3.b3Body_GetType(body));
+      if (type === bodyTypeValue(this.b3.b3BodyType.b3_staticBody)) staticBlock = true;
+      else nonStaticBlock = true;
+    }
+
+    return { staticBlock, nonStaticBlock };
+  }
+
+  _tryStaticStep(startPosition, capsule, horizontalDelta) {
+    const requestedDistance = lengthXZ(horizontalDelta);
+    if (requestedDistance < 1e-5) return null;
+
+    const direction = [
+      horizontalDelta[0] / requestedDistance,
+      0,
+      horizontalDelta[2] / requestedDistance,
+    ];
+    const liftDistance = this.maxStepHeight + this.stepLiftClearance;
+
+    const up = this._moveMover(startPosition, capsule, [0, liftDistance, 0], 4);
+    const lifted = up.position[1] - startPosition[1];
+    if (lifted < this.maxStepHeight * 0.92) return null;
+
+    const forward = this._moveMover(up.position, capsule, horizontalDelta, 4);
+    const forwardDelta = sub3(forward.position, up.position);
+    const progress = dotXZ(forwardDelta, direction);
+    if (progress < requestedDistance * this.stepMinProgress) return null;
+
+    const forwardContacts = this._collectPlanesAt(forward.position, capsule);
+    const forwardBlockers = this._blockingKinds(
+      forwardContacts.planes,
+      forwardContacts.extras,
+      direction,
+    );
+    if (forwardBlockers.nonStaticBlock) return null;
+
+    const downDistance = liftDistance + this.stepDownProbe;
+    const down = this._moveMover(forward.position, capsule, [0, -downDistance, 0], 5);
+    const finalContacts = this._collectPlanesAt(down.position, capsule);
+    const support = this._findSupport(finalContacts.planes, finalContacts.extras, [0, -1, 0]);
+    if (!support || support.type !== 'STATIC') return null;
+
+    const rise = down.position[1] - startPosition[1];
+    if (rise < 0.025 || rise > this.maxStepHeight + this.stepLiftClearance) return null;
+
+    return {
+      position: down.position,
+      planes: finalContacts.planes,
+      extras: finalContacts.extras,
+      support,
+      height: rise,
+    };
   }
 
   _solveMovement(dt) {
@@ -234,28 +375,56 @@ export class ControllerOwnedCharacter {
       center2: [0, this.halfSegment, 0],
       radius: this.radius,
     };
-    const target = [
-      this.position[0] + dt * this.velocity[0],
-      this.position[1] + dt * this.velocity[1],
-      this.position[2] + dt * this.velocity[2],
+
+    const startPosition = [...this.position];
+    const targetDelta = [
+      dt * this.velocity[0],
+      dt * this.velocity[1],
+      dt * this.velocity[2],
     ];
-    let lastPlanes = [];
-    let lastExtras = [];
-    const tolerance = 0.002;
-    for (let iteration = 0; iteration < 5; iteration++) {
-      const { planes, extras } = this._collectPlanes(capsule);
-      const solved = this.b3.b3SolvePlanes(sub3(target, this.position), planes);
-      let delta = solved.delta;
-      const fraction = this.b3.b3World_CastMover(this.world, this.position, capsule, delta, this.queryFilter, () => true);
-      delta = scale3(delta, fraction);
-      this.position = add3(this.position, delta);
-      lastPlanes = planes;
-      lastExtras = extras;
-      if (dot3(delta, delta) < tolerance * tolerance) break;
+    const horizontalDelta = [targetDelta[0], 0, targetDelta[2]];
+    const requestedHorizontal = lengthXZ(horizontalDelta);
+
+    const normalMove = this._moveMover(startPosition, capsule, targetDelta);
+    this.position = normalMove.position;
+    let lastPlanes = normalMove.planes;
+    let lastExtras = normalMove.extras;
+
+    if (
+      wasSupported &&
+      this.velocity[1] <= 0.25 &&
+      requestedHorizontal > 0.01
+    ) {
+      const direction = [
+        horizontalDelta[0] / requestedHorizontal,
+        0,
+        horizontalDelta[2] / requestedHorizontal,
+      ];
+      const achievedDelta = sub3(this.position, startPosition);
+      const achievedForward = dotXZ(achievedDelta, direction);
+      const contactNow = this._collectPlanesAt(this.position, capsule);
+      const blockers = this._blockingKinds(contactNow.planes, contactNow.extras, direction);
+
+      if (
+        achievedForward < requestedHorizontal * 0.72 &&
+        blockers.staticBlock &&
+        !blockers.nonStaticBlock
+      ) {
+        const step = this._tryStaticStep(startPosition, capsule, horizontalDelta);
+        if (step) {
+          this.position = [...step.position];
+          lastPlanes = step.planes;
+          lastExtras = step.extras;
+          this.velocity[1] = 0;
+          this.lastStepHeight = step.height;
+          this.lastStepAccepted = true;
+        }
+      }
     }
 
     this.lastPlaneCount = lastPlanes.length;
     this._exchangeDynamicContactImpulses(lastPlanes, lastExtras);
+
     const preClipVelocity = [...this.velocity];
     this.velocity = this.b3.b3ClipVector(this.velocity, lastPlanes);
     this.currentSupport = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
@@ -272,6 +441,7 @@ export class ControllerOwnedCharacter {
     this.lastContactImpulse = 0;
     this.lastDynamicContacts = 0;
     const invMassA = 1 / this.virtualMass;
+
     for (let i = 0; i < planes.length; i++) {
       const extra = extras[i];
       if (!extra) continue;
@@ -279,7 +449,11 @@ export class ControllerOwnedCharacter {
       const type = bodyTypeValue(this.b3.b3Body_GetType(body));
       if (type !== bodyTypeValue(this.b3.b3BodyType.b3_dynamicBody)) continue;
 
-      const normal = [-planes[i].plane.normal[0], -planes[i].plane.normal[1], -planes[i].plane.normal[2]];
+      const normal = [
+        -planes[i].plane.normal[0],
+        -planes[i].plane.normal[1],
+        -planes[i].plane.normal[2],
+      ];
       const invMassB = this.b3.b3Body_GetInverseMass(body);
       const invIB = this.b3.b3Body_GetWorldInverseRotationalInertia(body);
       this.b3.b3Body_GetWorldCenterOfMass(this._bodyCenter, body);
@@ -332,6 +506,7 @@ export class ControllerOwnedCharacter {
       this.b3.b3Body_GetRotation(this._bodyRotation, body);
       localPoint = inverseTransformPoint(this._bodyPosition, this._bodyRotation, extra.point);
     }
+
     return {
       body,
       type,
@@ -345,7 +520,10 @@ export class ControllerOwnedCharacter {
     this.b3.b3Body_GetLinearVelocity(this._bodyLinearVelocity, body);
     this.b3.b3Body_GetAngularVelocity(this._bodyAngularVelocity, body);
     this.b3.b3Body_GetWorldCenterOfMass(this._bodyCenter, body);
-    return add3(this._bodyLinearVelocity, cross3(this._bodyAngularVelocity, sub3(worldPoint, this._bodyCenter)));
+    return add3(
+      this._bodyLinearVelocity,
+      cross3(this._bodyAngularVelocity, sub3(worldPoint, this._bodyCenter)),
+    );
   }
 
   _supportPointVelocity(support) {
@@ -366,6 +544,9 @@ export class ControllerOwnedCharacter {
       contactImpulse: this.lastContactImpulse,
       planeCount: this.lastPlaneCount,
       virtualMass: this.virtualMass,
+      stepped: this.lastStepAccepted,
+      stepHeight: this.lastStepHeight,
+      maxStepHeight: this.maxStepHeight,
       justLanded: this.justLanded,
       landingSpeed: this.landingSpeed,
       coyoteRemaining: this.coyoteRemaining,
