@@ -60,11 +60,18 @@ function box(type, position, half, density = 30) {
 
 box('static', [0, -0.5, 0], [8, 0.5, 8]);
 
+// Four 22 cm stair rises. Centres/coverage:
+// z=5.0 [4.55,5.45], top .22
+// z=4.1 [3.65,4.55], top .44
+// z=3.2 [2.75,3.65], top .66
+// z=2.3 [1.85,2.75], top .88
 for (let i = 0; i < 4; i++) {
   const top = 0.22 * (i + 1);
   box('static', [-5, top * 0.5, 5.0 - i * 0.9], [0.7, top * 0.5, 0.45]);
 }
+// Explicit high ledge boundary: 52 cm top.
 box('static', [-3, 0.26, 5.0], [0.7, 0.26, 0.45]);
+// Low dynamic body: shorter than a normal stair, but must remain a pushable prop.
 const lowDynamic = box('dynamic', [-1, 0.10, 5.0], [0.45, 0.10, 0.45], 28);
 
 const dynamicBox = box('dynamic', [0, 0.6, -0.3], [0.6, 0.6, 0.6], 35);
@@ -100,6 +107,7 @@ function settle(frames = 180) {
 }
 
 try {
+  // Foundation 02 jump/ground baseline.
   settle();
   if (!character.currentSupport || character.currentSupport.type !== 'STATIC') {
     throw new Error('Static landing/support failed');
@@ -157,6 +165,7 @@ try {
     throw new Error(`Jump buffer failed: pressed=${bufferedPressed} launch=${bufferedLaunch}`);
   }
 
+  // Outcome gate: rounded capsule must traverse normal 22 cm stairs without jump.
   character.reset([-5, character.halfHeight + 0.02, 6.15]);
   settle(20);
   let stairPeak = character.position[1];
@@ -171,47 +180,76 @@ try {
     );
   }
 
+  // Independent descent gate. Start ON the highest tread, not behind its vertical back face.
+  character.reset([-5, character.halfHeight + 0.88 + 0.02, 2.40]);
+  settle(20);
+  if (
+    !character.currentSupport ||
+    Math.abs(character.position[1] - (character.halfHeight + 0.88)) > 0.08
+  ) {
+    throw new Error(
+      `Highest tread setup failed: y=${character.position[1].toFixed(3)} support=${character.currentSupport?.type ?? 'NONE'}`,
+    );
+  }
   let descentPeakVertical = 0;
-  for (let i = 0; i < 130; i++) {
+  for (let i = 0; i < 140; i++) {
     tick({ moveForward: -1 });
     descentPeakVertical = Math.max(descentPeakVertical, Math.abs(character.velocity[1]));
-    if (character.position[2] > 6.0) break;
+    if (
+      character.position[2] > 5.85 &&
+      character.position[1] < character.halfHeight + 0.12
+    ) {
+      break;
+    }
   }
-  if (character.position[2] <= 5.7 || character.position[1] > character.halfHeight + 0.12) {
+  if (character.position[2] <= 5.70 || character.position[1] > character.halfHeight + 0.12) {
     throw new Error(
-      `Static stair descent failed: y=${character.position[1].toFixed(3)} z=${character.position[2].toFixed(3)}`,
+      `Static stair descent failed: y=${character.position[1].toFixed(3)} z=${character.position[2].toFixed(3)} peakV=${descentPeakVertical.toFixed(3)}`,
     );
   }
 
+  // 52 cm ledge must remain a jump boundary.
   character.reset([-3, character.halfHeight + 0.02, 6.15]);
   settle(20);
   let ledgeMinZ = character.position[2];
+  let ledgePeakY = character.position[1];
   for (let i = 0; i < 70; i++) {
     tick({ moveForward: 1 });
     ledgeMinZ = Math.min(ledgeMinZ, character.position[2]);
+    ledgePeakY = Math.max(ledgePeakY, character.position[1]);
   }
-  if (ledgeMinZ < 5.70) {
-    throw new Error(`High ledge boundary failed: minZ=${ledgeMinZ.toFixed(3)}`);
+  if (ledgeMinZ < 5.70 || ledgePeakY > character.halfHeight + 0.20) {
+    throw new Error(
+      `High ledge boundary failed: minZ=${ledgeMinZ.toFixed(3)} peakY=${ledgePeakY.toFixed(3)}`,
+    );
   }
 
+  // A low dynamic object remains a physical prop, not traversal geometry.
   b3.b3Body_SetTransform(lowDynamic, [-1, 0.10, 5.0], [0, 0, 0, 1]);
   b3.b3Body_SetLinearVelocity(lowDynamic, [0, 0, 0]);
   b3.b3Body_SetAngularVelocity(lowDynamic, [0, 0, 0]);
   character.reset([-1, character.halfHeight + 0.02, 6.15]);
   settle(20);
   let lowPushImpulse = 0;
+  let lowCharacterPeakY = character.position[1];
   for (let i = 0; i < 70; i++) {
     tick({ moveForward: 1 });
     lowPushImpulse = Math.max(lowPushImpulse, character.lastContactImpulse);
+    lowCharacterPeakY = Math.max(lowCharacterPeakY, character.position[1]);
   }
   const lowDynamicPosition = [0, 0, 0];
   b3.b3Body_GetPosition(lowDynamicPosition, lowDynamic);
-  if (lowDynamicPosition[2] > 4.75 || lowPushImpulse <= 0) {
+  if (
+    lowDynamicPosition[2] > 4.75 ||
+    lowPushImpulse <= 0 ||
+    lowCharacterPeakY > character.halfHeight + 0.18
+  ) {
     throw new Error(
-      `Dynamic prop preservation failed: z=${lowDynamicPosition[2].toFixed(3)} impulse=${lowPushImpulse.toFixed(2)}`,
+      `Dynamic prop preservation failed: z=${lowDynamicPosition[2].toFixed(3)} impulse=${lowPushImpulse.toFixed(2)} charPeak=${lowCharacterPeakY.toFixed(3)}`,
     );
   }
 
+  // Existing Foundation 02 physical regression gates.
   b3.b3Body_SetTransform(dynamicBox, [0, 0.6, -0.3], [0, 0, 0, 1]);
   b3.b3Body_SetLinearVelocity(dynamicBox, [0, 0, 0]);
   b3.b3Body_SetAngularVelocity(dynamicBox, [0, 0, 0]);
@@ -298,7 +336,7 @@ try {
   }
 
   console.log(
-    `Foundation 02.1 smoke PASS: facing=${facingCases.length} stairPeak=${(stairPeak - character.halfHeight).toFixed(2)}m ledgeMinZ=${ledgeMinZ.toFixed(2)} lowPropZ=${lowDynamicPosition[2].toFixed(2)} fullJump=${(fullPeak - landedY).toFixed(2)}m shortJump=${(shortPeak - shortBase).toFixed(2)}m push=${maxPushImpulse.toFixed(1)}Ns ramDx=${ramDisplacement.toFixed(2)}m external=${maxExternal.toFixed(2)}m/s rideDx=${rideDx.toFixed(2)}m rotate=${rotateDistance.toFixed(2)}m descentV=${descentPeakVertical.toFixed(2)}m/s`,
+    `Foundation 02.1 smoke PASS: facing=${facingCases.length} stairsUp=${(stairPeak - character.halfHeight).toFixed(2)}m stairsDownV=${descentPeakVertical.toFixed(2)}m/s ledgeMinZ=${ledgeMinZ.toFixed(2)} lowPropZ=${lowDynamicPosition[2].toFixed(2)} fullJump=${(fullPeak - landedY).toFixed(2)}m shortJump=${(shortPeak - shortBase).toFixed(2)}m push=${maxPushImpulse.toFixed(1)}Ns ramDx=${ramDisplacement.toFixed(2)}m external=${maxExternal.toFixed(2)}m/s rideDx=${rideDx.toFixed(2)}m rotate=${rotateDistance.toFixed(2)}m`,
   );
 } finally {
   b3.b3DestroyWorld(world);
