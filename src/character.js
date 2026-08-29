@@ -237,6 +237,26 @@ export class ControllerOwnedCharacter {
     return this._collectPlanesAt(this.position, capsule);
   }
 
+  _hasStaticHorizontalBlocker(planes, extras, horizontalDelta) {
+    const distance = lengthXZ(horizontalDelta);
+    if (distance < 1e-6) return false;
+    const direction = [horizontalDelta[0] / distance, 0, horizontalDelta[2] / distance];
+
+    for (let i = 0; i < planes.length; i++) {
+      const extra = extras[i];
+      if (!extra) continue;
+      const normal = planes[i].plane.normal;
+      // Only treat near-vertical opposing planes as a blocked walk. Walkable/upward
+      // support planes and the trailing side of a ledge must not suppress adhesion.
+      if (Math.abs(normal[1]) > 0.45) continue;
+      if (normal[0] * direction[0] + normal[2] * direction[2] > -0.25) continue;
+      const body = this.b3.b3Shape_GetBody(extra.shapeId);
+      const type = bodyTypeValue(this.b3.b3Body_GetType(body));
+      if (type === bodyTypeValue(this.b3.b3BodyType.b3_staticBody)) return true;
+    }
+    return false;
+  }
+
   _probeStaticGroundStick(capsule) {
     const origin = [...this.position];
     const target = [origin[0], origin[1] - this.groundStickDistance, origin[2]];
@@ -277,7 +297,6 @@ export class ControllerOwnedCharacter {
   _solveMovement(dt) {
     const previousSupport = this.currentSupport;
     const wasSupported = Boolean(previousSupport);
-    const startPosition = [...this.position];
     const capsule = {
       center1: [0, -this.halfSegment, 0],
       center2: [0, this.halfSegment, 0],
@@ -305,24 +324,20 @@ export class ControllerOwnedCharacter {
       if (dot3(delta, delta) < tolerance * tolerance) break;
     }
 
-    const achievedDelta = sub3(this.position, startPosition);
-    const horizontalProgress = requestedHorizontal > 1e-6
-      ? (achievedDelta[0] * horizontalDelta[0] + achievedDelta[2] * horizontalDelta[2]) / requestedHorizontal
-      : 0;
     const preClipVelocity = [...this.velocity];
     let support = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
 
     // Earned from Foundation 02.1 descent evidence: preserve support across an ordinary
     // stair-sized downward transition, but only from static ground and only while walking.
-    // Requiring real horizontal progress keeps a blocked upward face from being mistaken
-    // for a descending edge. Jump clears currentSupport before this point, so launch cannot stick.
+    // A static vertical plane opposing motion means this is an ascent/block, not a drop.
+    // Jump clears currentSupport before this point, so deliberate upward launch cannot stick.
     if (
       !support &&
       previousSupport?.type === 'STATIC' &&
       this.desiredSpeed > 0.05 &&
       preClipVelocity[1] <= 0.20 &&
       requestedHorizontal > 0.001 &&
-      horizontalProgress >= requestedHorizontal * 0.75
+      !this._hasStaticHorizontalBlocker(lastPlanes, lastExtras, horizontalDelta)
     ) {
       const adhesion = this._probeStaticGroundStick(capsule);
       if (adhesion) {
