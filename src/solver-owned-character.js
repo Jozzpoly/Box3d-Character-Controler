@@ -90,7 +90,7 @@ export class SolverOwnedCharacter {
     const unitMass = b3.b3ComputeCapsuleMass(this.capsule, 1).mass;
     const shapeDef = b3.b3DefaultShapeDef();
     shapeDef.density = this.targetMass / unitMass;
-    shapeDef.baseMaterial.friction = options.friction ?? 0.82;
+    shapeDef.baseMaterial.friction = options.friction ?? 0.45;
     shapeDef.baseMaterial.restitution = 0;
     this.shape = b3.b3CreateCapsuleShape(this.body, shapeDef, this.capsule);
     this.mass = b3.b3Body_GetMass(this.body);
