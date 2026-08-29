@@ -14,18 +14,26 @@ Exact specimen: `cadb9405097ede149e64a64d8070c6127e8849a5`.
 
 ## E1-A2 — Support Reciprocity Crucible
 
-Current hypothesis under test:
+Question:
 
-> Can a controller-owned mover participate in gravity/support/support-loss and later dynamic support using a small number of general, causally legible rules rather than scenario-specific patches?
+> Can a controller-owned mover participate in gravity, support, support loss and dynamic support using a small number of general, causally legible rules rather than scenario-specific patches?
 
 ### Gate 1 — Gravity + static support
 
-Required before dynamic support work:
+Exact specimen: `5fd2aabdff35e79944bd82901175a9f64e73578f`.
 
-- unsupported body falls;
-- landing produces stable support without fixed-Y correction;
-- leaving support restores ballistic motion;
-- a bounded jump leaves and returns to support;
-- support is identified from mover contact geometry, not a scripted ground state.
+- Deterministic smoke: PASS for unsupported fall → static landing, bounded jump → return to support, and support loss → resumed falling.
+- Production build: PASS.
+- GitHub Pages deployment: PASS.
+- No fixed world-Y correction remains in the character solver.
+- Result: controller-owned state is **not falsified by static gravity/support alone**.
 
-Dynamic support is intentionally deferred until Gate 1 passes.
+### Gate 2 — Dynamic support
+
+The next bounded mechanisms are deliberately general:
+
+1. identify the actual support body from mover contact geometry;
+2. use an explicit finite virtual player mass (`80 kg`) to transfer landing/standing normal load into a dynamic support body;
+3. transport the controller-owned character by the dynamic support body's actual translational displacement, and inherit its horizontal linear velocity on jump.
+
+No crate-specific state, platform mode, ground snap, stair logic, mantling, or full angular contact-point transport is added. If these general mechanisms are insufficient, that insufficiency is evidence rather than an invitation to immediately accumulate special cases.

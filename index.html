@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Box3d Character Controler — E1-A2 Gate 1</title>
+    <title>Box3d Character Controler — E1-A2</title>
   </head>
   <body>
     <canvas id="app"></canvas>
     <section id="hud">
-      <div class="eyebrow">E1-A2 · SUPPORT RECIPROCITY · GATE 1</div>
-      <h1>Gravity + static support</h1>
-      <p class="controls"><strong>WASD</strong> move · <strong>Space</strong> jump · <strong>R</strong> reset</p>
+      <div class="eyebrow">E1-A2 · SUPPORT RECIPROCITY CRUCIBLE</div>
+      <h1>Controller-owned support test</h1>
+      <p class="controls"><strong>WASD</strong> move · <strong>Space</strong> jump · <strong>F</strong> nudge dynamic support · <strong>R</strong> reset</p>
       <p id="status">Loading Box3D…</p>
       <dl id="telemetry">
         <div><dt>horizontal speed</dt><dd id="speed">—</dd></div>
@@ -18,9 +18,11 @@
         <div><dt>desired speed</dt><dd id="desired">—</dd></div>
         <div><dt>supported</dt><dd id="supported">—</dd></div>
         <div><dt>support</dt><dd id="support-type">—</dd></div>
-        <div><dt>support planes</dt><dd id="planes">—</dd></div>
+        <div><dt>support speed</dt><dd id="support-speed">—</dd></div>
+        <div><dt>support load impulse</dt><dd id="load-impulse">—</dd></div>
+        <div><dt>dynamic platform speed</dt><dd id="platform-speed">—</dd></div>
       </dl>
-      <p class="note">Gate 1 deliberately tests only gravity, landing, jumping and static support. Dynamic support is not enabled until this mechanical gate passes.</p>
+      <p class="note">The player is still controller-owned. Dynamic support receives a load/landing impulse from an explicit 80 kg virtual player mass. Support translation is transported generically from the support body; there is no crate-specific mode or fixed-Y attachment.</p>
     </section>
     <script type="module" src="/src/main.js"></script>
   </body>
