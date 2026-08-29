@@ -41,35 +41,74 @@ Exact specimen: `ee5bb1813ac691750359c1d8f6f3934c29d9426b`.
 - Production build + GitHub Pages: PASS.
 - Owner runtime observation: gravity/jump/support broadly worked; moving-support feel appeared plausible and no obvious teleportation was observed.
 - Owner verdict on the build as a play instrument: **regression**. Natural push interaction from E1-A1 had disappeared, most objects behaved as static fixtures from the player's perspective, and the fixed camera reduced exploration.
-- Important correction: a technically narrower falsifier can increase directed evidence while reducing spontaneous affordance discovery.
 
 Methodological result:
 
 > **Controlled enough to explain, open enough to play.**
 
-Future experiments should avoid removing previously useful natural interactions unless removal is itself necessary to isolate a question.
+## Foundation 01 — Embodied Player Playground
 
-## Foundation 01 — Embodied Player Playground (candidate under validation)
+Exact specimen: `1416c2b7dc618fa99e5a3916326414178414997f`.
 
-This is a rebuild candidate, not yet accepted evidence.
+Goal:
+
+> Combine previously isolated abilities into one open research surface: locomotion, jump, natural push, reverse perturbation, dynamic/moving support and free camera exploration.
+
+Machine result:
+
+- PASS for static land/jump;
+- PASS for natural dynamic push (`175.3 N·s` peak in qualification smoke);
+- PASS for reverse perturbation (ram displaced the controller-owned character by about `0.48 m`);
+- PASS for translating support (`1.00 m` rider transport in qualification smoke);
+- PASS for off-center rotating support (`0.61 m` rider arc during a 45° support rotation);
+- CI/build/Pages: PASS.
+
+Owner observation from the first unscripted gameplay recording:
+
+- the playground did provoke broader free play: pushing, jumping across props, riding/using the moving slab, disturbing objects and revisiting different physical arrangements;
+- core behavior broadly worked;
+- however the overall experience remained **too raw**: camera, movement presentation, world composition and general feel did not meet the Owner's quality bar;
+- Owner explicitly requested a fundamental improvement/polish pass before expanding into new capabilities.
+
+Interpretation:
+
+Foundation 01 is useful evidence that the combined mechanisms coexist, but it is **not a fair quality ceiling for controller-owned embodiment**. Architecture comparison should wait until this candidate is less obviously handicapped by crude locomotion/camera/presentation.
+
+## Foundation 02 — Quality / Feel Baseline (candidate under validation)
 
 Question:
 
-> Can a small open playground preserve causal legibility while combining movement, jumping, natural object manipulation, moving support and reverse physical perturbation strongly enough to become a useful long-lived research surface?
+> Can the same controller-owned representation become a substantially more coherent and satisfying baseline without reducing physical reciprocity or hiding consequences behind stronger controller authority?
 
-Implementation hypothesis being tested:
+The candidate deliberately does not add grab, ragdoll or a new character representation. It attacks quality debt in four coupled layers:
 
-1. Keep controller-owned character state for strong player authority.
-2. Give the virtual character an explicit finite interaction mass (`80 kg`).
-3. Use one general normal effective-mass impulse exchange for all dynamic contacts, including equal-and-opposite velocity change on the character rather than a separate side-push hack and standing-load hack.
-4. Represent moving support by a body-local contact point; transport follows the real world-space motion of that point, including body rotation.
-5. Treat camera-relative input and a follow/orbit camera as part of the embodiment apparatus once free exploration matters.
-6. Preserve an open collection of ordinary physical objects so Owner free play can discover the next question without reading a test script.
+1. **Locomotion authority** — ground and air control are separated; target velocity is approached with bounded acceleration rather than the previous friction/acceleration loop.
+2. **Physical consequence persistence** — horizontal velocity gained from dynamic contact is tracked as an external component that decays rather than being immediately erased by movement intent.
+3. **Jump control** — coyote time, input buffering and early-release gravity shaping improve player timing without changing the fundamental ballistic/contact model.
+4. **Perception/presentation** — camera orbit/follow is damped and ordinary jump height no longer drives camera Y one-to-one; the visual character exposes facing, landing and contact state without gaining physics authority; the yard uses a coherent, readable visual/material language.
 
-The candidate must not be promoted to an architecture winner merely because CI passes or because the playground is more enjoyable than E1-A2.
+First branch qualification at `cce2bcecfa82a2be07188379bfbd02d4540a13d1`:
+
+- full jump apex above standing height: `1.23 m`;
+- early-release jump apex: `0.73 m`;
+- buffered-jump gate: PASS;
+- natural push peak: `169.4 N·s` (close to Foundation 01 rather than being sacrificed for feel);
+- reverse ram displacement: `-1.08 m` with `1.73 m/s` peak external horizontal response;
+- translating support transport: `1.00 m`;
+- rotating support arc: `1.03 m`;
+- production build: PASS.
+
+These numbers are machine evidence, not a positive Owner-feel verdict. In particular, stronger/persistent recoil may still be too much and must be judged in free play.
+
+Promotion requirements:
+
+- existing push/reverse-recoil/translating-support/rotating-support machine gates remain green;
+- jump shaping/buffering behaves deterministically;
+- production build passes;
+- only then may the exact candidate replace Foundation 01 on public Pages for a new Owner free-play verdict.
 
 ### Donor/provenance notes
 
-- Native Box3D `CharacterMover` provides the reference effective-mass contact calculation and demonstrates a substantially richer controller-owned specimen than E1.
-- Current `box3d.js` browser example provides donor patterns for camera-relative control, open obstacle/play space and generic Box3D→Three rendering.
-- `box3d.js@0.1.1` currently vendors native Box3D commit `8441b4a06d6d09dcfb0b0f704df4d847d1437b92`; binding version and engine snapshot are distinct provenance facts.
+- Native Box3D `CharacterMover` remains the reference for controller-owned mover collision and effective-mass dynamic contact response.
+- Current `box3d.js` browser examples remain donors for camera-relative control and generic Box3D→Three rendering, not an architecture to copy wholesale.
+- `box3d.js@0.1.1` vendors native Box3D commit `8441b4a06d6d09dcfb0b0f704df4d847d1437b92`; binding version and engine snapshot remain distinct facts.
