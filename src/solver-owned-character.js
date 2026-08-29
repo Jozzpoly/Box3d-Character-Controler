@@ -22,9 +22,15 @@ function clampVector2(x, z, maxLength) {
 /**
  * E2 disposable contrast specimen.
  *
- * The body position and linear velocity are solver-owned. Player intent is expressed
- * only through bounded impulses at the centre of mass. Rotation is deliberately locked
- * so E2 changes state ownership without also testing orientation / falling / recovery.
+ * Position and linear velocity belong to a real finite-mass Box3D body. Player intent
+ * is expressed only through bounded centre-of-mass impulses. Rotation is deliberately
+ * locked so E2 changes translational state ownership without also testing balance,
+ * falling or orientation recovery.
+ *
+ * No-input is intentionally not an active velocity command. Horizontal stopping and
+ * moving-support transport are left to ordinary rigid-body contact/friction. This keeps
+ * the first E2 control law from silently cancelling the physical consequence we want to
+ * observe or reconstructing the H-A support-transport bridge above the solver.
  */
 export class SolverOwnedCharacter {
   constructor(b3, world, options = {}) {
@@ -36,9 +42,9 @@ export class SolverOwnedCharacter {
     this.maxSpeed = options.maxSpeed ?? 5.2;
     this.sprintMultiplier = options.sprintMultiplier ?? 1.32;
     this.groundAcceleration = options.groundAcceleration ?? 26;
-    this.groundDeceleration = options.groundDeceleration ?? 20;
+    this.groundDeceleration = options.groundDeceleration ?? 0;
     this.airAcceleration = options.airAcceleration ?? 7.5;
-    this.airDeceleration = options.airDeceleration ?? 1.2;
+    this.airDeceleration = options.airDeceleration ?? 0;
     this.gravity = options.gravity ?? 20;
     this.fallGravityMultiplier = options.fallGravityMultiplier ?? 1.22;
     this.jumpReleaseGravityMultiplier = options.jumpReleaseGravityMultiplier ?? 1.75;
@@ -92,7 +98,6 @@ export class SolverOwnedCharacter {
     this._contacts = b3.createContactsBuffer();
     this._contact = b3.createContact();
     this._manifold = b3.createManifold();
-    this._supportVelocityScratch = [0, 0, 0];
     this._preSolveVelocity = [0, 0, 0];
     this._desiredWorldVelocity = [0, 0, 0];
     this._wasSupportedBeforeStep = false;
@@ -151,39 +156,37 @@ export class SolverOwnedCharacter {
     }
 
     const speedLimit = this.maxSpeed * (intent.sprint ? this.sprintMultiplier : 1);
-    const desiredRelativeVelocity = [
+    const desiredVelocity = [
       speedLimit * (forwardAmount * forward[0] + rightAmount * right[0]),
       0,
       speedLimit * (forwardAmount * forward[2] + rightAmount * right[2]),
     ];
-    this.desiredSpeed = Math.hypot(desiredRelativeVelocity[0], desiredRelativeVelocity[2]);
+    this._desiredWorldVelocity = [...desiredVelocity];
+    this.desiredSpeed = Math.hypot(desiredVelocity[0], desiredVelocity[2]);
     if (this.desiredSpeed > 1e-6) {
       this.desiredDirection = [
-        desiredRelativeVelocity[0] / this.desiredSpeed,
+        desiredVelocity[0] / this.desiredSpeed,
         0,
-        desiredRelativeVelocity[2] / this.desiredSpeed,
+        desiredVelocity[2] / this.desiredSpeed,
       ];
     }
-
-    const supportVelocity = grounded ? this._supportPointVelocity(this.currentSupport) : [0, 0, 0];
-    const targetX = desiredRelativeVelocity[0] + supportVelocity[0];
-    const targetZ = desiredRelativeVelocity[2] + supportVelocity[2];
-    this._desiredWorldVelocity = [targetX, 0, targetZ];
 
     const acceleration = grounded
       ? (this.desiredSpeed > 0.01 ? this.groundAcceleration : this.groundDeceleration)
       : (this.desiredSpeed > 0.01 ? this.airAcceleration : this.airDeceleration);
-    const [deltaVx, deltaVz] = clampVector2(
-      targetX - this.velocity[0],
-      targetZ - this.velocity[2],
-      acceleration * dt,
-    );
-    if (Math.abs(deltaVx) > 1e-8 || Math.abs(deltaVz) > 1e-8) {
-      const impulse = [this.mass * deltaVx, 0, this.mass * deltaVz];
-      this.b3.b3Body_ApplyLinearImpulseToCenter(this.body, impulse, true);
-      this.lastControlImpulse += Math.hypot(impulse[0], impulse[2]);
-      this.velocity[0] += deltaVx;
-      this.velocity[2] += deltaVz;
+    if (acceleration > 0) {
+      const [deltaVx, deltaVz] = clampVector2(
+        desiredVelocity[0] - this.velocity[0],
+        desiredVelocity[2] - this.velocity[2],
+        acceleration * dt,
+      );
+      if (Math.abs(deltaVx) > 1e-8 || Math.abs(deltaVz) > 1e-8) {
+        const impulse = [this.mass * deltaVx, 0, this.mass * deltaVz];
+        this.b3.b3Body_ApplyLinearImpulseToCenter(this.body, impulse, true);
+        this.lastControlImpulse += Math.hypot(impulse[0], impulse[2]);
+        this.velocity[0] += deltaVx;
+        this.velocity[2] += deltaVz;
+      }
     }
 
     const canJump = grounded || this.coyoteRemaining > 0;
@@ -217,8 +220,8 @@ export class SolverOwnedCharacter {
     const beforeZ = this._preSolveVelocity[2];
     this._syncFromBody();
 
-    // Horizontal solver delta is retained only as rough visual/debug telemetry.
-    // It is not an E2 comparison metric and deliberately excludes our own control impulse.
+    // Rough solver-response telemetry only; this is not used as a cross-architecture
+    // impulse equivalence metric because contact friction and constraints are coupled.
     this.lastContactImpulse =
       this.mass * Math.hypot(this.velocity[0] - beforeX, this.velocity[2] - beforeZ);
 
@@ -229,10 +232,9 @@ export class SolverOwnedCharacter {
     }
     if (this.currentSupport) this.coyoteRemaining = this.coyoteTime;
 
-    const supportVelocity = this.currentSupport ? this._supportPointVelocity(this.currentSupport) : [0, 0, 0];
-    this.externalVelocity[0] = this.velocity[0] - supportVelocity[0] - this._desiredWorldVelocity[0] + supportVelocity[0];
+    this.externalVelocity[0] = this.velocity[0] - this._desiredWorldVelocity[0];
     this.externalVelocity[1] = 0;
-    this.externalVelocity[2] = this.velocity[2] - supportVelocity[2] - this._desiredWorldVelocity[2] + supportVelocity[2];
+    this.externalVelocity[2] = this.velocity[2] - this._desiredWorldVelocity[2];
   }
 
   telemetry() {
@@ -298,12 +300,5 @@ export class SolverOwnedCharacter {
 
     this.currentSupport = bestSupport;
     this.lastDynamicContacts = dynamicContacts;
-  }
-
-  _supportPointVelocity(support) {
-    if (!support || support.type === 'STATIC') return [0, 0, 0];
-    const point = [this.position[0], this.position[1] - this.halfHeight, this.position[2]];
-    this.b3.b3Body_GetWorldPointVelocity(this._supportVelocityScratch, support.body, point);
-    return [...this._supportVelocityScratch];
   }
 }
