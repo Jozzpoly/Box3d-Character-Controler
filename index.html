@@ -3,20 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#161d23" />
-    <title>Box3D Character Controler — Embodied Playground</title>
+    <meta name="theme-color" content="#aebfc8" />
+    <title>Box3D Character Controler — Foundation 02</title>
   </head>
   <body>
     <canvas id="app"></canvas>
     <section id="hud" aria-label="controls">
-      <div class="eyebrow">EMBODIED PLAYER PLAYGROUND · FOUNDATION 01</div>
-      <div class="controls"><strong>WASD</strong> move · <strong>Space</strong> jump · <strong>Shift</strong> sprint</div>
-      <div class="controls"><strong>Drag</strong> orbit · <strong>Wheel</strong> zoom · <strong>R</strong> reset · <strong>H</strong> debug</div>
+      <div class="eyebrow">EMBODIED PLAYER · FOUNDATION 02</div>
+      <div class="controls"><strong>WASD</strong> move · <strong>Space</strong> jump · <strong>Shift</strong> sprint · <strong>Drag</strong> camera · <strong>Wheel</strong> zoom</div>
+      <div class="secondary"><strong>R</strong> reset · <strong>H</strong> causal telemetry</div>
       <div id="status">Loading…</div>
-      <div class="prompt">No prescribed test. Push things, climb things, ride things, fall off things.</div>
     </section>
     <section id="debug" hidden aria-label="debug telemetry">
-      <div><span>speed</span><strong id="d-speed">—</strong></div><div><span>vertical</span><strong id="d-vertical">—</strong></div><div><span>support</span><strong id="d-support">—</strong></div><div><span>dynamic contacts</span><strong id="d-contacts">—</strong></div><div><span>contact impulse</span><strong id="d-impulse">—</strong></div><div><span>support transport</span><strong id="d-transport">—</strong></div>
+      <div><span>speed</span><strong id="d-speed">—</strong></div>
+      <div><span>external</span><strong id="d-external">—</strong></div>
+      <div><span>vertical</span><strong id="d-vertical">—</strong></div>
+      <div><span>support</span><strong id="d-support">—</strong></div>
+      <div><span>dynamic contacts</span><strong id="d-contacts">—</strong></div>
+      <div><span>contact impulse</span><strong id="d-impulse">—</strong></div>
+      <div><span>support transport</span><strong id="d-transport">—</strong></div>
     </section>
     <script type="module" src="/src/main.js"></script>
   </body>

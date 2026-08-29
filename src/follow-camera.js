@@ -1,19 +1,28 @@
 import * as THREE from 'three';
 import { clamp } from './math.js';
 
+function damp(current, target, rate, dt) {
+  return current + (target - current) * (1 - Math.exp(-rate * dt));
+}
+
 export class FollowCamera {
   constructor(camera, canvas) {
     this.camera = camera;
     this.canvas = canvas;
-    this.yaw = 0;
-    this.pitch = 0.38;
-    this.distance = 7.2;
+    this.desiredYaw = 0;
+    this.desiredPitch = 0.31;
+    this.desiredDistance = 6.0;
+    this.yaw = this.desiredYaw;
+    this.pitch = this.desiredPitch;
+    this.distance = this.desiredDistance;
     this.target = new THREE.Vector3();
     this.smoothedTarget = new THREE.Vector3();
     this.desiredPosition = new THREE.Vector3();
+    this.verticalFocus = 0;
     this.dragging = false;
     this.lastX = 0;
     this.lastY = 0;
+
     canvas.addEventListener('contextmenu', (event) => event.preventDefault());
     canvas.addEventListener('pointerdown', (event) => {
       if (event.button !== 0 && event.button !== 2) return;
@@ -28,8 +37,8 @@ export class FollowCamera {
       const dy = event.clientY - this.lastY;
       this.lastX = event.clientX;
       this.lastY = event.clientY;
-      this.yaw -= dx * 0.006;
-      this.pitch = clamp(this.pitch - dy * 0.0045, -0.10, 1.05);
+      this.desiredYaw -= dx * 0.0052;
+      this.desiredPitch = clamp(this.desiredPitch - dy * 0.0038, -0.04, 0.92);
     });
     const stopDrag = (event) => {
       this.dragging = false;
@@ -39,35 +48,69 @@ export class FollowCamera {
     canvas.addEventListener('pointercancel', stopDrag);
     canvas.addEventListener('wheel', (event) => {
       event.preventDefault();
-      this.distance = clamp(this.distance * Math.exp(event.deltaY * 0.001), 3.4, 12.5);
+      this.desiredDistance = clamp(this.desiredDistance * Math.exp(event.deltaY * 0.0008), 4.0, 10.5);
     }, { passive: false });
   }
 
   reset() {
-    this.yaw = 0;
-    this.pitch = 0.38;
-    this.distance = 7.2;
+    this.desiredYaw = 0;
+    this.desiredPitch = 0.31;
+    this.desiredDistance = 6.0;
+    this.yaw = this.desiredYaw;
+    this.pitch = this.desiredPitch;
+    this.distance = this.desiredDistance;
   }
 
   basis() {
-    return { forward: [-Math.sin(this.yaw), 0, -Math.cos(this.yaw)], right: [Math.cos(this.yaw), 0, -Math.sin(this.yaw)] };
+    return {
+      forward: [-Math.sin(this.yaw), 0, -Math.cos(this.yaw)],
+      right: [Math.cos(this.yaw), 0, -Math.sin(this.yaw)],
+    };
   }
 
   snap(target) {
-    this.target.set(target[0], target[1] + 0.75, target[2]);
+    const focusY = target[1] + 0.62;
+    this.target.set(target[0], focusY, target[2]);
     this.smoothedTarget.copy(this.target);
+    this.verticalFocus = focusY;
+    this.yaw = this.desiredYaw;
+    this.pitch = this.desiredPitch;
+    this.distance = this.desiredDistance;
     this._placeCamera(1);
   }
 
-  update(target, dt) {
-    this.target.set(target[0], target[1] + 0.75, target[2]);
-    this.smoothedTarget.lerp(this.target, 1 - Math.exp(-dt * 10));
-    this._placeCamera(1 - Math.exp(-dt * 12));
+  update(target, grounded, dt) {
+    this.yaw = damp(this.yaw, this.desiredYaw, 17, dt);
+    this.pitch = damp(this.pitch, this.desiredPitch, 15, dt);
+    this.distance = damp(this.distance, this.desiredDistance, 12, dt);
+
+    const rawFocusY = target[1] + 0.62;
+    if (grounded) {
+      this.verticalFocus = damp(this.verticalFocus, rawFocusY, 7.5, dt);
+    } else {
+      const upper = this.verticalFocus + 1.0;
+      const lower = this.verticalFocus - 0.72;
+      let desiredVertical = this.verticalFocus;
+      if (rawFocusY > upper) desiredVertical = rawFocusY - 1.0;
+      else if (rawFocusY < lower) desiredVertical = rawFocusY + 0.72;
+      this.verticalFocus = damp(this.verticalFocus, desiredVertical, 4.5, dt);
+    }
+
+    this.target.set(target[0], this.verticalFocus, target[2]);
+    const horizontalBlend = 1 - Math.exp(-dt * 11.5);
+    this.smoothedTarget.x += (this.target.x - this.smoothedTarget.x) * horizontalBlend;
+    this.smoothedTarget.z += (this.target.z - this.smoothedTarget.z) * horizontalBlend;
+    this.smoothedTarget.y = this.verticalFocus;
+    this._placeCamera(1 - Math.exp(-dt * 13));
   }
 
   _placeCamera(blend) {
     const horizontal = Math.cos(this.pitch) * this.distance;
-    this.desiredPosition.set(this.smoothedTarget.x + Math.sin(this.yaw) * horizontal, this.smoothedTarget.y + Math.sin(this.pitch) * this.distance + 0.35, this.smoothedTarget.z + Math.cos(this.yaw) * horizontal);
+    this.desiredPosition.set(
+      this.smoothedTarget.x + Math.sin(this.yaw) * horizontal,
+      this.smoothedTarget.y + Math.sin(this.pitch) * this.distance + 0.2,
+      this.smoothedTarget.z + Math.cos(this.yaw) * horizontal,
+    );
     this.camera.position.lerp(this.desiredPosition, blend);
     this.camera.lookAt(this.smoothedTarget);
   }
