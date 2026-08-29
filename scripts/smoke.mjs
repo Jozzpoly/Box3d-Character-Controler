@@ -60,7 +60,6 @@ function box(type, position, half, density = 30) {
 
 box('static', [0, -0.5, 0], [8, 0.5, 8]);
 
-// Traversal fixtures: ordinary 22 cm stairs, a 52 cm ledge, and a low dynamic prop.
 for (let i = 0; i < 4; i++) {
   const top = 0.22 * (i + 1);
   box('static', [-5, top * 0.5, 5.0 - i * 0.9], [0.7, top * 0.5, 0.45]);
@@ -76,7 +75,6 @@ const character = new ControllerOwnedCharacter(b3, world, {
   startPosition: [0, 2.2, 2.8],
   gravity: 20,
   virtualMass: 80,
-  maxStepHeight: 0.30,
 });
 const forward = [0, 0, -1];
 const right = [1, 0, 0];
@@ -159,24 +157,20 @@ try {
     throw new Error(`Jump buffer failed: pressed=${bufferedPressed} launch=${bufferedLaunch}`);
   }
 
-  // Four ordinary static steps must be traversable without jumping.
   character.reset([-5, character.halfHeight + 0.02, 6.15]);
   settle(20);
-  let stepEvents = 0;
   let stairPeak = character.position[1];
   for (let i = 0; i < 110; i++) {
     tick({ moveForward: 1 });
-    if (character.lastStepAccepted) stepEvents += 1;
     stairPeak = Math.max(stairPeak, character.position[1]);
     if (character.position[2] < 1.9) break;
   }
-  if (stepEvents < 3 || stairPeak < character.halfHeight + 0.68) {
+  if (stairPeak < character.halfHeight + 0.68 || character.position[2] >= 1.9) {
     throw new Error(
-      `Static stair ascent failed: events=${stepEvents} peakY=${stairPeak.toFixed(3)} z=${character.position[2].toFixed(3)}`,
+      `Static stair ascent failed: peakY=${stairPeak.toFixed(3)} z=${character.position[2].toFixed(3)}`,
     );
   }
 
-  // Walking back down should return to floor without needing jump or exploding vertically.
   let descentPeakVertical = 0;
   for (let i = 0; i < 130; i++) {
     tick({ moveForward: -1 });
@@ -189,44 +183,35 @@ try {
     );
   }
 
-  // The explicit 52 cm ledge is above the provisional auto-step limit and must block.
   character.reset([-3, character.halfHeight + 0.02, 6.15]);
   settle(20);
-  let ledgeStepped = false;
   let ledgeMinZ = character.position[2];
   for (let i = 0; i < 70; i++) {
     tick({ moveForward: 1 });
-    ledgeStepped ||= character.lastStepAccepted;
     ledgeMinZ = Math.min(ledgeMinZ, character.position[2]);
   }
-  if (ledgeStepped || ledgeMinZ < 5.70) {
-    throw new Error(
-      `High ledge boundary failed: stepped=${ledgeStepped} minZ=${ledgeMinZ.toFixed(3)}`,
-    );
+  if (ledgeMinZ < 5.70) {
+    throw new Error(`High ledge boundary failed: minZ=${ledgeMinZ.toFixed(3)}`);
   }
 
-  // A low dynamic object is still a physical prop, never an auto-step surface.
   b3.b3Body_SetTransform(lowDynamic, [-1, 0.10, 5.0], [0, 0, 0, 1]);
   b3.b3Body_SetLinearVelocity(lowDynamic, [0, 0, 0]);
   b3.b3Body_SetAngularVelocity(lowDynamic, [0, 0, 0]);
   character.reset([-1, character.halfHeight + 0.02, 6.15]);
   settle(20);
-  let dynamicAutoStep = false;
   let lowPushImpulse = 0;
   for (let i = 0; i < 70; i++) {
     tick({ moveForward: 1 });
-    dynamicAutoStep ||= character.lastStepAccepted;
     lowPushImpulse = Math.max(lowPushImpulse, character.lastContactImpulse);
   }
   const lowDynamicPosition = [0, 0, 0];
   b3.b3Body_GetPosition(lowDynamicPosition, lowDynamic);
-  if (dynamicAutoStep || lowDynamicPosition[2] > 4.75 || lowPushImpulse <= 0) {
+  if (lowDynamicPosition[2] > 4.75 || lowPushImpulse <= 0) {
     throw new Error(
-      `Dynamic prop preservation failed: stepped=${dynamicAutoStep} z=${lowDynamicPosition[2].toFixed(3)} impulse=${lowPushImpulse.toFixed(2)}`,
+      `Dynamic prop preservation failed: z=${lowDynamicPosition[2].toFixed(3)} impulse=${lowPushImpulse.toFixed(2)}`,
     );
   }
 
-  // Existing Foundation 02 physical regression gates.
   b3.b3Body_SetTransform(dynamicBox, [0, 0.6, -0.3], [0, 0, 0, 1]);
   b3.b3Body_SetLinearVelocity(dynamicBox, [0, 0, 0]);
   b3.b3Body_SetAngularVelocity(dynamicBox, [0, 0, 0]);
@@ -313,7 +298,7 @@ try {
   }
 
   console.log(
-    `Foundation 02.1 smoke PASS: facing=${facingCases.length} stairEvents=${stepEvents} stairPeak=${(stairPeak - character.halfHeight).toFixed(2)}m ledgeMinZ=${ledgeMinZ.toFixed(2)} lowPropZ=${lowDynamicPosition[2].toFixed(2)} fullJump=${(fullPeak - landedY).toFixed(2)}m shortJump=${(shortPeak - shortBase).toFixed(2)}m push=${maxPushImpulse.toFixed(1)}Ns ramDx=${ramDisplacement.toFixed(2)}m external=${maxExternal.toFixed(2)}m/s rideDx=${rideDx.toFixed(2)}m rotate=${rotateDistance.toFixed(2)}m descentV=${descentPeakVertical.toFixed(2)}m/s`,
+    `Foundation 02.1 smoke PASS: facing=${facingCases.length} stairPeak=${(stairPeak - character.halfHeight).toFixed(2)}m ledgeMinZ=${ledgeMinZ.toFixed(2)} lowPropZ=${lowDynamicPosition[2].toFixed(2)} fullJump=${(fullPeak - landedY).toFixed(2)}m shortJump=${(shortPeak - shortBase).toFixed(2)}m push=${maxPushImpulse.toFixed(1)}Ns ramDx=${ramDisplacement.toFixed(2)}m external=${maxExternal.toFixed(2)}m/s rideDx=${rideDx.toFixed(2)}m rotate=${rotateDistance.toFixed(2)}m descentV=${descentPeakVertical.toFixed(2)}m/s`,
   );
 } finally {
   b3.b3DestroyWorld(world);

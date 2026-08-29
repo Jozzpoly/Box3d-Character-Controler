@@ -101,7 +101,7 @@ export function createPlayground(b3) {
   });
 
   // Deliberate traversal boundary: ordinary 22 cm stairs plus a nearby 52 cm ledge.
-  // The provisional capsule may auto-step the stairs, but the ledge still requires jump.
+  // The rounded provisional capsule should walk the stairs naturally; the ledge still requires jump.
   const stairX = -6.5;
   const stairStartZ = 5.25;
   const stairDepth = 0.72;
