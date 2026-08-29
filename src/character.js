@@ -48,6 +48,9 @@ export class ControllerOwnedCharacter {
     this.coyoteTime = options.coyoteTime ?? 0.11;
     this.jumpBufferTime = options.jumpBufferTime ?? 0.12;
     this.supportNormalMinY = options.supportNormalMinY ?? 0.58;
+    // Provisional traversal polish only: keep ordinary stair-sized downward transitions
+    // attached to static ground without converting larger drops into hidden teleportation.
+    this.groundStickDistance = options.groundStickDistance ?? 0.27;
     this.startPosition = [...(options.startPosition ?? [0, 1.0, 7])];
 
     this.position = [...this.startPosition];
@@ -57,6 +60,7 @@ export class ControllerOwnedCharacter {
     this.desiredDirection = [0, 0, -1];
     this.currentSupport = null;
     this.supportTransportDistance = 0;
+    this.lastGroundStickDistance = 0;
     this.lastContactImpulse = 0;
     this.lastDynamicContacts = 0;
     this.lastPlaneCount = 0;
@@ -88,6 +92,7 @@ export class ControllerOwnedCharacter {
     this.currentSupport = null;
     this._supportProbe = null;
     this.supportTransportDistance = 0;
+    this.lastGroundStickDistance = 0;
     this.lastContactImpulse = 0;
     this.lastDynamicContacts = 0;
     this.lastPlaneCount = 0;
@@ -100,6 +105,7 @@ export class ControllerOwnedCharacter {
   preStep(dt, intent) {
     this.justLanded = false;
     this.landingSpeed = 0;
+    this.lastGroundStickDistance = 0;
     this._captureSupportTransport();
     this._integrateIntent(dt, intent);
   }
@@ -199,10 +205,10 @@ export class ControllerOwnedCharacter {
     this.supportTransportDistance = length3(delta);
   }
 
-  _collectPlanes(capsule) {
+  _collectPlanesAt(position, capsule) {
     const planes = [];
     const extras = [];
-    this.b3.b3World_CollideMover(this.world, this.position, capsule, this.queryFilter, (shapeId, buffer) => {
+    this.b3.b3World_CollideMover(this.world, position, capsule, this.queryFilter, (shapeId, buffer) => {
       const count = this.b3.getNumPlaneResults(buffer);
       for (let i = 0; i < count; i++) {
         this.b3.getPlaneResultAt(this.planeScratch, buffer, i);
@@ -216,9 +222,9 @@ export class ControllerOwnedCharacter {
         extras.push({
           shapeId,
           point: [
-            this.position[0] + this.planeScratch.point[0],
-            this.position[1] + this.planeScratch.point[1],
-            this.position[2] + this.planeScratch.point[2],
+            position[0] + this.planeScratch.point[0],
+            position[1] + this.planeScratch.point[1],
+            position[2] + this.planeScratch.point[2],
           ],
         });
       }
@@ -227,8 +233,50 @@ export class ControllerOwnedCharacter {
     return { planes, extras };
   }
 
+  _collectPlanes(capsule) {
+    return this._collectPlanesAt(this.position, capsule);
+  }
+
+  _probeStaticGroundStick(capsule) {
+    const origin = [...this.position];
+    const target = [origin[0], origin[1] - this.groundStickDistance, origin[2]];
+    let probePosition = [...origin];
+    const tolerance = 0.002;
+
+    for (let iteration = 0; iteration < 5; iteration++) {
+      const { planes } = this._collectPlanesAt(probePosition, capsule);
+      const solved = this.b3.b3SolvePlanes(sub3(target, probePosition), planes);
+      let delta = solved.delta;
+      const fraction = this.b3.b3World_CastMover(
+        this.world,
+        probePosition,
+        capsule,
+        delta,
+        this.queryFilter,
+        () => true,
+      );
+      delta = scale3(delta, fraction);
+      probePosition = add3(probePosition, delta);
+      if (dot3(delta, delta) < tolerance * tolerance) break;
+    }
+
+    const contacts = this._collectPlanesAt(probePosition, capsule);
+    const support = this._findSupport(contacts.planes, contacts.extras, [0, -1, 0]);
+    const distance = origin[1] - probePosition[1];
+    if (!support || support.type !== 'STATIC') return null;
+    if (distance < 0.004 || distance > this.groundStickDistance + 0.005) return null;
+
+    return {
+      position: probePosition,
+      planes: contacts.planes,
+      extras: contacts.extras,
+      distance,
+    };
+  }
+
   _solveMovement(dt) {
-    const wasSupported = Boolean(this.currentSupport);
+    const previousSupport = this.currentSupport;
+    const wasSupported = Boolean(previousSupport);
     const capsule = {
       center1: [0, -this.halfSegment, 0],
       center2: [0, this.halfSegment, 0],
@@ -254,11 +302,32 @@ export class ControllerOwnedCharacter {
       if (dot3(delta, delta) < tolerance * tolerance) break;
     }
 
+    const preClipVelocity = [...this.velocity];
+    let support = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
+
+    // Earned from Foundation 02.1 descent evidence: preserve support across an ordinary
+    // stair-sized downward transition, but only from static ground and only while walking.
+    // Jump clears currentSupport before this point, so deliberate upward launch cannot stick.
+    if (
+      !support &&
+      previousSupport?.type === 'STATIC' &&
+      this.desiredSpeed > 0.05 &&
+      preClipVelocity[1] <= 0.20
+    ) {
+      const adhesion = this._probeStaticGroundStick(capsule);
+      if (adhesion) {
+        this.position = [...adhesion.position];
+        lastPlanes = adhesion.planes;
+        lastExtras = adhesion.extras;
+        this.lastGroundStickDistance = adhesion.distance;
+        support = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
+      }
+    }
+
     this.lastPlaneCount = lastPlanes.length;
     this._exchangeDynamicContactImpulses(lastPlanes, lastExtras);
-    const preClipVelocity = [...this.velocity];
     this.velocity = this.b3.b3ClipVector(this.velocity, lastPlanes);
-    this.currentSupport = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
+    this.currentSupport = support ?? this._findSupport(lastPlanes, lastExtras, preClipVelocity);
     if (this.currentSupport && this.velocity[1] < 0) this.velocity[1] = 0;
 
     if (!wasSupported && this.currentSupport && preClipVelocity[1] < -0.5) {
@@ -362,6 +431,7 @@ export class ControllerOwnedCharacter {
       grounded: Boolean(this.currentSupport),
       supportType: this.currentSupport?.type ?? 'NONE',
       supportTransport: this.supportTransportDistance,
+      groundStickDistance: this.lastGroundStickDistance,
       dynamicContacts: this.lastDynamicContacts,
       contactImpulse: this.lastContactImpulse,
       planeCount: this.lastPlaneCount,
