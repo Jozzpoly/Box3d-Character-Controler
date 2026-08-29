@@ -6,9 +6,11 @@ This repository is a public browser laboratory for a broader question:
 
 The working tension is **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**.
 
-## Current foundation candidate
+## Current provisional baseline
 
-`Foundation 02.1` is the machine-qualified provisional capsule baseline awaiting final Owner free-play validation. It closes two basic quality debts reported after Foundation 02 without adding a new embodiment architecture or a general traversal subsystem.
+`Foundation 02.1` is the **Owner-accepted provisional capsule baseline**. It closes two basic quality debts reported after Foundation 02 without adding a new embodiment architecture or a general traversal subsystem.
+
+It is intentionally not a polished final character controller. Remaining capsule feel debt is deferred unless a future research question gives a reason to revisit it.
 
 Current character representation:
 
@@ -33,7 +35,7 @@ The yard is intentionally open rather than a prescribed obstacle course. It cont
 
 Foundation 02.1 also makes one traversal boundary explicit:
 
-- four ordinary static stair rises of `0.22 m`, which the existing rounded capsule can traverse without jump and without a stair special-case;
+- four ordinary static stair rises of `0.22 m`, which the existing rounded capsule traverses without jump and without a stair special-case;
 - a nearby `0.52 m` ledge, which remains a jump boundary;
 - low dynamic props remain physical/pushable objects rather than being silently converted into traversal geometry.
 
@@ -60,7 +62,14 @@ The current implementation is disposable; accepted observations are not.
 - `ee5bb1813ac691750359c1d8f6f3934c29d9426b` — E1-A2 dynamic-support specimen.
 - `1416c2b7dc618fa99e5a3916326414178414997f` — Foundation 01 open embodied-player playground; machine-qualified and Owner-tested, but Owner judged overall quality/feel too raw for the next serious phase.
 - `9d6e8ca77d024e784ed6aa5d71786ee3e223733d` — Foundation 02 quality/feel public baseline; Owner judged it better, then reported reversed visual facing and non-walkable stair fixtures.
-- `9e2608088a868a027b5e89e2159ee8fdb346adee` — Foundation 02.1 machine-qualified closure runtime/tests before documentation-only closure commits.
+- `12841bd5c095827092ee5aae0acc19981a848490` — exact public Foundation 02.1 runtime accepted by Owner after machine qualification and Pages deployment.
+
+Owner closure verdict for Foundation 02.1:
+
+- facing: PASS;
+- ordinary stair ascent: PASS;
+- stair descent: looks acceptable / PASS;
+- remaining capsule feel debt: intentionally deferred.
 
 See [`docs/RESEARCH.md`](docs/RESEARCH.md) for claims, non-claims, failed traversal experiments and Owner observations.
 
@@ -83,3 +92,7 @@ npm run build
 ```
 
 The broad smoke checks coexistence of Foundation 02 physics plus Foundation 02.1 facing/traversal outcomes. A second isolated closure smoke independently verifies that the original natural-push strength is preserved (`169.4 N·s` in qualification) and that stair descent actually recovers static support. Peak descent velocity remains telemetry for Owner judgement rather than an arbitrary machine quality threshold.
+
+## Stage boundary
+
+Foundation 02.1 is accepted as a **known comparison/research specimen**, not an architecture winner. Do not continue polishing the capsule automatically. The next phase should start from a fresh question about physical player embodiment and may keep, replace or challenge this representation.
