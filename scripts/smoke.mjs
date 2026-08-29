@@ -1,207 +1,42 @@
 import Box3D from 'box3d.js/inline';
+import { ControllerOwnedCharacter } from '../src/character.js';
 
 const b3 = await Box3D();
-const required = [
-  'b3DefaultWorldDef', 'b3CreateWorld', 'b3World_Step', 'b3DefaultBodyDef', 'b3CreateBody',
-  'b3DefaultShapeDef', 'b3CreateBoxShape', 'b3DefaultQueryFilter', 'b3World_CollideMover',
-  'b3SolvePlanes', 'b3World_CastMover', 'b3ClipVector', 'createPlaneResult', 'getNumPlaneResults',
-  'getPlaneResultAt', 'b3Shape_GetBody', 'b3Body_GetMass', 'b3Body_GetPosition',
-  'b3Body_GetLinearVelocity', 'b3Body_ApplyLinearImpulse', 'b3DestroyWorld',
-];
-for (const name of required) {
-  if (typeof b3[name] !== 'function') throw new Error(`Missing required box3d.js API: ${name}`);
+const required = ['b3CreateWorld','b3World_Step','b3World_CollideMover','b3World_CastMover','b3SolvePlanes','b3ClipVector','b3Body_GetInverseMass','b3Body_GetWorldInverseRotationalInertia','b3Body_GetWorldCenterOfMass','b3Body_GetAngularVelocity','b3Body_ApplyLinearImpulse','b3Body_SetTargetTransform'];
+for (const name of required) if (typeof b3[name] !== 'function') throw new Error(`Missing required Box3D API: ${name}`);
+const dt = 1 / 60;
+const worldDef = b3.b3DefaultWorldDef(); worldDef.gravity = [0, -18, 0]; const world = b3.b3CreateWorld(worldDef);
+function box(type, position, half, density = 30) {
+  const bodyDef = b3.b3DefaultBodyDef(); if (type === 'dynamic') bodyDef.type = b3.b3BodyType.b3_dynamicBody; if (type === 'kinematic') bodyDef.type = b3.b3BodyType.b3_kinematicBody; bodyDef.position = [...position]; const body = b3.b3CreateBody(world, bodyDef);
+  const shapeDef = b3.b3DefaultShapeDef(); shapeDef.baseMaterial.friction = 0.8; if (type === 'dynamic') shapeDef.density = density; b3.b3CreateBoxShape(body, shapeDef, half[0], half[1], half[2]); return body;
 }
-
-const DT = 1 / 60;
-const GRAVITY = 10;
-const PLAYER_MASS = 80;
-const HALF_SEGMENT = 0.55;
-const RADIUS = 0.35;
-const SUPPORT_MIN_Y = 0.55;
-const capsule = { center1: [0, -HALF_SEGMENT, 0], center2: [0, HALF_SEGMENT, 0], radius: RADIUS };
-const filter = b3.b3DefaultQueryFilter();
-const scratch = b3.createPlaneResult();
-
-const worldDef = b3.b3DefaultWorldDef();
-worldDef.gravity = [0, -GRAVITY, 0];
-const world = b3.b3CreateWorld(worldDef);
-
-function createStaticBox(position, half) {
-  const def = b3.b3DefaultBodyDef();
-  def.position = [...position];
-  const body = b3.b3CreateBody(world, def);
-  b3.b3CreateBoxShape(body, b3.b3DefaultShapeDef(), half[0], half[1], half[2]);
-}
-
-createStaticBox([0, -0.25, 0], [8, 0.25, 8]);
-const platformDef = b3.b3DefaultBodyDef();
-platformDef.type = b3.b3BodyType.b3_dynamicBody;
-platformDef.position = [0, 0.3, 0];
-platformDef.linearDamping = 0.15;
-platformDef.angularDamping = 0.7;
-const platform = b3.b3CreateBody(world, platformDef);
-const platformShapeDef = b3.b3DefaultShapeDef();
-platformShapeDef.density = 35;
-platformShapeDef.baseMaterial.friction = 0.7;
-b3.b3CreateBoxShape(platform, platformShapeDef, 1.25, 0.3, 1.25);
-const platformMass = b3.b3Body_GetMass(platform);
-if (!(platformMass > PLAYER_MASS)) throw new Error(`Unexpected platform mass ${platformMass}`);
-
-const bodyVelocity = [0, 0, 0];
-const bodyPosition = [0, 0, 0];
-
-function collectPlanes(position) {
-  const planes = [];
-  const extras = [];
-  b3.b3World_CollideMover(world, position, capsule, filter, (shapeId, buffer) => {
-    const count = b3.getNumPlaneResults(buffer);
-    for (let i = 0; i < count; i++) {
-      b3.getPlaneResultAt(scratch, buffer, i);
-      planes.push({
-        plane: { normal: [...scratch.plane.normal], offset: scratch.plane.offset },
-        pushLimit: 3.4e38,
-        push: 0,
-        clipVelocity: true,
-      });
-      extras.push({
-        shapeId,
-        point: [position[0] + scratch.point[0], position[1] + scratch.point[1], position[2] + scratch.point[2]],
-      });
-    }
-    return true;
-  });
-  return { planes, extras };
-}
-
-function moveCharacter(state) {
-  state.velocity[1] -= GRAVITY * DT;
-  const target = state.position.map((value, i) => value + state.velocity[i] * DT);
-  let lastPlanes = [];
-  let lastExtras = [];
-
-  for (let iteration = 0; iteration < 5; iteration++) {
-    const { planes, extras } = collectPlanes(state.position);
-    const targetDelta = target.map((value, i) => value - state.position[i]);
-    const solved = b3.b3SolvePlanes(targetDelta, planes);
-    let delta = solved.delta;
-    const fraction = b3.b3World_CastMover(world, state.position, capsule, delta, filter, () => true);
-    delta = delta.map((value) => value * fraction);
-    state.position = state.position.map((value, i) => value + delta[i]);
-    lastPlanes = planes;
-    lastExtras = extras;
-    if (delta.reduce((sum, value) => sum + value * value, 0) < 0.000004) break;
-  }
-
-  const preClip = [...state.velocity];
-  let support = null;
-  let bestUp = SUPPORT_MIN_Y;
-  for (let i = 0; i < lastPlanes.length; i++) {
-    const up = lastPlanes[i].plane.normal[1];
-    if (up > bestUp && preClip[1] <= 0.05) {
-      const body = b3.b3Shape_GetBody(lastExtras[i].shapeId);
-      const mass = b3.b3Body_GetMass(body);
-      support = {
-        body,
-        type: mass > 0 ? 'DYNAMIC' : 'STATIC',
-        normal: lastPlanes[i].plane.normal,
-        point: lastExtras[i].point,
-      };
-      bestUp = up;
-    }
-  }
-
-  let loadImpulse = 0;
-  if (support?.type === 'DYNAMIC') {
-    b3.b3Body_GetLinearVelocity(bodyVelocity, support.body);
-    const relative = preClip.map((value, i) => value - bodyVelocity[i]);
-    const closing = relative.reduce((sum, value, i) => sum + value * support.normal[i], 0);
-    if (closing < 0) {
-      loadImpulse = PLAYER_MASS * -closing;
-      const impulse = support.normal.map((value) => -value * loadImpulse);
-      b3.b3Body_ApplyLinearImpulse(support.body, impulse, support.point, true);
-    }
-  }
-
-  state.velocity = b3.b3ClipVector(state.velocity, lastPlanes);
-  if (support && state.velocity[1] < 0) state.velocity[1] = 0;
-  state.support = support;
-  return loadImpulse;
-}
-
-function captureAndStepSupport(state) {
-  let before = null;
-  if (state.support?.type === 'DYNAMIC') {
-    b3.b3Body_GetPosition(bodyPosition, state.support.body);
-    before = [...bodyPosition];
-  }
-  b3.b3World_Step(world, DT, 4);
-  if (before) {
-    b3.b3Body_GetPosition(bodyPosition, state.support.body);
-    state.position = state.position.map((value, i) => value + bodyPosition[i] - before[i]);
-  }
-}
-
+box('static', [0, -0.5, 0], [8, 0.5, 8]);
+const dynamicBox = box('dynamic', [0, 0.6, -0.3], [0.6, 0.6, 0.6], 35);
+const movingPlatform = box('kinematic', [3, 0.25, 0], [1.5, 0.25, 1.5]);
+const dynamicMass = b3.b3Body_GetMass(dynamicBox);
+const character = new ControllerOwnedCharacter(b3, world, { startPosition: [0, 2.2, 2.8], gravity: 18, virtualMass: 80 });
+const forward = [0, 0, -1]; const right = [1, 0, 0];
+function tick(intent = {}, preWorld = null) { preWorld?.(); character.preStep(dt, { forward, right, moveForward: 0, moveRight: 0, jump: false, sprint: false, ...intent }); b3.b3World_Step(world, dt, 4); character.postStep(dt); }
 try {
-  for (let i = 0; i < 90; i++) b3.b3World_Step(world, DT, 4);
-
-  const state = { position: [0, 3.0, 0], velocity: [0, 0, 0], support: null };
-  let dynamicLanding = false;
-  let peakLoad = 0;
-  for (let i = 0; i < 240; i++) {
-    captureAndStepSupport(state);
-    peakLoad = Math.max(peakLoad, moveCharacter(state));
-    if (state.support?.type === 'DYNAMIC') {
-      dynamicLanding = true;
-      break;
-    }
-  }
-  if (!dynamicLanding) throw new Error(`Dynamic landing failed, y=${state.position[1].toFixed(3)}`);
-  if (peakLoad < PLAYER_MASS) throw new Error(`Landing load impulse too small: ${peakLoad.toFixed(2)}`);
-
-  let standingLoad = 0;
-  for (let i = 0; i < 45; i++) {
-    captureAndStepSupport(state);
-    standingLoad += moveCharacter(state);
-  }
-  if (standingLoad < 300) throw new Error(`Standing load did not accumulate: ${standingLoad.toFixed(2)}`);
-  if (state.support?.type !== 'DYNAMIC') throw new Error('Dynamic support was lost during standing-load probe');
-
-  b3.b3Body_GetPosition(bodyPosition, platform);
-  const startPlatformX = bodyPosition[0];
-  const startRelativeX = state.position[0] - startPlatformX;
-  b3.b3Body_ApplyLinearImpulse(platform, [platformMass * 1.5, 0, 0], [...bodyPosition], true);
-  for (let i = 0; i < 30; i++) {
-    captureAndStepSupport(state);
-    moveCharacter(state);
-  }
-  b3.b3Body_GetPosition(bodyPosition, platform);
-  const platformDx = bodyPosition[0] - startPlatformX;
-  const endRelativeX = state.position[0] - bodyPosition[0];
-  if (platformDx < 0.08) throw new Error(`Dynamic support nudge barely moved: dx=${platformDx.toFixed(3)}`);
-  if (Math.abs(endRelativeX - startRelativeX) > 0.12) {
-    throw new Error(`Support transport drifted: startRel=${startRelativeX.toFixed(3)}, endRel=${endRelativeX.toFixed(3)}`);
-  }
-
-  state.velocity[0] = -4;
-  let lostSupport = false;
-  let yAtLoss = state.position[1];
-  for (let i = 0; i < 90; i++) {
-    captureAndStepSupport(state);
-    moveCharacter(state);
-    if (!state.support) {
-      lostSupport = true;
-      yAtLoss = state.position[1];
-      break;
-    }
-  }
-  if (!lostSupport) throw new Error('Walking-off probe never lost dynamic support');
-  for (let i = 0; i < 12; i++) {
-    captureAndStepSupport(state);
-    moveCharacter(state);
-  }
-  if (!(state.position[1] < yAtLoss - 0.05)) throw new Error('Character did not resume falling after dynamic support loss');
-
-  console.log(`E1-A2 Gate 2 smoke PASS: platformMass=${platformMass.toFixed(1)}, peakLoad=${peakLoad.toFixed(1)}, standingLoad=${standingLoad.toFixed(1)}, platformDx=${platformDx.toFixed(2)}`);
-} finally {
-  b3.b3DestroyWorld(world);
-}
+  for (let i = 0; i < 180; i++) tick();
+  if (!character.currentSupport || character.currentSupport.type !== 'STATIC') throw new Error('Static landing/support failed');
+  const landedY = character.position[1]; let peakY = landedY; tick({ jump: true });
+  for (let i = 0; i < 150; i++) { tick(); peakY = Math.max(peakY, character.position[1]); }
+  if (peakY < landedY + 0.7 || !character.currentSupport) throw new Error(`Jump/return failed: landedY=${landedY.toFixed(2)} peakY=${peakY.toFixed(2)}`);
+  b3.b3Body_SetTransform(dynamicBox, [0, 0.6, -0.3], [0, 0, 0, 1]); b3.b3Body_SetLinearVelocity(dynamicBox, [0, 0, 0]); b3.b3Body_SetAngularVelocity(dynamicBox, [0, 0, 0]); character.reset([0, character.halfHeight + 0.02, 2.8]);
+  for (let i = 0; i < 20; i++) tick(); let maxPushImpulse = 0;
+  for (let i = 0; i < 120; i++) { tick({ moveForward: 1 }); maxPushImpulse = Math.max(maxPushImpulse, character.lastContactImpulse); }
+  const boxPosition = [0, 0, 0]; b3.b3Body_GetPosition(boxPosition, dynamicBox);
+  if (boxPosition[2] > -0.55 || maxPushImpulse <= 0) throw new Error(`Natural push failed: boxZ=${boxPosition[2].toFixed(2)} impulse=${maxPushImpulse.toFixed(2)}`);
+  b3.b3Body_SetTransform(dynamicBox, [2.0, 0.6, 0], [0, 0, 0, 1]); b3.b3Body_SetLinearVelocity(dynamicBox, [0, 0, 0]); b3.b3Body_SetAngularVelocity(dynamicBox, [0, 0, 0]); character.reset([0, character.halfHeight + 0.02, 0]);
+  for (let i = 0; i < 20; i++) tick(); const ramStartX = character.position[0]; b3.b3Body_ApplyLinearImpulse(dynamicBox, [-dynamicMass * 6.0, 0, 0], [2.0, 0.6, 0], true); let ramImpulse = 0;
+  for (let i = 0; i < 90; i++) { tick(); ramImpulse = Math.max(ramImpulse, character.lastContactImpulse); }
+  const ramDisplacement = character.position[0] - ramStartX;
+  if (ramDisplacement > -0.06 || ramImpulse <= 0) throw new Error(`Reverse reciprocity failed: dx=${ramDisplacement.toFixed(3)} impulse=${ramImpulse.toFixed(2)}`);
+  b3.b3Body_SetTransform(movingPlatform, [3, 0.25, 0], [0, 0, 0, 1]); character.reset([3, 0.5 + character.halfHeight + 0.02, 0]);
+  for (let i = 0; i < 30; i++) tick(); if (character.currentSupport?.type !== 'KINEMATIC') throw new Error(`Kinematic support acquisition failed: ${character.currentSupport?.type ?? 'NONE'}`);
+  const rideStartX = character.position[0];
+  for (let i = 0; i < 60; i++) { const alpha = (i + 1) / 60; tick({}, () => b3.b3Body_SetTargetTransform(movingPlatform, { position: [3 + alpha, 0.25, 0], quaternion: [0, 0, 0, 1] }, dt, true)); }
+  const rideDx = character.position[0] - rideStartX; if (rideDx < 0.55 || rideDx > 1.45) throw new Error(`Moving support transport failed: dx=${rideDx.toFixed(3)}`);
+  console.log(`Foundation smoke PASS: push=${maxPushImpulse.toFixed(1)}Ns ramDx=${ramDisplacement.toFixed(2)}m rideDx=${rideDx.toFixed(2)}m`);
+} finally { b3.b3DestroyWorld(world); }

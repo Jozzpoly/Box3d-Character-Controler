@@ -3,26 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Box3d Character Controler — E1-A2</title>
+    <meta name="theme-color" content="#161d23" />
+    <title>Box3D Character Controler — Embodied Playground</title>
   </head>
   <body>
     <canvas id="app"></canvas>
-    <section id="hud">
-      <div class="eyebrow">E1-A2 · SUPPORT RECIPROCITY CRUCIBLE</div>
-      <h1>Controller-owned support test</h1>
-      <p class="controls"><strong>WASD</strong> move · <strong>Space</strong> jump · <strong>F</strong> nudge dynamic support · <strong>R</strong> reset</p>
-      <p id="status">Loading Box3D…</p>
-      <dl id="telemetry">
-        <div><dt>horizontal speed</dt><dd id="speed">—</dd></div>
-        <div><dt>vertical speed</dt><dd id="vertical-speed">—</dd></div>
-        <div><dt>desired speed</dt><dd id="desired">—</dd></div>
-        <div><dt>supported</dt><dd id="supported">—</dd></div>
-        <div><dt>support</dt><dd id="support-type">—</dd></div>
-        <div><dt>support speed</dt><dd id="support-speed">—</dd></div>
-        <div><dt>support load impulse</dt><dd id="load-impulse">—</dd></div>
-        <div><dt>dynamic platform speed</dt><dd id="platform-speed">—</dd></div>
-      </dl>
-      <p class="note">The player is still controller-owned. Dynamic support receives a load/landing impulse from an explicit 80 kg virtual player mass. Support translation is transported generically from the support body; there is no crate-specific mode or fixed-Y attachment.</p>
+    <section id="hud" aria-label="controls">
+      <div class="eyebrow">EMBODIED PLAYER PLAYGROUND · FOUNDATION 01</div>
+      <div class="controls"><strong>WASD</strong> move · <strong>Space</strong> jump · <strong>Shift</strong> sprint</div>
+      <div class="controls"><strong>Drag</strong> orbit · <strong>Wheel</strong> zoom · <strong>R</strong> reset · <strong>H</strong> debug</div>
+      <div id="status">Loading…</div>
+      <div class="prompt">No prescribed test. Push things, climb things, ride things, fall off things.</div>
+    </section>
+    <section id="debug" hidden aria-label="debug telemetry">
+      <div><span>speed</span><strong id="d-speed">—</strong></div><div><span>vertical</span><strong id="d-vertical">—</strong></div><div><span>support</span><strong id="d-support">—</strong></div><div><span>dynamic contacts</span><strong id="d-contacts">—</strong></div><div><span>contact impulse</span><strong id="d-impulse">—</strong></div><div><span>support transport</span><strong id="d-transport">—</strong></div>
     </section>
     <script type="module" src="/src/main.js"></script>
   </body>
