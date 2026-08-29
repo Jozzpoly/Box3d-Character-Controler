@@ -68,6 +68,84 @@ function settle(world, character, frames = 180) {
   for (let i = 0; i < frames; i++) tick(world, character);
 }
 
+function frictionSensitivity(friction) {
+  const drive = makeWorld();
+  const walker = new SolverOwnedCharacter(b3, drive.world, {
+    startPosition: [0, 0.92, 4.5],
+    mass: 80,
+    friction,
+  });
+  settle(drive.world, walker, 40);
+  let walkPeak = 0;
+  for (let i = 0; i < 75; i++) {
+    tick(drive.world, walker, { moveForward: 1 });
+    walkPeak = Math.max(walkPeak, walker.telemetry().speed);
+  }
+  const releaseStart = walker.position[2];
+  let stopFrame = -1;
+  for (let i = 0; i < 60; i++) {
+    tick(drive.world, walker);
+    if (stopFrame < 0 && walker.telemetry().speed < 0.05) stopFrame = i + 1;
+  }
+  const releaseDistance = Math.abs(walker.position[2] - releaseStart);
+
+  const impact = makeWorld();
+  const impacted = new SolverOwnedCharacter(b3, impact.world, {
+    startPosition: [0, 0.92, 0],
+    mass: 80,
+    friction,
+  });
+  const box = impact.box('dynamic', [2.0, 0.60, 0], [0.60, 0.60, 0.60], 35);
+  settle(impact.world, impacted, 40);
+  const boxMass = b3.b3Body_GetMass(box);
+  const impactStart = impacted.position[0];
+  b3.b3Body_ApplyLinearImpulse(box, [-boxMass * 6.0, 0, 0], [2.0, 0.60, 0], true);
+  let minVx = 0;
+  let minDx = 0;
+  let contactFrame = -1;
+  let impactSettleFrame = -1;
+  let sawConsequence = false;
+  for (let i = 0; i < 60; i++) {
+    tick(impact.world, impacted);
+    minVx = Math.min(minVx, impacted.velocity[0]);
+    minDx = Math.min(minDx, impacted.position[0] - impactStart);
+    if (contactFrame < 0 && impacted.lastDynamicContacts > 0) contactFrame = i;
+    if (impacted.velocity[0] < -0.10) sawConsequence = true;
+    if (
+      sawConsequence &&
+      impactSettleFrame < 0 &&
+      i > contactFrame &&
+      Math.abs(impacted.velocity[0]) < 0.05
+    ) {
+      impactSettleFrame = i - contactFrame;
+    }
+  }
+
+  const supportWorld = makeWorld();
+  const platform = supportWorld.box('kinematic', [0, 0.25, 0], [1.5, 0.25, 1.5], 0, 0.92);
+  const rider = new SolverOwnedCharacter(b3, supportWorld.world, {
+    startPosition: [0, 1.42, 0],
+    mass: 80,
+    friction,
+  });
+  settle(supportWorld.world, rider, 40);
+  const rideStart = rider.position[0];
+  for (let i = 0; i < 60; i++) {
+    const alpha = (i + 1) / 60;
+    tick(supportWorld.world, rider, {}, () =>
+      b3.b3Body_SetTargetTransform(
+        platform,
+        { position: [alpha, 0.25, 0], quaternion: [0, 0, 0, 1] },
+        dt,
+        true,
+      ),
+    );
+  }
+  const rideDx = rider.position[0] - rideStart;
+
+  return { friction, walkPeak, releaseDistance, stopFrame, minVx, minDx, impactSettleFrame, rideDx };
+}
+
 // Gate 1: the E2 body is genuinely finite-mass and solver-supported.
 const landing = makeWorld();
 const character = new SolverOwnedCharacter(b3, landing.world, {
@@ -199,4 +277,16 @@ if (rideDx < 0.55 || rideControlImpulse > 0.01) {
 
 console.log(
   `E2 authority-ownership smoke PASS: mass=${character.mass.toFixed(2)}kg walkDz=${walkDz.toFixed(2)}m walkPeak=${walkPeakSpeed.toFixed(2)}m/s releaseDz=${releaseDz.toFixed(2)}m releaseSpeed=${releaseSpeed.toFixed(2)}m/s ramMinVx=${ramMinVx.toFixed(2)}m/s ramMinDx=${ramMinDx.toFixed(3)}m ramFinalDx=${ramFinalDx.toFixed(3)}m ramSettle=${ramSettledFrame}f ramControl=${ramControlAfterContact.toFixed(1)}Ns ramContact=${ramPeakSolverImpulse.toFixed(1)}Ns rideDx=${rideDx.toFixed(2)}m rideControl=${rideControlImpulse.toFixed(1)}Ns`,
+);
+
+// Diagnostic only: bracket traction rather than selecting a value by intuition.
+// These are not pass/fail thresholds; they expose the trade-off before choosing the public specimen.
+const frictionProbe = [0.82, 0.45, 0.20].map(frictionSensitivity);
+console.log(
+  `E2 friction sensitivity: ${frictionProbe
+    .map(
+      (p) =>
+        `f=${p.friction.toFixed(2)} walk=${p.walkPeak.toFixed(2)} stop=${p.releaseDistance.toFixed(2)}m/${p.stopFrame}f ramV=${p.minVx.toFixed(2)} ramDx=${p.minDx.toFixed(3)}m/${p.impactSettleFrame}f ride=${p.rideDx.toFixed(2)}m`,
+    )
+    .join(' | ')}`,
 );
