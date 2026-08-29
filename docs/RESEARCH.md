@@ -74,7 +74,7 @@ Interpretation:
 
 Foundation 01 is useful evidence that the combined mechanisms coexist, but it is **not a fair quality ceiling for controller-owned embodiment**. Architecture comparison should wait until this candidate is less obviously handicapped by crude locomotion/camera/presentation.
 
-## Foundation 02 — Quality / Feel Baseline (candidate under validation)
+## Foundation 02 — Quality / Feel Baseline
 
 Question:
 
@@ -92,20 +92,74 @@ First branch qualification at `cce2bcecfa82a2be07188379bfbd02d4540a13d1`:
 - full jump apex above standing height: `1.23 m`;
 - early-release jump apex: `0.73 m`;
 - buffered-jump gate: PASS;
-- natural push peak: `169.4 N·s` (close to Foundation 01 rather than being sacrificed for feel);
+- natural push peak: `169.4 N·s`;
 - reverse ram displacement: `-1.08 m` with `1.73 m/s` peak external horizontal response;
 - translating support transport: `1.00 m`;
 - rotating support arc: `1.03 m`;
 - production build: PASS.
 
-These numbers are machine evidence, not a positive Owner-feel verdict. In particular, stronger/persistent recoil may still be too much and must be judged in free play.
+Owner observation after public Foundation 02 play:
 
-Promotion requirements:
+- overall verdict was **better than Foundation 01**;
+- the provisional visual character had an obvious facing error: side movement made the face/head turn the opposite way and visually suggested backwards walking;
+- the existing objects presented as stairs could not be traversed by ordinary walking and required jumping;
+- Owner asked to polish the provisional capsule while explicitly leaving future embodiment experiments free to solve traversal differently.
 
-- existing push/reverse-recoil/translating-support/rotating-support machine gates remain green;
-- jump shaping/buffering behaves deterministically;
-- production build passes;
-- only then may the exact candidate replace Foundation 01 on public Pages for a new Owner free-play verdict.
+Interpretation:
+
+Foundation 02 materially improved the fairness of the controller-owned candidate, but the two reported defects were sufficiently basic that they should be removed before treating the capsule as the stable provisional comparison specimen.
+
+## Foundation 02.1 — Provisional Capsule Traversal Closure
+
+Goal:
+
+> Fix the reported visual-direction error and make ordinary small static steps traversable without turning the provisional capsule into a growing traversal framework or weakening physical interaction with dynamic props.
+
+Machine-qualified closure candidate: `9e2608088a868a027b5e89e2159ee8fdb346adee`.
+
+Accepted changes:
+
+- explicit visual convention: provisional character local `-Z` is forward;
+- deterministic facing checks for forward/back/left/right and two diagonals;
+- playground staircase normalized to four ordinary `0.22 m` rises;
+- nearby `0.52 m` ledge remains a deliberate jump boundary;
+- low dynamic prop remains pushable physical matter rather than being reclassified as traversal geometry;
+- Foundation 02 `character.js` movement/contact solver remains unchanged.
+
+Qualification evidence:
+
+- six facing cases: PASS;
+- four-step ascent without jump: `0.88 m` total rise, PASS;
+- descent reaches the floor and independently recovers `STATIC` support, PASS;
+- descent peak vertical speed is about `2.77 m/s`; this is retained as telemetry, **not** a quality failure without Owner-observed evidence;
+- high ledge remains blocked (`ledgeMinZ ≈ 5.80`), PASS;
+- low dynamic prop is pushed rather than climbed, PASS;
+- full jump: `1.23 m`;
+- short jump: `0.73 m`;
+- reverse ram: about `-1.05 m` character displacement with `1.73 m/s` peak external response;
+- translating support: `1.00 m`;
+- rotating support: `1.03 m`;
+- production build: PASS.
+
+The broad shared-world smoke reports a lower main push peak (`101.7 N·s`) after the traversal fixture has been disturbed. An isolated closure gate using the same Foundation 02 runtime reproduces the prior baseline exactly: `169.4 N·s`, with the box reaching about `z=-1.51`. Therefore the broad value is treated as fixture/order contamination, not evidence of a runtime push regression.
+
+### Rejected / deferred traversal experiments
+
+An explicit bounded step-up policy was implemented during exploration, then removed. With correctly sized `0.22 m` stairs the rounded capsule already traversed the staircase while the explicit step mechanism recorded no accepted step events. The proposed policy therefore did not earn its complexity for the reported problem.
+
+A later experimental branch explored static ground adhesion to reduce machine-observed vertical velocity while descending. That line introduced downward probes, blocker classification and retry state, then failed its own falsifiers: variants interfered with normal stair ascent and the latest branch head could still apply adhesion during a real larger drop. The Owner had not reported stair descent as a feel problem.
+
+Current verdict:
+
+> **Do not promote the ground-adhesion line. Preserve it only as negative research evidence.**
+
+This is not a claim that step-up, floor-stick or other traversal policies are universally wrong. They remain available if a future representation, geometry set or Owner-observed problem earns them.
+
+### Non-claims / boundary
+
+Foundation 02.1 is a **provisional capsule baseline**, not an architecture winner and not a final traversal system. It does not establish that future articulated, dynamic-root or hybrid characters should inherit these traversal semantics. No mantle, crouch, grab, IK, ragdoll or universal movement framework is added by this stage.
+
+Owner free-play remains the final quality gate for the public Foundation 02.1 build, especially for facing readability and whether ordinary stair ascent/descent actually feels acceptable.
 
 ### Donor/provenance notes
 
