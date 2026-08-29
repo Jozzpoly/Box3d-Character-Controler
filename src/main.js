@@ -11,7 +11,7 @@ import './style.css';
 const FIXED_DT = 1 / 60;
 const SUBSTEPS = 4;
 const requestedMode = new URLSearchParams(window.location.search).get('mode');
-const EMBODIMENT_MODE = requestedMode === 'solver' ? 'solver' : 'controller';
+const EMBODIMENT_MODE = requestedMode === 'solver' ? 'solver' : requestedMode === 'causal' ? 'causal' : 'controller';
 
 const canvas = document.querySelector('#app');
 const statusEl = document.querySelector('#status');
@@ -35,6 +35,7 @@ const debugLabels = {
 function loadMode(mode) {
   const url = new URL(window.location.href);
   if (mode === 'solver') url.searchParams.set('mode', 'solver');
+  else if (mode === 'causal') url.searchParams.set('mode', 'causal');
   else url.searchParams.delete('mode');
   window.location.assign(url);
 }
@@ -52,6 +53,10 @@ window.addEventListener('keydown', (event) => {
   }
   if (key === '2' && !event.repeat) {
     loadMode('solver');
+    return;
+  }
+  if (key === '3' && !event.repeat) {
+    loadMode('causal');
     return;
   }
 
@@ -124,18 +129,21 @@ async function main() {
   const { renderer, scene, camera } = setupScene();
   const playground = createPlayground(b3);
 
-  const character =
-    EMBODIMENT_MODE === 'solver'
-      ? new SolverOwnedCharacter(b3, playground.world, {
-          startPosition: playground.spawn,
-          gravity: playground.gravity,
-          mass: 80,
-        })
-      : new ControllerOwnedCharacter(b3, playground.world, {
-          startPosition: playground.spawn,
-          gravity: playground.gravity,
-          virtualMass: 80,
-        });
+  let character;
+  if (EMBODIMENT_MODE === 'solver') {
+    character = new SolverOwnedCharacter(b3, playground.world, {
+      startPosition: playground.spawn,
+      gravity: playground.gravity,
+      mass: 80,
+    });
+  } else {
+    character = new ControllerOwnedCharacter(b3, playground.world, {
+      startPosition: playground.spawn,
+      gravity: playground.gravity,
+      virtualMass: 80,
+      reciprocityMode: EMBODIMENT_MODE === 'causal' ? 'causal-components' : 'normal',
+    });
+  }
 
   const worldView = createWorldRenderer(b3, playground.world, {
     appearance: playground.appearance,
@@ -153,6 +161,11 @@ async function main() {
     debugLabels.external.textContent = 'intent residual';
     debugLabels.impulse.textContent = 'solver Δp proxy';
     debugLabels.transport.textContent = 'manual transport';
+  } else if (EMBODIMENT_MODE === 'causal') {
+    phaseEl.textContent = 'E2.2 A′ · CAUSAL-COMPONENT RECIPROCITY';
+    debugLabels.external.textContent = 'external';
+    debugLabels.impulse.textContent = 'causal contact impulse';
+    debugLabels.transport.textContent = 'support transport';
   } else {
     phaseEl.textContent = 'E2 A · FOUNDATION 02.1 H-A';
     debugLabels.external.textContent = 'external';
@@ -170,10 +183,13 @@ async function main() {
   }
 
   const counts = playground.stats();
-  statusEl.textContent =
-    EMBODIMENT_MODE === 'solver'
-      ? `Ready · B solver-owned · real 80 kg body · rotation locked · ${counts.dynamicCount} playground bodies`
-      : `Ready · A controller-owned · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
+  if (EMBODIMENT_MODE === 'solver') {
+    statusEl.textContent = `Ready · B solver-owned · real 80 kg body · rotation locked · ${counts.dynamicCount} playground bodies`;
+  } else if (EMBODIMENT_MODE === 'causal') {
+    statusEl.textContent = `Ready · A′ controller-owned · causal-component reciprocity · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
+  } else {
+    statusEl.textContent = `Ready · A controller-owned · baseline normal reciprocity · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
+  }
 
   let previous = performance.now();
   let accumulator = 0;
