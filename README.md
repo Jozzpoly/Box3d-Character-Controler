@@ -6,43 +6,62 @@ This repository is a public browser laboratory for a broader question:
 
 The working tension is **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**.
 
-## Current provisional baseline
+## Current research surface — E2 Authority Ownership Crucible
 
-`Foundation 02.1` is the **Owner-accepted provisional capsule baseline**. It closes two basic quality debts reported after Foundation 02 without adding a new embodiment architecture or a general traversal subsystem.
+`Foundation 02.1` remains the **Owner-accepted provisional controller-owned capsule baseline**. It is preserved as comparison variant **A**, not treated as an architecture winner.
 
-It is intentionally not a polished final character controller. Remaining capsule feel debt is deferred unless a future research question gives a reason to revisit it.
+E2 adds a deliberately narrow comparison variant **B**: a solver-owned finite-mass translational root. The experiment asks whether changing who owns the player's physical state produces a meaningful difference in physical consequence and embodiment without immediately introducing ragdoll, articulation, balance or a new feature layer.
 
-Current character representation:
+### A — Foundation 02.1 controller-owned baseline
 
 - controller-owned capsule position/state;
 - explicit `80 kg` virtual interaction mass;
-- one general effective-mass impulse exchange for dynamic contacts, including equal-and-opposite character velocity response;
-- gravity, support and support loss through Box3D mover queries;
-- body-local support anchors, so translating and rotating supports can carry the character;
-- camera-relative movement;
-- separate ground/air movement authority;
-- external horizontal recoil retained as a decaying motion component instead of being immediately overwritten by input;
-- buffered/coyote jump with early-release shaping;
-- smoothed orbit/follow camera with reduced vertical pumping during ordinary jumps;
-- visual-only character presentation for facing, landing and impact readability; physics authority remains the capsule;
-- explicit provisional visual-forward convention: local `-Z` is the character's face/forward direction.
+- general effective-mass impulse exchange for dynamic contacts;
+- gravity/support through Box3D mover queries;
+- body-local support transport;
+- persistent external recoil component;
+- camera-relative bounded locomotion and shaped jump;
+- exact Owner-tested Foundation 02.1 runtime: `12841bd5c095827092ee5aae0acc19981a848490`.
 
-There is still no active ragdoll, IK, mantle, authored animation locomotion, grab system, explicit stair-step policy, ground-stick/adhesion system or universal framework.
+### B — E2 solver-owned translational root
 
-## Playground
+- real Box3D dynamic capsule with actual `80 kg` solver mass;
+- translation and collision response owned by the solver;
+- angular motion intentionally locked so E2 does **not** also test balance/falling/orientation recovery;
+- player locomotion and jump expressed through bounded centre-of-mass impulses;
+- real contact manifolds provide support classification;
+- no mover-based position solve;
+- no manual effective-mass exchange with dynamic bodies;
+- no manual support-position transport;
+- no horizontal velocity overwrite;
+- no-input horizontal control impulse is zero, so stopping, external-consequence decay and moving-support transport are produced by ordinary contact/friction;
+- provisional player friction `0.45`, selected from a small sensitivity bracket as a fair research floor, not an optimized feel setting.
 
-The yard is intentionally open rather than a prescribed obstacle course. It contains ordinary rigid bodies with different mass/shape affordances, a loose stack, a slab, a beam, static elevation changes and one translating/rotating support.
+Machine-qualified A/B runtime before documentation: `ca7316da9d80ae1bf0fd009629316352991c9733`.
 
-Foundation 02.1 also makes one traversal boundary explicit:
+## Important E2 result so far
 
-- four ordinary static stair rises of `0.22 m`, which the existing rounded capsule traverses without jump and without a stair special-case;
-- a nearby `0.52 m` ledge, which remains a jump boundary;
-- low dynamic props remain physical/pushable objects rather than being silently converted into traversal geometry.
+E2 already falsified one tempting implementation shortcut: simply putting the player on a dynamic body is not enough if the control law immediately cancels the solver's answer.
 
-The goal remains to preserve both causal tests and unscripted free play.
+An early idle servo erased a measured reverse perturbation in one tick, so it was removed. An early moving-support law explicitly inherited support velocity, so it was also removed because it reconstructed above the solver the same kind of bridge E2 was meant to examine.
 
-## Controls
+With the current minimal law, machine evidence shows that the solver-owned root can:
 
+- reach about `5.00 m/s` through bounded impulses;
+- jump about `1.28 m` and return to support;
+- naturally push ordinary dynamic matter;
+- acquire a real `450 kg` dynamic slab as support;
+- ride a translating kinematic support about `0.96 m` with zero horizontal controller impulse and no manual position transport;
+- receive a real reverse perturbation while idle without the controller cancelling it.
+
+At the same time, the traction probe exposed a real trade-off: ordinary friction that supplies traction, passive stopping and moving-support transport also damps horizontal external consequence. This is evidence to observe in play, not a reason to add another correction system yet.
+
+## Public A/B controls
+
+The public build contains both variants on the same playground and presentation surface:
+
+- `1` — **A: Foundation 02.1 controller-owned**
+- `2` — **B: E2 solver-owned translational root**
 - `WASD` — move relative to camera
 - `Space` — jump
 - `Shift` — sprint
@@ -51,7 +70,21 @@ The goal remains to preserve both causal tests and unscripted free play.
 - `R` — reset world + player
 - `H` — toggle causal telemetry
 
+Changing A/B mode reloads the world deliberately, preventing the second variant from inheriting a disturbed playground from the first. A remains the default.
+
 Public build: https://jozzpoly.github.io/Box3d-Character-Controler/
+
+## Playground
+
+The yard remains intentionally open rather than a prescribed obstacle course. It contains ordinary rigid bodies with different mass/shape affordances, a loose stack, slab, beam, static elevation changes and one translating/rotating support.
+
+Foundation 02.1's known traversal fixtures remain present:
+
+- four `0.22 m` static stair rises;
+- a nearby `0.52 m` jump boundary;
+- low dynamic props that remain physical/pushable matter.
+
+Those traversal outcomes are evidence for A, not requirements imposed on every future embodiment representation. The goal remains to preserve both causal tests and unscripted free play.
 
 ## Evidence history
 
@@ -60,18 +93,12 @@ The current implementation is disposable; accepted observations are not.
 - `cadb9405097ede149e64a64d8070c6127e8849a5` — E1-A1 planar physical-contact baseline.
 - `5fd2aabdff35e79944bd82901175a9f64e73578f` — E1-A2 static gravity/support gate.
 - `ee5bb1813ac691750359c1d8f6f3934c29d9426b` — E1-A2 dynamic-support specimen.
-- `1416c2b7dc618fa99e5a3916326414178414997f` — Foundation 01 open embodied-player playground; machine-qualified and Owner-tested, but Owner judged overall quality/feel too raw for the next serious phase.
-- `9d6e8ca77d024e784ed6aa5d71786ee3e223733d` — Foundation 02 quality/feel public baseline; Owner judged it better, then reported reversed visual facing and non-walkable stair fixtures.
-- `12841bd5c095827092ee5aae0acc19981a848490` — exact public Foundation 02.1 runtime accepted by Owner after machine qualification and Pages deployment.
+- `1416c2b7dc618fa99e5a3916326414178414997f` — Foundation 01 open embodied-player playground; machine-qualified and Owner-tested, but too raw for fair architecture comparison.
+- `9d6e8ca77d024e784ed6aa5d71786ee3e223733d` — Foundation 02 quality/feel baseline.
+- `12841bd5c095827092ee5aae0acc19981a848490` — exact Owner-tested Foundation 02.1 runtime; facing/stairs accepted and further capsule-only polish deferred.
+- `ca7316da9d80ae1bf0fd009629316352991c9733` — machine-qualified E2 A/B runtime before research-ledger documentation.
 
-Owner closure verdict for Foundation 02.1:
-
-- facing: PASS;
-- ordinary stair ascent: PASS;
-- stair descent: looks acceptable / PASS;
-- remaining capsule feel debt: intentionally deferred.
-
-See [`docs/RESEARCH.md`](docs/RESEARCH.md) for claims, non-claims, failed traversal experiments and Owner observations.
+See [`docs/RESEARCH.md`](docs/RESEARCH.md) for causal corrections, machine evidence, negative results, non-claims and Owner observations.
 
 ## Runtime provenance
 
@@ -81,7 +108,7 @@ Current browser substrate remains intentionally small:
 - `three@0.183.0`
 - `vite@7.0.0`
 
-Important: `box3d.js@0.1.1` currently vendors native Box3D commit `8441b4a06d6d09dcfb0b0f704df4d847d1437b92`. Binding version and native engine snapshot are distinct provenance facts.
+`box3d.js@0.1.1` vendors native Box3D commit `8441b4a06d6d09dcfb0b0f704df4d847d1437b92`. Binding version and native engine snapshot are distinct provenance facts.
 
 ## Validation
 
@@ -91,8 +118,21 @@ npm run smoke
 npm run build
 ```
 
-The broad smoke checks coexistence of Foundation 02 physics plus Foundation 02.1 facing/traversal outcomes. A second isolated closure smoke independently verifies that the original natural-push strength is preserved (`169.4 N·s` in qualification) and that stair descent actually recovers static support. Peak descent velocity remains telemetry for Owner judgement rather than an arbitrary machine quality threshold.
+Validation runs the frozen Foundation 02.1 broad and isolated closure gates **before** E2 gates. E2 then checks actual finite mass, bounded impulse locomotion, no-input physical stopping, reverse perturbation without controller cancellation, natural moving-support transport, jump, natural push and dynamic support. A small friction sensitivity probe remains diagnostic rather than a pass/fail optimization target.
 
-## Stage boundary
+## Current stage boundary
 
-Foundation 02.1 is accepted as a **known comparison/research specimen**, not an architecture winner. Do not continue polishing the capsule automatically. The next phase should start from a fresh question about physical player embodiment and may keep, replace or challenge this representation.
+E2 is **not** an architecture verdict and is not permission to automatically build a full dynamic controller.
+
+The next required evidence is Owner A/B free play: whether the solver-owned state creates a meaningful difference in embodiment, agency and emergent physical interaction, and what causes that difference.
+
+Until that evidence exists, do not automatically add:
+
+- free rotation / balance;
+- multi-body articulation or active ragdoll;
+- grab/mantle/IK;
+- another traversal framework;
+- more capsule polish;
+- a general character-controller architecture.
+
+The natural boundary is a machine-qualified public A/B research instrument awaiting Owner observation.
