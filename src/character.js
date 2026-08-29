@@ -33,6 +33,10 @@ export class ControllerOwnedCharacter {
     this.radius = options.radius ?? 0.36;
     this.halfSegment = options.halfSegment ?? 0.54;
     this.virtualMass = options.virtualMass ?? 80;
+    this.reciprocityMode = options.reciprocityMode ?? 'normal';
+    if (this.reciprocityMode !== 'normal' && this.reciprocityMode !== 'causal-components') {
+      throw new Error(`Unknown controller reciprocity mode: ${this.reciprocityMode}`);
+    }
     this.maxSpeed = options.maxSpeed ?? 5.2;
     this.sprintMultiplier = options.sprintMultiplier ?? 1.32;
     this.groundAcceleration = options.groundAcceleration ?? 31;
@@ -289,11 +293,45 @@ export class ControllerOwnedCharacter {
       if (!(kNormal > 0)) continue;
 
       const pointVelocity = this._bodyPointVelocity(body, extra.point);
-      const vn = dot3(sub3(pointVelocity, this.velocity), normal);
-      if (vn >= 0) continue;
+      const relativeVelocity = sub3(this.velocity, pointVelocity);
+      const closingSpeed = dot3(relativeVelocity, normal);
+      if (closingSpeed <= 0) continue;
 
-      const impulseMagnitude = -vn / kNormal;
-      const impulse = scale3(normal, impulseMagnitude);
+      const baselineMagnitude = closingSpeed / kNormal;
+      let impulse = scale3(normal, baselineMagnitude);
+      let recordedMagnitude = baselineMagnitude;
+
+      if (this.reciprocityMode === 'causal-components') {
+        const horizontalNormalLength = Math.hypot(normal[0], normal[2]);
+        const horizontalClosing = Math.max(
+          0,
+          relativeVelocity[0] * normal[0] + relativeVelocity[2] * normal[2],
+        );
+        const verticalClosing = Math.max(0, relativeVelocity[1] * normal[1]);
+        const causalClosing = horizontalClosing + verticalClosing;
+        if (causalClosing <= 1e-8) continue;
+
+        const horizontalWeight = horizontalClosing / causalClosing;
+        const verticalWeight = verticalClosing / causalClosing;
+        const direction = [0, 0, 0];
+        if (horizontalNormalLength > 1e-8 && horizontalWeight > 0) {
+          direction[0] = horizontalWeight * normal[0] / horizontalNormalLength;
+          direction[2] = horizontalWeight * normal[2] / horizontalNormalLength;
+        }
+        if (Math.abs(normal[1]) > 1e-8 && verticalWeight > 0) {
+          direction[1] = verticalWeight * Math.sign(normal[1]);
+        }
+        if (length3(direction) <= 1e-8) continue;
+
+        // The mover owns geometric deflection. Reciprocity transfers only the axes of
+        // momentum that actually contributed to closing the contact, so an oblique edge
+        // normal cannot manufacture horizontal character momentum from a vertical fall.
+        // Mixed-axis directions are intentionally not renormalized; the total transfer
+        // cannot exceed the baseline normal-impulse scalar.
+        impulse = scale3(direction, baselineMagnitude);
+        recordedMagnitude = length3(impulse);
+      }
+
       const reaction = scale3(impulse, -invMassA);
       this.velocity[0] += reaction[0];
       this.velocity[1] += reaction[1];
@@ -301,7 +339,7 @@ export class ControllerOwnedCharacter {
       this.externalVelocity[0] += reaction[0];
       this.externalVelocity[2] += reaction[2];
       this.b3.b3Body_ApplyLinearImpulse(body, impulse, extra.point, true);
-      this.lastContactImpulse += impulseMagnitude;
+      this.lastContactImpulse += recordedMagnitude;
       this.lastDynamicContacts += 1;
     }
   }
