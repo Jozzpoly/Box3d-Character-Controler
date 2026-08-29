@@ -6,59 +6,99 @@ This repository is a public browser laboratory for a broader question:
 
 The working tension is **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**.
 
-## Current research surface — E2 Authority Ownership Crucible
+## Current research state — E2.1 localization complete
 
-`Foundation 02.1` remains the **Owner-accepted provisional controller-owned capsule baseline**. It is preserved as comparison variant **A**, not treated as an architecture winner.
+`Foundation 02.1` remains the exact Owner-tested controller-owned comparison specimen **A**. E2 added solver-owned translational-root specimen **B**. Owner free play then rejected both as satisfactory current locomotion options:
 
-E2 adds a deliberately narrow comparison variant **B**: a solver-owned finite-mass translational root. The experiment asks whether changing who owns the player's physical state produces a meaningful difference in physical consequence and embodiment without immediately introducing ragdoll, articulation, balance or a new feature layer.
+- **A** traverses ordinary stairs, but Owner observed a strange slippery / unstable effect that can appear around jumping onto physical objects;
+- **B** has cleaner solver-owned physical coupling, but ordinary small terrain discontinuities too often become walls that require repeated jumping.
 
-### A — Foundation 02.1 controller-owned baseline
+E2.1 did **not** build a third controller. It localized those two failure families while leaving the public A/B runtime unchanged.
+
+Exact machine-qualified E2.1 diagnostic specimen before documentation: `3725586c6369a978afbdb0f63a8c02fb1f03a451`.
+
+Full mechanism map: [`docs/E2_1_LOCALIZATION.md`](docs/E2_1_LOCALIZATION.md).
+
+## A — Foundation 02.1 controller-owned baseline
 
 - controller-owned capsule position/state;
 - explicit `80 kg` virtual interaction mass;
+- mover collision/plane solve;
 - general effective-mass impulse exchange for dynamic contacts;
-- gravity/support through Box3D mover queries;
+- gravity/support through mover queries;
 - body-local support transport;
 - persistent external recoil component;
 - camera-relative bounded locomotion and shaped jump;
 - exact Owner-tested Foundation 02.1 runtime: `12841bd5c095827092ee5aae0acc19981a848490`.
 
-### B — E2 solver-owned translational root
+### E2.1 finding for A
+
+Flat support-velocity inheritance is deterministic and proportional to support point velocity; it did not by itself reproduce the Owner anomaly.
+
+A zero-input vertical edge-landing probe did reproduce the failure family:
+
+- on a static cube near the edge, A produced about `0.24 m` lateral **position drift while horizontal velocity remained `0.00 m/s`**;
+- on the corresponding dynamic cube, the same case grew to about `1.10 m` drift and `1.34 m/s` peak horizontal speed with about `259 N·s` of manual dynamic-contact impulse.
+
+Diagnostic decomposition showed:
+
+- disabling manual dynamic impulse exchange reduced the dynamic-edge case from about `1.10 m` to `0.23 m` drift;
+- disabling body-local support transport left about `1.00 m` drift.
+
+Current interpretation:
+
+> Rounded mover edge geometry creates a base lateral positional correction; A's manual dynamic reciprocity is the dominant amplifier in the reproduced dynamic-object anomaly. Support-anchor transport is not the dominant amplifier.
+
+This is a localized causal result, not a claim that every A slippery event has exactly the same path.
+
+## B — E2 solver-owned translational root
 
 - real Box3D dynamic capsule with actual `80 kg` solver mass;
 - translation and collision response owned by the solver;
-- angular motion intentionally locked so E2 does **not** also test balance/falling/orientation recovery;
-- player locomotion and jump expressed through bounded centre-of-mass impulses;
+- angular motion intentionally locked so E2 does not also test balance/falling/orientation recovery;
+- locomotion and jump through bounded centre-of-mass impulses;
 - real contact manifolds provide support classification;
 - no mover-based position solve;
-- no manual effective-mass exchange with dynamic bodies;
+- no manual dynamic effective-mass exchange;
 - no manual support-position transport;
 - no horizontal velocity overwrite;
-- no-input horizontal control impulse is zero, so stopping, external-consequence decay and moving-support transport are produced by ordinary contact/friction;
-- provisional player friction `0.45`, selected from a small sensitivity bracket as a fair research floor, not an optimized feel setting.
+- provisional player friction `0.45` remains a research setting, not optimized feel.
 
-Machine-qualified A/B runtime before documentation: `ca7316da9d80ae1bf0fd009629316352991c9733`.
+### E2.1 finding for B
 
-## Important E2 result so far
+A no-jump vertical-step sweep found the natural traversal boundary in the diagnostic fixture:
 
-E2 already falsified one tempting implementation shortcut: simply putting the player on a dynamic body is not enough if the control law immediately cancels the solver's answer.
+- A: passes up to `0.25 m`, blocks at `0.30 m`;
+- B at friction `0.20`: passes up to `0.10 m`;
+- B at friction `0.45`: passes up to `0.10 m`;
+- B at friction `0.82`: passes only `0.05 m`.
 
-An early idle servo erased a measured reverse perturbation in one tick, so it was removed. An early moving-support law explicitly inherited support velocity, so it was also removed because it reconstructed above the solver the same kind of bridge E2 was meant to examine.
+More friction did not solve the problem and could make it worse.
 
-With the current minimal law, machine evidence shows that the solver-owned root can:
+A second sweep increased B ground authority from `13` through `26`, `52` and `104 m/s²`. Steps `0.15`, `0.20` and `0.22 m` remained blocked even at the highest authority, despite very large bounded control impulses. The body gained only about `0.01–0.02 m` of vertical rise at the obstacle.
 
-- reach about `5.00 m/s` through bounded impulses;
-- jump about `1.28 m` and return to support;
-- naturally push ordinary dynamic matter;
-- acquire a real `450 kg` dynamic slab as support;
-- ride a translating kinematic support about `0.96 m` with zero horizontal controller impulse and no manual position transport;
-- receive a real reverse perturbation while idle without the controller cancelling it.
+Current interpretation:
 
-At the same time, the traction probe exposed a real trade-off: ordinary friction that supplies traction, passive stopping and moving-support transport also damps horizontal external consequence. This is evidence to observe in play, not a reason to add another correction system yet.
+> B's rough-terrain failure is not primarily insufficient traction or an underpowered horizontal motor. A simple upright solver-owned capsule has a genuine contact/geometric boundary at small vertical discontinuities and needs some additional terrain-negotiation capability if it is to support ordinary rough-ground locomotion.
+
+## What E2.1 changed conceptually
+
+The immediate problem is no longer well described as **A versus B**.
+
+Two responsibilities need to be studied separately:
+
+1. **terrain negotiation / locomotion affordance** — ordinary small discontinuities should not require constant jump input;
+2. **physical coupling / consequence** — dynamic contact must remain causally coherent without edge geometry plus reciprocity producing disproportionate lateral behavior.
+
+A currently gets terrain continuity from rounded mover contact geometry, then layers manual reciprocity on top. B gets cleaner solver-owned consequence, but has no mechanism that interprets a vertical discontinuity as terrain to negotiate.
+
+The next useful experiment should test the smallest terrain-negotiation capability that can coexist with solver-owned physical consequence **without simply recreating A's edge/dynamic failure mode**.
+
+That is a new stage and has not been started.
 
 ## Public A/B controls
 
-The public build contains both variants on the same playground and presentation surface:
+The public build still contains the E2 comparison surface:
 
 - `1` — **A: Foundation 02.1 controller-owned**
 - `2` — **B: E2 solver-owned translational root**
@@ -70,9 +110,11 @@ The public build contains both variants on the same playground and presentation 
 - `R` — reset world + player
 - `H` — toggle causal telemetry
 
-Changing A/B mode reloads the world deliberately, preventing the second variant from inheriting a disturbed playground from the first. A remains the default.
+Changing A/B mode reloads the world so the second representation does not inherit a disturbed playground from the first. A remains the default.
 
 Public build: https://jozzpoly.github.io/Box3d-Character-Controler/
+
+The current public A/B surface is retained as evidence. Neither A nor B is accepted as the next controller direction.
 
 ## Playground
 
@@ -84,7 +126,7 @@ Foundation 02.1's known traversal fixtures remain present:
 - a nearby `0.52 m` jump boundary;
 - low dynamic props that remain physical/pushable matter.
 
-Those traversal outcomes are evidence for A, not requirements imposed on every future embodiment representation. The goal remains to preserve both causal tests and unscripted free play.
+Those traversal outcomes remain evidence for A, not universal requirements imposed on every future representation.
 
 ## Evidence history
 
@@ -93,12 +135,13 @@ The current implementation is disposable; accepted observations are not.
 - `cadb9405097ede149e64a64d8070c6127e8849a5` — E1-A1 planar physical-contact baseline.
 - `5fd2aabdff35e79944bd82901175a9f64e73578f` — E1-A2 static gravity/support gate.
 - `ee5bb1813ac691750359c1d8f6f3934c29d9426b` — E1-A2 dynamic-support specimen.
-- `1416c2b7dc618fa99e5a3916326414178414997f` — Foundation 01 open embodied-player playground; machine-qualified and Owner-tested, but too raw for fair architecture comparison.
+- `1416c2b7dc618fa99e5a3916326414178414997f` — Foundation 01 open embodied-player playground.
 - `9d6e8ca77d024e784ed6aa5d71786ee3e223733d` — Foundation 02 quality/feel baseline.
-- `12841bd5c095827092ee5aae0acc19981a848490` — exact Owner-tested Foundation 02.1 runtime; facing/stairs accepted and further capsule-only polish deferred.
-- `ca7316da9d80ae1bf0fd009629316352991c9733` — machine-qualified E2 A/B runtime before research-ledger documentation.
+- `12841bd5c095827092ee5aae0acc19981a848490` — exact Owner-tested Foundation 02.1 runtime.
+- `ca7316da9d80ae1bf0fd009629316352991c9733` — machine-qualified E2 A/B runtime before documentation.
+- `3725586c6369a978afbdb0f63a8c02fb1f03a451` — machine-qualified E2.1 diagnostic mechanism-map specimen before documentation.
 
-See [`docs/RESEARCH.md`](docs/RESEARCH.md) for causal corrections, machine evidence, negative results, non-claims and Owner observations.
+See [`docs/RESEARCH.md`](docs/RESEARCH.md) for the earlier evidence ledger and [`docs/E2_1_LOCALIZATION.md`](docs/E2_1_LOCALIZATION.md) for the current terrain/support localization.
 
 ## Runtime provenance
 
@@ -118,21 +161,20 @@ npm run smoke
 npm run build
 ```
 
-Validation runs the frozen Foundation 02.1 broad and isolated closure gates **before** E2 gates. E2 then checks actual finite mass, bounded impulse locomotion, no-input physical stopping, reverse perturbation without controller cancellation, natural moving-support transport, jump, natural push and dynamic support. A small friction sensitivity probe remains diagnostic rather than a pass/fail optimization target.
+Validation still runs the frozen Foundation 02.1 gates and E2 gates first. E2.1 adds deterministic diagnostics for support/jump velocity transfer, A/B vertical-step boundaries, zero-input edge landing, B authority sensitivity and diagnostic decomposition of A's dynamic-edge amplification.
+
+The decomposition uses test-local monkey patches only; production character runtime source is unchanged by E2.1.
 
 ## Current stage boundary
 
-E2 is **not** an architecture verdict and is not permission to automatically build a full dynamic controller.
+E2.1 is complete at a **mechanism map**, not a new controller.
 
-The next required evidence is Owner A/B free play: whether the solver-owned state creates a meaningful difference in embodiment, agency and emergent physical interaction, and what causes that difference.
+Do not automatically:
 
-Until that evidence exists, do not automatically add:
+- polish A further;
+- increase B friction/force further;
+- add teleporting step-up;
+- start active ragdoll or multi-body articulation;
+- combine A and B into a general framework.
 
-- free rotation / balance;
-- multi-body articulation or active ragdoll;
-- grab/mantle/IK;
-- another traversal framework;
-- more capsule polish;
-- a general character-controller architecture.
-
-The natural boundary is a machine-qualified public A/B research instrument awaiting Owner observation.
+The next stage must first choose the smallest falsifiable experiment for **terrain negotiation with preserved physical consequence**. That selection and implementation belong to a separate stage.
