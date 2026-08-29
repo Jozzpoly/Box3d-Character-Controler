@@ -82,6 +82,7 @@ const character = new ControllerOwnedCharacter(b3, world, {
   startPosition: [0, 2.2, 2.8],
   gravity: 20,
   virtualMass: 80,
+  groundStickDistance: 0.27,
 });
 const forward = [0, 0, -1];
 const right = [1, 0, 0];
@@ -192,9 +193,14 @@ try {
     );
   }
   let descentPeakVertical = 0;
+  let maxGroundStick = 0;
+  let groundStickEvents = 0;
   for (let i = 0; i < 140; i++) {
     tick({ moveForward: -1 });
-    descentPeakVertical = Math.max(descentPeakVertical, Math.abs(character.velocity[1]));
+    const data = character.telemetry();
+    descentPeakVertical = Math.max(descentPeakVertical, Math.abs(data.verticalSpeed));
+    maxGroundStick = Math.max(maxGroundStick, data.groundStickDistance);
+    if (data.groundStickDistance > 0.02) groundStickEvents += 1;
     if (
       character.position[2] > 5.85 &&
       character.position[1] < character.halfHeight + 0.12
@@ -202,13 +208,19 @@ try {
       break;
     }
   }
-  if (character.position[2] <= 5.70 || character.position[1] > character.halfHeight + 0.12) {
+  if (
+    character.position[2] <= 5.70 ||
+    character.position[1] > character.halfHeight + 0.12 ||
+    groundStickEvents < 1 ||
+    maxGroundStick < 0.12 ||
+    descentPeakVertical > 1.20
+  ) {
     throw new Error(
-      `Static stair descent failed: y=${character.position[1].toFixed(3)} z=${character.position[2].toFixed(3)} peakV=${descentPeakVertical.toFixed(3)}`,
+      `Static stair descent adhesion failed: y=${character.position[1].toFixed(3)} z=${character.position[2].toFixed(3)} peakV=${descentPeakVertical.toFixed(3)} stick=${maxGroundStick.toFixed(3)} events=${groundStickEvents}`,
     );
   }
 
-  // 52 cm ledge must remain a jump boundary.
+  // 52 cm ledge must remain a jump boundary when approached from below.
   character.reset([-3, character.halfHeight + 0.02, 6.15]);
   settle(20);
   let ledgeMinZ = character.position[2];
@@ -221,6 +233,41 @@ try {
   if (ledgeMinZ < 5.70 || ledgePeakY > character.halfHeight + 0.20) {
     throw new Error(
       `High ledge boundary failed: minZ=${ledgeMinZ.toFixed(3)} peakY=${ledgePeakY.toFixed(3)}`,
+    );
+  }
+
+  // The same 52 cm difference from above must become a real fall, not adhesion.
+  character.reset([-3, character.halfHeight + 0.52 + 0.02, 5.0]);
+  settle(20);
+  if (
+    !character.currentSupport ||
+    Math.abs(character.position[1] - (character.halfHeight + 0.52)) > 0.08
+  ) {
+    throw new Error(
+      `Large-drop setup failed: y=${character.position[1].toFixed(3)} support=${character.currentSupport?.type ?? 'NONE'}`,
+    );
+  }
+  let sawLargeDropAir = false;
+  let maxLargeDropFallSpeed = 0;
+  let maxLargeDropStick = 0;
+  for (let i = 0; i < 100; i++) {
+    tick({ moveForward: -1 });
+    const data = character.telemetry();
+    sawLargeDropAir ||= !data.grounded;
+    maxLargeDropFallSpeed = Math.max(maxLargeDropFallSpeed, Math.max(0, -data.verticalSpeed));
+    maxLargeDropStick = Math.max(maxLargeDropStick, data.groundStickDistance);
+    if (
+      sawLargeDropAir &&
+      data.grounded &&
+      character.position[2] > 5.80 &&
+      character.position[1] < character.halfHeight + 0.12
+    ) {
+      break;
+    }
+  }
+  if (!sawLargeDropAir || maxLargeDropFallSpeed < 1.5 || maxLargeDropStick > 0.04) {
+    throw new Error(
+      `Large drop incorrectly adhered: air=${sawLargeDropAir} fall=${maxLargeDropFallSpeed.toFixed(3)} stick=${maxLargeDropStick.toFixed(3)} y=${character.position[1].toFixed(3)} z=${character.position[2].toFixed(3)}`,
     );
   }
 
@@ -336,7 +383,7 @@ try {
   }
 
   console.log(
-    `Foundation 02.1 smoke PASS: facing=${facingCases.length} stairsUp=${(stairPeak - character.halfHeight).toFixed(2)}m stairsDownV=${descentPeakVertical.toFixed(2)}m/s ledgeMinZ=${ledgeMinZ.toFixed(2)} lowPropZ=${lowDynamicPosition[2].toFixed(2)} fullJump=${(fullPeak - landedY).toFixed(2)}m shortJump=${(shortPeak - shortBase).toFixed(2)}m push=${maxPushImpulse.toFixed(1)}Ns ramDx=${ramDisplacement.toFixed(2)}m external=${maxExternal.toFixed(2)}m/s rideDx=${rideDx.toFixed(2)}m rotate=${rotateDistance.toFixed(2)}m`,
+    `Foundation 02.1 smoke PASS: facing=${facingCases.length} stairsUp=${(stairPeak - character.halfHeight).toFixed(2)}m stairsDownV=${descentPeakVertical.toFixed(2)}m/s stick=${maxGroundStick.toFixed(2)}m/${groundStickEvents} largeDrop=${maxLargeDropFallSpeed.toFixed(2)}m/s lowPropZ=${lowDynamicPosition[2].toFixed(2)} fullJump=${(fullPeak - landedY).toFixed(2)}m shortJump=${(shortPeak - shortBase).toFixed(2)}m push=${maxPushImpulse.toFixed(1)}Ns ramDx=${ramDisplacement.toFixed(2)}m external=${maxExternal.toFixed(2)}m/s rideDx=${rideDx.toFixed(2)}m rotate=${rotateDistance.toFixed(2)}m`,
   );
 } finally {
   b3.b3DestroyWorld(world);
