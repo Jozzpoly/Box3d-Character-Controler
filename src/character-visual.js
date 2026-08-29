@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { clamp } from './math.js';
+import { clamp, yawFromForwardXZ } from './math.js';
 
 function shortestAngleDelta(from, to) {
   return Math.atan2(Math.sin(to - from), Math.cos(to - from));
@@ -29,6 +29,7 @@ export function createCharacterVisual(character) {
     new THREE.BoxGeometry(0.34, 0.18, 0.055),
     new THREE.MeshStandardMaterial({ color: 0x18242b, roughness: 0.35, metalness: 0.08 }),
   );
+  // Provisional visual contract: the character's face points along local -Z.
   visor.position.set(0, 0.27, -character.radius * 0.965);
   bodyRig.add(visor);
 
@@ -77,29 +78,44 @@ export function createCharacterVisual(character) {
 
   function update(dt) {
     root.position.set(character.position[0], character.position[1], character.position[2]);
+
+    // Facing follows deliberate player intent, not physical recoil.
     if (character.desiredSpeed > 0.08) {
-      const desiredYaw = Math.atan2(character.desiredDirection[0], -character.desiredDirection[2]);
+      const desiredYaw = yawFromForwardXZ(character.desiredDirection);
       facingYaw += shortestAngleDelta(facingYaw, desiredYaw) * (1 - Math.exp(-dt * 13));
     }
     root.rotation.y = facingYaw;
 
     const speedRatio = clamp(character.desiredSpeed / (character.maxSpeed * character.sprintMultiplier), 0, 1);
     const targetLeanX = speedRatio * 0.055;
-    const sideLocal = Math.cos(facingYaw) * character.externalVelocity[0] + Math.sin(facingYaw) * character.externalVelocity[2];
+
+    // local +X transformed by yaw is (cos(yaw), 0, -sin(yaw)).
+    const sideLocal =
+      Math.cos(facingYaw) * character.externalVelocity[0] -
+      Math.sin(facingYaw) * character.externalVelocity[2];
     const targetLeanZ = clamp(-sideLocal * 0.022, -0.09, 0.09);
     leanX += (targetLeanX - leanX) * (1 - Math.exp(-dt * 9));
     leanZ += (targetLeanZ - leanZ) * (1 - Math.exp(-dt * 9));
     bodyRig.rotation.x = leanX;
     bodyRig.rotation.z = leanZ;
 
-    if (character.justLanded) landingPulse = Math.max(landingPulse, clamp(character.landingSpeed / 9, 0, 1));
+    if (character.justLanded) {
+      landingPulse = Math.max(landingPulse, clamp(character.landingSpeed / 9, 0, 1));
+    }
     landingPulse *= Math.exp(-dt * 10);
-    bodyRig.scale.set(1 + landingPulse * 0.035, 1 - landingPulse * 0.07, 1 + landingPulse * 0.035);
+    bodyRig.scale.set(
+      1 + landingPulse * 0.035,
+      1 - landingPulse * 0.07,
+      1 + landingPulse * 0.035,
+    );
 
     const grounded = Boolean(character.currentSupport);
-    groundRingMaterial.opacity += ((grounded ? 0.48 : 0.08) - groundRingMaterial.opacity) * (1 - Math.exp(-dt * 14));
+    groundRingMaterial.opacity +=
+      ((grounded ? 0.48 : 0.08) - groundRingMaterial.opacity) * (1 - Math.exp(-dt * 14));
     groundRing.scale.setScalar(1 + clamp(character.lastContactImpulse / 240, 0, 0.22));
-    bodyMaterial.emissiveIntensity += (clamp(character.lastContactImpulse / 140, 0, 0.7) - bodyMaterial.emissiveIntensity) * (1 - Math.exp(-dt * 18));
+    bodyMaterial.emissiveIntensity +=
+      (clamp(character.lastContactImpulse / 140, 0, 0.7) - bodyMaterial.emissiveIntensity) *
+      (1 - Math.exp(-dt * 18));
   }
 
   return { object3d: root, update, reset };
