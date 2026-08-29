@@ -115,7 +115,7 @@ Goal:
 
 > Fix the reported visual-direction error and make ordinary small static steps traversable without turning the provisional capsule into a growing traversal framework or weakening physical interaction with dynamic props.
 
-Machine-qualified closure candidate: `9e2608088a868a027b5e89e2159ee8fdb346adee`.
+Exact Owner-tested public runtime: `12841bd5c095827092ee5aae0acc19981a848490`.
 
 Accepted changes:
 
@@ -126,12 +126,12 @@ Accepted changes:
 - low dynamic prop remains pushable physical matter rather than being reclassified as traversal geometry;
 - Foundation 02 `character.js` movement/contact solver remains unchanged.
 
-Qualification evidence:
+Machine qualification:
 
 - six facing cases: PASS;
 - four-step ascent without jump: `0.88 m` total rise, PASS;
 - descent reaches the floor and independently recovers `STATIC` support, PASS;
-- descent peak vertical speed is about `2.77 m/s`; this is retained as telemetry, **not** a quality failure without Owner-observed evidence;
+- descent peak vertical speed is about `2.77 m/s`; retained as telemetry rather than an arbitrary quality threshold;
 - high ledge remains blocked (`ledgeMinZ ≈ 5.80`), PASS;
 - low dynamic prop is pushed rather than climbed, PASS;
 - full jump: `1.23 m`;
@@ -139,15 +139,32 @@ Qualification evidence:
 - reverse ram: about `-1.05 m` character displacement with `1.73 m/s` peak external response;
 - translating support: `1.00 m`;
 - rotating support: `1.03 m`;
-- production build: PASS.
+- isolated natural-push closure gate: `169.4 N·s`, with the box reaching about `z=-1.51`;
+- production build + GitHub Pages: PASS.
 
-The broad shared-world smoke reports a lower main push peak (`101.7 N·s`) after the traversal fixture has been disturbed. An isolated closure gate using the same Foundation 02 runtime reproduces the prior baseline exactly: `169.4 N·s`, with the box reaching about `z=-1.51`. Therefore the broad value is treated as fixture/order contamination, not evidence of a runtime push regression.
+The broad shared-world smoke reports a lower main push peak (`101.7 N·s`) after the traversal fixture has been disturbed. The isolated closure gate reproduces the prior Foundation 02 baseline exactly (`169.4 N·s`), so the broad value is treated as fixture/order contamination rather than evidence of runtime push regression.
+
+### Owner closure verdict — PASS
+
+Owner tested the final public Foundation 02.1 runtime after machine qualification and reported:
+
+- facing direction: **PASS**;
+- ordinary stair ascent without jump: **PASS**;
+- stair descent: **looks fine / PASS**.
+
+Owner explicitly accepts the stage as passed. The capsule still has feel shortcomings, but further capsule-only polishing is intentionally deferred because the project is not trying to perfect this one representation before continuing embodiment research.
+
+Stage verdict:
+
+> **Foundation 02.1 accepted as the provisional capsule baseline. Close this stage without further capsule polish.**
+
+This is a baseline acceptance, not an architecture verdict. It means the current controller-owned capsule is now fair enough to serve as a known comparison/research specimen until a future question gives a reason to revisit it.
 
 ### Rejected / deferred traversal experiments
 
 An explicit bounded step-up policy was implemented during exploration, then removed. With correctly sized `0.22 m` stairs the rounded capsule already traversed the staircase while the explicit step mechanism recorded no accepted step events. The proposed policy therefore did not earn its complexity for the reported problem.
 
-A later experimental branch explored static ground adhesion to reduce machine-observed vertical velocity while descending. That line introduced downward probes, blocker classification and retry state, then failed its own falsifiers: variants interfered with normal stair ascent and the latest branch head could still apply adhesion during a real larger drop. The Owner had not reported stair descent as a feel problem.
+A later experimental branch explored static ground adhesion to reduce machine-observed vertical velocity while descending. That line introduced downward probes, blocker classification and retry state, then failed its own falsifiers: variants interfered with normal stair ascent and the latest branch head could still apply adhesion during a real larger drop. The Owner had not reported stair descent as a feel problem, and final Owner play confirmed that descent looked acceptable without adhesion.
 
 Current verdict:
 
@@ -159,7 +176,7 @@ This is not a claim that step-up, floor-stick or other traversal policies are un
 
 Foundation 02.1 is a **provisional capsule baseline**, not an architecture winner and not a final traversal system. It does not establish that future articulated, dynamic-root or hybrid characters should inherit these traversal semantics. No mantle, crouch, grab, IK, ragdoll or universal movement framework is added by this stage.
 
-Owner free-play remains the final quality gate for the public Foundation 02.1 build, especially for facing readability and whether ordinary stair ascent/descent actually feels acceptable.
+The next stage should begin from a fresh embodiment question rather than continued automatic capsule polish.
 
 ### Donor/provenance notes
 
