@@ -277,15 +277,18 @@ export class ControllerOwnedCharacter {
   _solveMovement(dt) {
     const previousSupport = this.currentSupport;
     const wasSupported = Boolean(previousSupport);
+    const startPosition = [...this.position];
     const capsule = {
       center1: [0, -this.halfSegment, 0],
       center2: [0, this.halfSegment, 0],
       radius: this.radius,
     };
+    const horizontalDelta = [dt * this.velocity[0], 0, dt * this.velocity[2]];
+    const requestedHorizontal = lengthXZ(horizontalDelta);
     const target = [
-      this.position[0] + dt * this.velocity[0],
+      this.position[0] + horizontalDelta[0],
       this.position[1] + dt * this.velocity[1],
-      this.position[2] + dt * this.velocity[2],
+      this.position[2] + horizontalDelta[2],
     ];
     let lastPlanes = [];
     let lastExtras = [];
@@ -302,17 +305,24 @@ export class ControllerOwnedCharacter {
       if (dot3(delta, delta) < tolerance * tolerance) break;
     }
 
+    const achievedDelta = sub3(this.position, startPosition);
+    const horizontalProgress = requestedHorizontal > 1e-6
+      ? (achievedDelta[0] * horizontalDelta[0] + achievedDelta[2] * horizontalDelta[2]) / requestedHorizontal
+      : 0;
     const preClipVelocity = [...this.velocity];
     let support = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
 
     // Earned from Foundation 02.1 descent evidence: preserve support across an ordinary
     // stair-sized downward transition, but only from static ground and only while walking.
-    // Jump clears currentSupport before this point, so deliberate upward launch cannot stick.
+    // Requiring real horizontal progress keeps a blocked upward face from being mistaken
+    // for a descending edge. Jump clears currentSupport before this point, so launch cannot stick.
     if (
       !support &&
       previousSupport?.type === 'STATIC' &&
       this.desiredSpeed > 0.05 &&
-      preClipVelocity[1] <= 0.20
+      preClipVelocity[1] <= 0.20 &&
+      requestedHorizontal > 0.001 &&
+      horizontalProgress >= requestedHorizontal * 0.75
     ) {
       const adhesion = this._probeStaticGroundStick(capsule);
       if (adhesion) {
