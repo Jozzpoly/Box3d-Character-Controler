@@ -4,19 +4,23 @@ import { ControllerOwnedCharacter } from './character.js';
 import { SolverOwnedCharacter } from './solver-owned-character.js';
 import { createCharacterVisual } from './character-visual.js';
 import { FollowCamera } from './follow-camera.js';
+import { createFreePlayCapture } from './free-play-capture.js';
 import { createPlayground } from './playground.js';
 import { createWorldRenderer } from './world-renderer.js';
 import './style.css';
 
 const FIXED_DT = 1 / 60;
 const SUBSTEPS = 4;
-const requestedMode = new URLSearchParams(window.location.search).get('mode');
+const urlParams = new URLSearchParams(window.location.search);
+const requestedMode = urlParams.get('mode');
 const EMBODIMENT_MODE = requestedMode === 'solver' ? 'solver' : requestedMode === 'causal' ? 'causal' : 'controller';
+const CAPTURE_MODE = EMBODIMENT_MODE === 'causal' && urlParams.get('capture') === '1';
 
 const canvas = document.querySelector('#app');
 const statusEl = document.querySelector('#status');
 const phaseEl = document.querySelector('#phase');
 const debugEl = document.querySelector('#debug');
+const secondaryControlsEl = document.querySelector('#hud .secondary');
 const debugValues = {
   speed: document.querySelector('#d-speed'),
   external: document.querySelector('#d-external'),
@@ -44,6 +48,7 @@ const keys = new Set();
 let jumpQueued = false;
 let resetQueued = false;
 let debugVisible = false;
+let captureControls = null;
 
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
@@ -57,6 +62,14 @@ window.addEventListener('keydown', (event) => {
   }
   if (key === '3' && !event.repeat) {
     loadMode('causal');
+    return;
+  }
+  if (key === 'c' && !event.repeat && captureControls) {
+    captureControls.mark();
+    return;
+  }
+  if (key === 'x' && !event.repeat && captureControls) {
+    captureControls.export();
     return;
   }
 
@@ -156,11 +169,28 @@ async function main() {
   const followCamera = new FollowCamera(camera, canvas);
   followCamera.snap(character.position);
 
+  const capture = CAPTURE_MODE
+    ? createFreePlayCapture({
+      playground,
+      character,
+      fixedDt: FIXED_DT,
+      substeps: SUBSTEPS,
+      sourceUrl: window.location.href,
+      userAgent: navigator.userAgent,
+    })
+    : null;
+
   if (EMBODIMENT_MODE === 'solver') {
     phaseEl.textContent = 'E2 B · SOLVER-OWNED TRANSLATIONAL ROOT';
     debugLabels.external.textContent = 'intent residual';
     debugLabels.impulse.textContent = 'solver Δp proxy';
     debugLabels.transport.textContent = 'manual transport';
+  } else if (CAPTURE_MODE) {
+    phaseEl.textContent = 'E2.2c-1 A′ · OWNER-MARKED FREE-PLAY CAPTURE';
+    debugLabels.external.textContent = 'external';
+    debugLabels.impulse.textContent = 'causal contact impulse';
+    debugLabels.transport.textContent = 'support transport';
+    secondaryControlsEl.insertAdjacentHTML('beforeend', ' · <strong>C</strong> mark slide · <strong>X</strong> export captures');
   } else if (EMBODIMENT_MODE === 'causal') {
     phaseEl.textContent = 'E2.2 A′ · CAUSAL-COMPONENT RECIPROCITY';
     debugLabels.external.textContent = 'external';
@@ -173,23 +203,51 @@ async function main() {
     debugLabels.transport.textContent = 'support transport';
   }
 
+  const counts = playground.stats();
+  let baseStatus;
+  if (EMBODIMENT_MODE === 'solver') {
+    baseStatus = `Ready · B solver-owned · real 80 kg body · rotation locked · ${counts.dynamicCount} playground bodies`;
+  } else if (CAPTURE_MODE) {
+    baseStatus = `Ready · A′ capture · causal-component reciprocity unchanged · ${counts.dynamicCount} dynamic bodies`;
+  } else if (EMBODIMENT_MODE === 'causal') {
+    baseStatus = `Ready · A′ controller-owned · causal-component reciprocity · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
+  } else {
+    baseStatus = `Ready · A controller-owned · baseline normal reciprocity · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
+  }
+
+  function refreshStatus(note = '') {
+    if (!capture) {
+      statusEl.textContent = baseStatus;
+      return;
+    }
+    const info = capture.summary();
+    const captureState = `CAPTURE ON · C mark · X export · marked ${info.marked} (${info.pending} collecting)`;
+    statusEl.textContent = `${baseStatus} · ${captureState}${note ? ` · ${note}` : ''}`;
+  }
+
+  captureControls = capture ? {
+    mark() {
+      const id = capture.mark();
+      refreshStatus(id ? `marked ${id}` : 'mark ignored before first physics tick');
+    },
+    export() {
+      const eventCount = capture.download();
+      refreshStatus(`exported ${eventCount} event${eventCount === 1 ? '' : 's'}`);
+    },
+  } : null;
+
   function resetAll() {
+    capture?.resetEpoch('manual-reset');
     playground.reset();
     character.reset(playground.spawn);
     characterVisual.reset();
     followCamera.reset();
     followCamera.snap(character.position);
     resetQueued = false;
+    refreshStatus(capture ? 'new capture epoch after reset' : '');
   }
 
-  const counts = playground.stats();
-  if (EMBODIMENT_MODE === 'solver') {
-    statusEl.textContent = `Ready · B solver-owned · real 80 kg body · rotation locked · ${counts.dynamicCount} playground bodies`;
-  } else if (EMBODIMENT_MODE === 'causal') {
-    statusEl.textContent = `Ready · A′ controller-owned · causal-component reciprocity · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
-  } else {
-    statusEl.textContent = `Ready · A controller-owned · baseline normal reciprocity · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
-  }
+  refreshStatus();
 
   let previous = performance.now();
   let accumulator = 0;
@@ -206,24 +264,29 @@ async function main() {
     if (keys.has('d')) moveRight += 1;
     if (keys.has('a')) moveRight -= 1;
 
-    character.preStep(dt, {
+    const intent = {
       moveForward,
       moveRight,
-      forward: basis.forward,
-      right: basis.right,
+      forward: [...basis.forward],
+      right: [...basis.right],
       jump: jumpQueued,
       jumpHeld: keys.has(' '),
       sprint: keys.has('shift'),
-    });
+    };
+
+    character.preStep(dt, intent);
     jumpQueued = false;
 
     b3.b3World_Step(playground.world, dt, SUBSTEPS);
     character.postStep(dt);
+    capture?.record(intent);
 
     if (character.position[1] < -10 || Math.hypot(character.position[0], character.position[2]) > 45) {
+      capture?.resetEpoch('player-auto-reset');
       character.reset(playground.spawn);
       characterVisual.reset();
       followCamera.snap(character.position);
+      refreshStatus(capture ? 'new capture epoch after player reset' : '');
     }
   }
 
@@ -245,6 +308,7 @@ async function main() {
     debugValues.contacts.textContent = `${data.dynamicContacts}`;
     debugValues.impulse.textContent = `${data.contactImpulse.toFixed(1)} N·s`;
     debugValues.transport.textContent = `${(data.supportTransport * 100).toFixed(1)} cm/tick`;
+    if (capture) refreshStatus();
   }
 
   function frame(now) {
