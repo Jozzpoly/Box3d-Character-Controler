@@ -103,11 +103,10 @@ function freeMomentumTrial(grounded) {
 }
 
 function clipContractIsolate() {
-  // This isolate intentionally does NOT test approach/cast timing. It starts with a
-  // shallow overlap so CollideMover gives us the actual Box3D wall plane, then calls
-  // b3ClipVector directly with both signs of the normal component. We therefore learn
-  // the engine's one-sided clipping convention empirically instead of encoding a sign
-  // assumption into the fixture.
+  // Box3D's b3ClipVector only considers collision planes whose accumulated `push`
+  // was activated by b3SolvePlanes. Reproduce that real contract explicitly here:
+  // CollideMover -> SolvePlanes -> ClipVector. Approach/CastMover timing is a separate
+  // positional-sweep question and is intentionally outside this isolate.
   const setup = makeWorld(0);
   setup.box('static', [0.6, 2.5, 0], [0.1, 3.0, 5.0], { restitution: 0 });
   const character = makeCharacter(setup, [0.16, 2.5, 0], 0);
@@ -120,6 +119,9 @@ function clipContractIsolate() {
   const wall = planes.find((entry) => Math.abs(entry.plane.normal[0]) > 0.8);
   if (!wall) throw new Error(`E2.3 clip isolate could not recover wall plane; planes=${JSON.stringify(planes)}`);
 
+  // A zero desired translation is sufficient to resolve the deliberate shallow overlap
+  // and, critically, populate plane.push exactly as production b3SolvePlanes does.
+  const solved = b3.b3SolvePlanes([0, 0, 0], planes);
   const normal = [...wall.plane.normal];
   const tangentLength = Math.hypot(normal[0], normal[2]);
   const tangent = [-normal[2] / tangentLength, 0, normal[0] / tangentLength];
@@ -141,13 +143,13 @@ function clipContractIsolate() {
     };
   }
 
-  const positive = probe(3);
-  const negative = probe(-3);
   return {
     planeCount: planes.length,
     normal,
-    positive,
-    negative,
+    push: wall.push,
+    solveDelta: [...solved.delta],
+    positive: probe(3),
+    negative: probe(-3),
   };
 }
 
@@ -226,20 +228,21 @@ console.log(
   `  free airborne: 5.000 -> 1f ${airFree.after1.toFixed(3)} -> 6f ${airFree.after6.toFixed(3)} -> 15f ${airFree.after15.toFixed(3)} -> 30f ${airFree.after30.toFixed(3)} m/s`,
 );
 console.log(
-  `  direct wall clip: planes=${clip.planeCount} normal=${fmt(clip.normal)} | ${clipFmt('+normal', clip.positive)} | ${clipFmt('-normal', clip.negative)}`,
+  `  wall solve+clip: planes=${clip.planeCount} normal=${fmt(clip.normal)} push=${clip.push.toFixed(4)} solveDelta=${fmt(clip.solveDelta)} | ${clipFmt('+normal', clip.positive)} | ${clipFmt('-normal', clip.negative)}`,
 );
 console.log(
   `  owner-1 A-double-prime first clean no-contact tick=${owner1.separationFrame}: beforeMotor=${fmt(owner1.beforeSeparationMotor)} afterMotor=${fmt(owner1.afterSeparationMotor)} motorDelta=${fmt(owner1.motorDelta)} speed=${owner1.speedBeforeMotor.toFixed(3)}->${owner1.speedAfterMotor.toFixed(3)} 6f=${owner1.speedAfter6.toFixed(3)} support=${owner1.supportAtSeparation}`,
 );
 
-const positiveClipped = Math.abs(clip.positive.normalAfter) < 0.05;
-const negativeClipped = Math.abs(clip.negative.normalAfter) < 0.05;
-if (positiveClipped === negativeClipped) {
-  throw new Error(`E2.3 expected a one-sided clip convention; +normal clipped=${positiveClipped} -normal clipped=${negativeClipped}`);
+if (!(clip.push > 0)) {
+  throw new Error(`E2.3 SolvePlanes did not activate wall push: ${clip.push}`);
+}
+if (!(Math.abs(clip.negative.normalAfter) < 0.05 && clip.positive.normalAfter > 2.5)) {
+  throw new Error(`E2.3 clip convention mismatch: +normal ${clip.positive.normalBefore}->${clip.positive.normalAfter}, -normal ${clip.negative.normalBefore}->${clip.negative.normalAfter}`);
 }
 for (const sample of [clip.positive, clip.negative]) {
   if (Math.abs(sample.tangentAfter - sample.tangentBefore) > 1e-6) {
-    throw new Error(`E2.3 direct clip changed wall tangent: ${sample.tangentBefore} -> ${sample.tangentAfter}`);
+    throw new Error(`E2.3 solve+clip changed wall tangent: ${sample.tangentBefore} -> ${sample.tangentAfter}`);
   }
 }
 if (!(groundFree.after6 < airFree.after6 - 2.0)) {
@@ -249,5 +252,5 @@ if (!(owner1.speedAfterMotor < owner1.speedBeforeMotor - 0.5)) {
   throw new Error('E2.3 owner-1 recovered anchor did not expose the grounded motor as a large immediate momentum sink');
 }
 
-console.log(`  structural gate PASS: Box3D clip is one-sided (+normal clipped=${positiveClipped}, -normal clipped=${negativeClipped}) and preserves the wall tangent exactly; rapid grounded momentum loss is dominated by locomotion motor policy.`);
+console.log('  structural gate PASS: after SolvePlanes activates the wall plane, Box3D clip removes the constrained negative-normal component while preserving tangent exactly; rapid grounded momentum loss is dominated by locomotion motor policy.');
 console.log('  no runtime behavior, desired slide amount, or recovery constant is selected by this diagnostic.');
