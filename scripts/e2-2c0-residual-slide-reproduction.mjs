@@ -192,6 +192,20 @@ const specs = [
     initialVelocity: [0.75, 0, 0],
   },
   {
+    name: 'player-arc-edge',
+    bodyPosition: [0, 0.62, 0],
+    bodyHalf: [0.62, 0.62, 0.62],
+    characterStart: [-0.62, 3.55, 0],
+    initialVelocity: [3.2, 0, 0],
+  },
+  {
+    name: 'player-arc-edge-fast',
+    bodyPosition: [0, 0.62, 0],
+    bodyHalf: [0.62, 0.62, 0.62],
+    characterStart: [-0.78, 3.55, 0],
+    initialVelocity: [4.0, 0, 0],
+  },
+  {
     name: 'airborne-side-ram',
     bodyPosition: [2.2, 5.0, 0],
     bodyHalf: [0.55, 0.55, 0.55],
