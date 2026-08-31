@@ -62,14 +62,19 @@ function run(withCapture) {
     character.postStep(dt);
     maxDynamicContacts = Math.max(maxDynamicContacts, character.lastDynamicContacts);
     capture?.record(intent);
-    if (capture && frame === 190) capture.mark('machine-marker');
+    if (capture && frame === 190) capture.mark('machine-marker-complete');
+    if (capture && frame === 300) capture.mark('machine-marker-before-reset');
   }
 
+  const final = {
+    character: characterFingerprint(character),
+    playground: playground.captureSnapshot(),
+  };
+
+  if (capture) capture.resetEpoch('machine-reset');
+
   return {
-    final: {
-      character: characterFingerprint(character),
-      playground: playground.captureSnapshot(),
-    },
+    final,
     maxDynamicContacts,
     capture: capture?.exportData('machine-export') ?? null,
   };
@@ -106,21 +111,34 @@ if (control.maxDynamicContacts <= 0 || observed.maxDynamicContacts <= 0) {
 }
 
 const exported = observed.capture;
-if (!exported || exported.events.length !== 1) {
-  throw new Error('E2.2c-1 capture did not export exactly one marked event');
+if (!exported || exported.events.length !== 2) {
+  throw new Error('E2.2c-1 capture did not export the two expected marked events');
 }
-const event = exported.events[0];
-if (!event.complete) throw new Error('E2.2c-1 marked event did not complete its post-roll');
-if (event.markerIndex !== 179) {
-  throw new Error(`E2.2c-1 pre-roll expected markerIndex=179, got ${event.markerIndex}`);
+
+const completedEvent = exported.events[0];
+if (!completedEvent.complete) throw new Error('E2.2c-1 completed event did not finish its post-roll');
+if (completedEvent.markerIndex !== 179) {
+  throw new Error(`E2.2c-1 pre-roll expected markerIndex=179, got ${completedEvent.markerIndex}`);
 }
-if (event.frames.length !== 270) {
-  throw new Error(`E2.2c-1 expected 270 captured frames, got ${event.frames.length}`);
+if (completedEvent.frames.length !== 270) {
+  throw new Error(`E2.2c-1 expected 270 captured frames, got ${completedEvent.frames.length}`);
 }
-if (event.frames[event.markerIndex].frame !== event.markerFrame) {
+if (completedEvent.frames[completedEvent.markerIndex].frame !== completedEvent.markerFrame) {
   throw new Error('E2.2c-1 marker does not point at the marked physics frame');
 }
 
+const truncatedEvent = exported.events[1];
+if (truncatedEvent.complete) throw new Error('E2.2c-1 reset-boundary event was incorrectly marked complete');
+if (truncatedEvent.truncatedBy !== 'machine-reset') {
+  throw new Error(`E2.2c-1 reset-boundary event missing truncation reason: ${truncatedEvent.truncatedBy}`);
+}
+if (truncatedEvent.frames.some((frame) => frame.epoch !== truncatedEvent.epoch)) {
+  throw new Error('E2.2c-1 reset-boundary event crossed capture epochs');
+}
+if (truncatedEvent.frames.length !== 189) {
+  throw new Error(`E2.2c-1 expected 189 frames before reset truncation, got ${truncatedEvent.frames.length}`);
+}
+
 console.log(
-  `E2.2c-1 capture non-interference PASS: dynamicContacts=${control.maxDynamicContacts} finalPos=${control.final.character.position.map((v) => v.toFixed(4)).join(',')} eventFrames=${event.frames.length} pre=180 post=90 bodiesPerFrame=${event.frames[0].bodies.length}`,
+  `E2.2c-1 capture non-interference PASS: dynamicContacts=${control.maxDynamicContacts} finalPos=${control.final.character.position.map((v) => v.toFixed(4)).join(',')} completeFrames=${completedEvent.frames.length} truncatedFrames=${truncatedEvent.frames.length} resetBoundary=PASS bodiesPerFrame=${completedEvent.frames[0].bodies.length}`,
 );
