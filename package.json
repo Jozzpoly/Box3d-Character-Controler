@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "vite", "smoke": "node scripts/smoke.mjs && node scripts/closure-smoke.mjs && node scripts/e2-smoke.mjs && node scripts/e2-playability-smoke.mjs && node scripts/e2-1-localization.mjs && node scripts/e2-1-edge-authority.mjs && node scripts/e2-1-a-dynamic-decomposition.mjs && node scripts/e2-2-reciprocity-falsifier.mjs && node scripts/e2-2-continuity-falsifier.mjs && node scripts/e2-2-survivor-falsifier.mjs && node scripts/e2-2-aprime-smoke.mjs && node scripts/e2-2b-momentum-persistence.mjs && node scripts/e2-2c0-residual-slide-reproduction.mjs && node scripts/e2-2c1-capture-noninterference.mjs", "build": "vite build --base=./", "preview": "vite preview" },
+  "scripts": { "dev": "vite", "smoke": "node scripts/smoke.mjs && node scripts/closure-smoke.mjs && node scripts/e2-smoke.mjs && node scripts/e2-playability-smoke.mjs && node scripts/e2-1-localization.mjs && node scripts/e2-1-edge-authority.mjs && node scripts/e2-1-a-dynamic-decomposition.mjs && node scripts/e2-2-reciprocity-falsifier.mjs && node scripts/e2-2-continuity-falsifier.mjs && node scripts/e2-2-survivor-falsifier.mjs && node scripts/e2-2-aprime-smoke.mjs && node scripts/e2-2b-momentum-persistence.mjs && node scripts/e2-2c0-residual-slide-reproduction.mjs && node scripts/e2-2c1-capture-noninterference.mjs && node scripts/e2-2c2-momentum-semantics.mjs", "build": "vite build --base=./", "preview": "vite preview" },
   "dependencies": { "box3d.js": "0.1.1", "three": "0.183.0" },
   "devDependencies": { "vite": "7.0.0" }
 }
