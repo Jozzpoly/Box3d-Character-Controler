@@ -73,6 +73,7 @@ function tick(setup, character, groundedHint = false) {
     afterPost: [...character.velocity],
     position: [...character.position],
     contacts: character.lastDynamicContacts,
+    planes: character.lastPlaneCount,
     support: character.currentSupport?.type ?? 'AIR',
   };
 }
@@ -109,30 +110,49 @@ function staticWallGlanceTrial(grounded) {
   character.velocity = [3, 0, 4];
   if (grounded) character.currentSupport = { type: 'STATIC' };
 
-  const first = tick(setup, character, grounded);
-  const tangentialAfterPre = first.afterPre[2];
-  const tangentialAfterContact = first.afterPost[2];
-  const normalAfterContact = first.afterPost[0];
+  // CastMover can stop the first translation at the wall before that wall appears in
+  // the overlap planes used by b3ClipVector. Therefore qualify the actual clip tick
+  // instead of assuming the first approach tick is the collision-response tick.
+  const frames = [];
+  let contactIndex = -1;
+  for (let i = 0; i < 18; i++) {
+    const frame = tick(setup, character, grounded);
+    frames.push(frame);
+    if (Math.abs(frame.afterPost[0]) < Math.abs(frame.afterPre[0]) - 0.20) {
+      contactIndex = i;
+      break;
+    }
+  }
+  if (contactIndex < 0) throw new Error(`E2.3 ${grounded ? 'grounded' : 'airborne'} wall fixture never produced a velocity clip`);
+
+  const contact = frames[contactIndex];
+  const tangentialAfterPre = contact.afterPre[2];
+  const tangentialAfterContact = contact.afterPost[2];
+  const normalAfterContact = contact.afterPost[0];
   const contactRetention = Math.abs(tangentialAfterPre) > 1e-9
     ? tangentialAfterContact / tangentialAfterPre
     : 0;
 
-  const frames = [first];
   for (let i = 0; i < 15; i++) frames.push(tick(setup, character, grounded));
+  const next = frames[contactIndex + 1];
+  const after6 = frames[Math.min(contactIndex + 6, frames.length - 1)];
+  const after15 = frames[Math.min(contactIndex + 15, frames.length - 1)];
 
   return {
     grounded,
-    beforePre: first.beforePre,
-    afterPre: first.afterPre,
-    afterContact: first.afterPost,
+    contactIndex,
+    beforePre: contact.beforePre,
+    afterPre: contact.afterPre,
+    afterContact: contact.afterPost,
     normalAfterContact,
     tangentialAfterPre,
     tangentialAfterContact,
     contactRetention,
-    tangentialAfterNextMotor: frames[1].afterPre[2],
-    tangentialAfter6: frames[6].afterPost[2],
-    tangentialAfter15: frames[15].afterPost[2],
-    support: first.support,
+    tangentialAfterNextMotor: next.afterPre[2],
+    tangentialAfter6: after6.afterPost[2],
+    tangentialAfter15: after15.afterPost[2],
+    support: contact.support,
+    planes: contact.planes,
   };
 }
 
@@ -209,19 +229,15 @@ console.log(
   `  free airborne: 5.000 -> 1f ${airFree.after1.toFixed(3)} -> 6f ${airFree.after6.toFixed(3)} -> 15f ${airFree.after15.toFixed(3)} -> 30f ${airFree.after30.toFixed(3)} m/s`,
 );
 console.log(
-  `  grounded wall glance: before=${fmt(groundWall.beforePre)} afterMotor=${fmt(groundWall.afterPre)} afterContact=${fmt(groundWall.afterContact)} tangentRetention=${(100 * groundWall.contactRetention).toFixed(1)}% nextMotorTangent=${groundWall.tangentialAfterNextMotor.toFixed(3)} 6f=${groundWall.tangentialAfter6.toFixed(3)} 15f=${groundWall.tangentialAfter15.toFixed(3)} support=${groundWall.support}`,
+  `  grounded wall glance: clipTick=${groundWall.contactIndex} before=${fmt(groundWall.beforePre)} afterMotor=${fmt(groundWall.afterPre)} afterContact=${fmt(groundWall.afterContact)} tangentRetention=${(100 * groundWall.contactRetention).toFixed(1)}% nextMotorTangent=${groundWall.tangentialAfterNextMotor.toFixed(3)} 6f=${groundWall.tangentialAfter6.toFixed(3)} 15f=${groundWall.tangentialAfter15.toFixed(3)} planes=${groundWall.planes} support=${groundWall.support}`,
 );
 console.log(
-  `  airborne wall glance: before=${fmt(airWall.beforePre)} afterMotor=${fmt(airWall.afterPre)} afterContact=${fmt(airWall.afterContact)} tangentRetention=${(100 * airWall.contactRetention).toFixed(1)}% nextMotorTangent=${airWall.tangentialAfterNextMotor.toFixed(3)} 6f=${airWall.tangentialAfter6.toFixed(3)} 15f=${airWall.tangentialAfter15.toFixed(3)} support=${airWall.support}`,
+  `  airborne wall glance: clipTick=${airWall.contactIndex} before=${fmt(airWall.beforePre)} afterMotor=${fmt(airWall.afterPre)} afterContact=${fmt(airWall.afterContact)} tangentRetention=${(100 * airWall.contactRetention).toFixed(1)}% nextMotorTangent=${airWall.tangentialAfterNextMotor.toFixed(3)} 6f=${airWall.tangentialAfter6.toFixed(3)} 15f=${airWall.tangentialAfter15.toFixed(3)} planes=${airWall.planes} support=${airWall.support}`,
 );
 console.log(
   `  owner-1 A-double-prime first clean no-contact tick=${owner1.separationFrame}: beforeMotor=${fmt(owner1.beforeSeparationMotor)} afterMotor=${fmt(owner1.afterSeparationMotor)} motorDelta=${fmt(owner1.motorDelta)} speed=${owner1.speedBeforeMotor.toFixed(3)}->${owner1.speedAfterMotor.toFixed(3)} 6f=${owner1.speedAfter6.toFixed(3)} support=${owner1.supportAtSeparation}`,
 );
 
-// The diagnostic is meant to attribute, not tune. Guard only the structural facts that
-// make it useful: a glancing wall must remove normal motion without destroying the
-// tangential component in the same collision solve, and the grounded/air motor policies
-// must remain observably distinct.
 if (Math.abs(groundWall.normalAfterContact) > 0.15) {
   throw new Error(`E2.3 grounded wall fixture did not clip normal motion: vx=${groundWall.normalAfterContact}`);
 }
