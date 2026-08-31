@@ -60,6 +60,10 @@ function horizontal(v) {
   return Math.hypot(v[0], v[2]);
 }
 
+function dot(a, b) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
 function tick(setup, character, groundedHint = false) {
   if (groundedHint && !character.currentSupport) character.currentSupport = { type: 'STATIC' };
   const beforePre = [...character.velocity];
@@ -73,7 +77,6 @@ function tick(setup, character, groundedHint = false) {
     afterPost: [...character.velocity],
     position: [...character.position],
     contacts: character.lastDynamicContacts,
-    planes: character.lastPlaneCount,
     support: character.currentSupport?.type ?? 'AIR',
   };
 }
@@ -90,7 +93,6 @@ function freeMomentumTrial(grounded) {
   const sample = (frame) => frames[Math.min(frame, frames.length - 1)];
   const stopped = frames.findIndex((frame) => horizontal(frame.afterPost) < 0.01);
   return {
-    grounded,
     after1: horizontal(sample(0).afterPost),
     after6: horizontal(sample(5).afterPost),
     after15: horizontal(sample(14).afterPost),
@@ -100,44 +102,48 @@ function freeMomentumTrial(grounded) {
   };
 }
 
-function staticWallPlaneIsolate(grounded) {
-  const setup = makeWorld(20);
-  if (grounded) setup.box('static', [0, -0.5, 0], [20, 0.5, 20], { restitution: 0 });
+function clipContractIsolate() {
+  // This isolate intentionally does NOT test approach/cast timing. It starts with a
+  // shallow overlap so CollideMover gives us the actual Box3D wall plane, then calls
+  // b3ClipVector directly. That separates the velocity-clipping contract from the
+  // locomotion motor and from CastMover's positional sweep contract.
+  const setup = makeWorld(0);
   setup.box('static', [0.6, 2.5, 0], [0.1, 3.0, 5.0], { restitution: 0 });
+  const character = makeCharacter(setup, [0.16, 2.5, 0], 0);
+  const capsule = {
+    center1: [0, -character.halfSegment, 0],
+    center2: [0, character.halfSegment, 0],
+    radius: character.radius,
+  };
+  const { planes } = character._collectPlanes(capsule);
+  const wall = planes.find((entry) => Math.abs(entry.plane.normal[0]) > 0.8);
+  if (!wall) throw new Error(`E2.3 clip isolate could not recover wall plane; planes=${JSON.stringify(planes)}`);
 
-  // Deliberately start about 20 mm inside the wall's overlap region so this test asks
-  // only what the overlap-plane solve + b3ClipVector do to an already-present glancing
-  // contact. Natural approach/cast timing is a separate API behavior and is not what
-  // this isolate is trying to qualify.
-  const character = makeCharacter(setup, grounded ? [0.16, 0.9, 0] : [0.16, 2.5, 0]);
-  character.velocity = [3, 0, 4];
-  if (grounded) character.currentSupport = { type: 'STATIC' };
-
-  const contact = tick(setup, character, grounded);
-  const tangentialAfterPre = contact.afterPre[2];
-  const tangentialAfterContact = contact.afterPost[2];
-  const normalAfterContact = contact.afterPost[0];
-  const contactRetention = Math.abs(tangentialAfterPre) > 1e-9
-    ? tangentialAfterContact / tangentialAfterPre
-    : 0;
-
-  const frames = [contact];
-  for (let i = 0; i < 15; i++) frames.push(tick(setup, character, grounded));
-
+  const normal = [...wall.plane.normal];
+  const tangentLength = Math.hypot(normal[0], normal[2]);
+  const tangent = [-normal[2] / tangentLength, 0, normal[0] / tangentLength];
+  // Character reciprocity already establishes that closing motion uses -plane.normal.
+  // Use that exact convention here: 3 m/s into the wall plus 4 m/s tangent.
+  const incoming = [
+    -3 * normal[0] + 4 * tangent[0],
+    -3 * normal[1] + 4 * tangent[1],
+    -3 * normal[2] + 4 * tangent[2],
+  ];
+  const clipped = b3.b3ClipVector(incoming, planes);
+  const normalBefore = dot(incoming, normal);
+  const normalAfter = dot(clipped, normal);
+  const tangentBefore = dot(incoming, tangent);
+  const tangentAfter = dot(clipped, tangent);
   return {
-    grounded,
-    beforePre: contact.beforePre,
-    afterPre: contact.afterPre,
-    afterContact: contact.afterPost,
-    normalAfterContact,
-    tangentialAfterPre,
-    tangentialAfterContact,
-    contactRetention,
-    tangentialAfterNextMotor: frames[1].afterPre[2],
-    tangentialAfter6: frames[6].afterPost[2],
-    tangentialAfter15: frames[15].afterPost[2],
-    support: contact.support,
-    planes: contact.planes,
+    planeCount: planes.length,
+    normal,
+    incoming,
+    clipped: [...clipped],
+    normalBefore,
+    normalAfter,
+    tangentBefore,
+    tangentAfter,
+    tangentRetention: tangentAfter / tangentBefore,
   };
 }
 
@@ -201,8 +207,7 @@ function fmt(v) {
 
 const groundFree = freeMomentumTrial(true);
 const airFree = freeMomentumTrial(false);
-const groundWall = staticWallPlaneIsolate(true);
-const airWall = staticWallPlaneIsolate(false);
+const clip = clipContractIsolate();
 const owner1 = owner1MotorAttribution();
 
 console.log('E2.3 momentum-preservation boundary diagnostic (A-double-prime runtime semantics):');
@@ -213,27 +218,24 @@ console.log(
   `  free airborne: 5.000 -> 1f ${airFree.after1.toFixed(3)} -> 6f ${airFree.after6.toFixed(3)} -> 15f ${airFree.after15.toFixed(3)} -> 30f ${airFree.after30.toFixed(3)} m/s`,
 );
 console.log(
-  `  grounded wall plane isolate: before=${fmt(groundWall.beforePre)} afterMotor=${fmt(groundWall.afterPre)} afterClip=${fmt(groundWall.afterContact)} tangentRetention=${(100 * groundWall.contactRetention).toFixed(1)}% nextMotorTangent=${groundWall.tangentialAfterNextMotor.toFixed(3)} 6f=${groundWall.tangentialAfter6.toFixed(3)} 15f=${groundWall.tangentialAfter15.toFixed(3)} planes=${groundWall.planes} support=${groundWall.support}`,
-);
-console.log(
-  `  airborne wall plane isolate: before=${fmt(airWall.beforePre)} afterMotor=${fmt(airWall.afterPre)} afterClip=${fmt(airWall.afterContact)} tangentRetention=${(100 * airWall.contactRetention).toFixed(1)}% nextMotorTangent=${airWall.tangentialAfterNextMotor.toFixed(3)} 6f=${airWall.tangentialAfter6.toFixed(3)} 15f=${airWall.tangentialAfter15.toFixed(3)} planes=${airWall.planes} support=${airWall.support}`,
+  `  direct wall clip: planes=${clip.planeCount} normal=${fmt(clip.normal)} incoming=${fmt(clip.incoming)} clipped=${fmt(clip.clipped)} n=${clip.normalBefore.toFixed(3)}->${clip.normalAfter.toFixed(3)} tangent=${clip.tangentBefore.toFixed(3)}->${clip.tangentAfter.toFixed(3)} (${(100 * clip.tangentRetention).toFixed(1)}%)`,
 );
 console.log(
   `  owner-1 A-double-prime first clean no-contact tick=${owner1.separationFrame}: beforeMotor=${fmt(owner1.beforeSeparationMotor)} afterMotor=${fmt(owner1.afterSeparationMotor)} motorDelta=${fmt(owner1.motorDelta)} speed=${owner1.speedBeforeMotor.toFixed(3)}->${owner1.speedAfterMotor.toFixed(3)} 6f=${owner1.speedAfter6.toFixed(3)} support=${owner1.supportAtSeparation}`,
 );
 
-if (groundWall.planes < 2 || Math.abs(groundWall.normalAfterContact) > 0.15) {
-  throw new Error(`E2.3 grounded wall plane isolate failed: planes=${groundWall.planes} vx=${groundWall.normalAfterContact}`);
+if (!(clip.normalBefore < -2.5 && clip.normalAfter > -0.05)) {
+  throw new Error(`E2.3 direct clip did not remove into-wall normal component: ${clip.normalBefore} -> ${clip.normalAfter}`);
 }
-if (airWall.planes < 1 || Math.abs(airWall.normalAfterContact) > 0.15) {
-  throw new Error(`E2.3 airborne wall plane isolate failed: planes=${airWall.planes} vx=${airWall.normalAfterContact}`);
-}
-if (groundWall.contactRetention < 0.90 || airWall.contactRetention < 0.90) {
-  throw new Error(`E2.3 b3ClipVector did not preserve glancing tangent: ground=${groundWall.contactRetention} air=${airWall.contactRetention}`);
+if (clip.tangentRetention < 0.99) {
+  throw new Error(`E2.3 direct clip lost glancing tangent: retention=${clip.tangentRetention}`);
 }
 if (!(groundFree.after6 < airFree.after6 - 2.0)) {
   throw new Error('E2.3 fixture did not expose the intended grounded-vs-air motor authority boundary');
 }
+if (!(owner1.speedAfterMotor < owner1.speedBeforeMotor - 0.5)) {
+  throw new Error('E2.3 owner-1 recovered anchor did not expose the grounded motor as a large immediate momentum sink');
+}
 
-console.log('  structural gate PASS: overlap-plane solve/clip preserves glancing tangent; rapid grounded momentum loss occurs in locomotion motor policy after/before contact, not in the clip itself.');
+console.log('  structural gate PASS: Box3D clip removes into-wall normal motion while preserving the tangent; rapid grounded momentum loss is dominated by locomotion motor policy, not by the clip contract.');
 console.log('  no runtime behavior or recovery constant is selected by this diagnostic.');
