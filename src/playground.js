@@ -22,6 +22,16 @@ export function createPlayground(b3) {
     appearance.set(bodyKey(body), style);
   }
 
+  function rememberBody(body, position, rotation, type) {
+    resettableBodies.push({
+      id: `body-${resettableBodies.length}`,
+      body,
+      position: [...position],
+      rotation: [...rotation],
+      type,
+    });
+  }
+
   function createBox({
     type = 'static',
     position,
@@ -51,9 +61,7 @@ export function createPlayground(b3) {
     if (type === 'dynamic') shapeDef.density = density;
     b3.b3CreateBoxShape(body, shapeDef, half[0], half[1], half[2]);
     styleBody(body, { color, roughness });
-    if (resettable) {
-      resettableBodies.push({ body, position: [...position], rotation: [...rotation], type });
-    }
+    if (resettable) rememberBody(body, position, rotation, type);
     return body;
   }
 
@@ -78,12 +86,7 @@ export function createPlayground(b3) {
     shapeDef.baseMaterial.restitution = restitution;
     b3.b3CreateSphereShape(body, shapeDef, { center: [0, 0, 0], radius });
     styleBody(body, { color, roughness: 0.56 });
-    resettableBodies.push({
-      body,
-      position: [...position],
-      rotation: [0, 0, 0, 1],
-      type: 'dynamic',
-    });
+    rememberBody(body, position, [0, 0, 0, 1], 'dynamic');
     return body;
   }
 
@@ -243,5 +246,48 @@ export function createPlayground(b3) {
     return { dynamicCount, kinematicCount };
   }
 
-  return { world, gravity, spawn, preStep, reset, stats, appearance };
+  function captureDefinitions() {
+    return resettableBodies.map((record) => ({
+      id: record.id,
+      type: record.type,
+      initialPosition: [...record.position],
+      initialRotation: [...record.rotation],
+    }));
+  }
+
+  function captureSnapshot() {
+    return {
+      time,
+      bodies: resettableBodies.map((record) => {
+        const position = [0, 0, 0];
+        const rotation = [0, 0, 0, 1];
+        const linearVelocity = [0, 0, 0];
+        const angularVelocity = [0, 0, 0];
+        b3.b3Body_GetPosition(position, record.body);
+        b3.b3Body_GetRotation(rotation, record.body);
+        b3.b3Body_GetLinearVelocity(linearVelocity, record.body);
+        b3.b3Body_GetAngularVelocity(angularVelocity, record.body);
+        return {
+          id: record.id,
+          type: record.type,
+          position,
+          rotation,
+          linearVelocity,
+          angularVelocity,
+        };
+      }),
+    };
+  }
+
+  return {
+    world,
+    gravity,
+    spawn,
+    preStep,
+    reset,
+    stats,
+    appearance,
+    captureDefinitions,
+    captureSnapshot,
+  };
 }
