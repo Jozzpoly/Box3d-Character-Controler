@@ -91,7 +91,6 @@ function freeMomentumTrial(grounded) {
   const stopped = frames.findIndex((frame) => horizontal(frame.afterPost) < 0.01);
   return {
     grounded,
-    initialSpeed: 5,
     after1: horizontal(sample(0).afterPost),
     after6: horizontal(sample(5).afterPost),
     after15: horizontal(sample(14).afterPost),
@@ -101,31 +100,20 @@ function freeMomentumTrial(grounded) {
   };
 }
 
-function staticWallGlanceTrial(grounded) {
+function staticWallPlaneIsolate(grounded) {
   const setup = makeWorld(20);
   if (grounded) setup.box('static', [0, -0.5, 0], [20, 0.5, 20], { restitution: 0 });
   setup.box('static', [0.6, 2.5, 0], [0.1, 3.0, 5.0], { restitution: 0 });
 
-  const character = makeCharacter(setup, grounded ? [0.13, 0.9, 0] : [0.13, 2.5, 0]);
+  // Deliberately start about 20 mm inside the wall's overlap region so this test asks
+  // only what the overlap-plane solve + b3ClipVector do to an already-present glancing
+  // contact. Natural approach/cast timing is a separate API behavior and is not what
+  // this isolate is trying to qualify.
+  const character = makeCharacter(setup, grounded ? [0.16, 0.9, 0] : [0.16, 2.5, 0]);
   character.velocity = [3, 0, 4];
   if (grounded) character.currentSupport = { type: 'STATIC' };
 
-  // CastMover can stop the first translation at the wall before that wall appears in
-  // the overlap planes used by b3ClipVector. Therefore qualify the actual clip tick
-  // instead of assuming the first approach tick is the collision-response tick.
-  const frames = [];
-  let contactIndex = -1;
-  for (let i = 0; i < 18; i++) {
-    const frame = tick(setup, character, grounded);
-    frames.push(frame);
-    if (Math.abs(frame.afterPost[0]) < Math.abs(frame.afterPre[0]) - 0.20) {
-      contactIndex = i;
-      break;
-    }
-  }
-  if (contactIndex < 0) throw new Error(`E2.3 ${grounded ? 'grounded' : 'airborne'} wall fixture never produced a velocity clip`);
-
-  const contact = frames[contactIndex];
+  const contact = tick(setup, character, grounded);
   const tangentialAfterPre = contact.afterPre[2];
   const tangentialAfterContact = contact.afterPost[2];
   const normalAfterContact = contact.afterPost[0];
@@ -133,14 +121,11 @@ function staticWallGlanceTrial(grounded) {
     ? tangentialAfterContact / tangentialAfterPre
     : 0;
 
+  const frames = [contact];
   for (let i = 0; i < 15; i++) frames.push(tick(setup, character, grounded));
-  const next = frames[contactIndex + 1];
-  const after6 = frames[Math.min(contactIndex + 6, frames.length - 1)];
-  const after15 = frames[Math.min(contactIndex + 15, frames.length - 1)];
 
   return {
     grounded,
-    contactIndex,
     beforePre: contact.beforePre,
     afterPre: contact.afterPre,
     afterContact: contact.afterPost,
@@ -148,9 +133,9 @@ function staticWallGlanceTrial(grounded) {
     tangentialAfterPre,
     tangentialAfterContact,
     contactRetention,
-    tangentialAfterNextMotor: next.afterPre[2],
-    tangentialAfter6: after6.afterPost[2],
-    tangentialAfter15: after15.afterPost[2],
+    tangentialAfterNextMotor: frames[1].afterPre[2],
+    tangentialAfter6: frames[6].afterPost[2],
+    tangentialAfter15: frames[15].afterPost[2],
     support: contact.support,
     planes: contact.planes,
   };
@@ -202,7 +187,6 @@ function owner1MotorAttribution() {
     separationFrame,
     beforeSeparationMotor,
     afterSeparationMotor,
-    afterSeparationPost: frames[separationFrame].afterPost,
     motorDelta,
     speedBeforeMotor: horizontal(beforeSeparationMotor),
     speedAfterMotor: horizontal(afterSeparationMotor),
@@ -217,8 +201,8 @@ function fmt(v) {
 
 const groundFree = freeMomentumTrial(true);
 const airFree = freeMomentumTrial(false);
-const groundWall = staticWallGlanceTrial(true);
-const airWall = staticWallGlanceTrial(false);
+const groundWall = staticWallPlaneIsolate(true);
+const airWall = staticWallPlaneIsolate(false);
 const owner1 = owner1MotorAttribution();
 
 console.log('E2.3 momentum-preservation boundary diagnostic (A-double-prime runtime semantics):');
@@ -229,27 +213,27 @@ console.log(
   `  free airborne: 5.000 -> 1f ${airFree.after1.toFixed(3)} -> 6f ${airFree.after6.toFixed(3)} -> 15f ${airFree.after15.toFixed(3)} -> 30f ${airFree.after30.toFixed(3)} m/s`,
 );
 console.log(
-  `  grounded wall glance: clipTick=${groundWall.contactIndex} before=${fmt(groundWall.beforePre)} afterMotor=${fmt(groundWall.afterPre)} afterContact=${fmt(groundWall.afterContact)} tangentRetention=${(100 * groundWall.contactRetention).toFixed(1)}% nextMotorTangent=${groundWall.tangentialAfterNextMotor.toFixed(3)} 6f=${groundWall.tangentialAfter6.toFixed(3)} 15f=${groundWall.tangentialAfter15.toFixed(3)} planes=${groundWall.planes} support=${groundWall.support}`,
+  `  grounded wall plane isolate: before=${fmt(groundWall.beforePre)} afterMotor=${fmt(groundWall.afterPre)} afterClip=${fmt(groundWall.afterContact)} tangentRetention=${(100 * groundWall.contactRetention).toFixed(1)}% nextMotorTangent=${groundWall.tangentialAfterNextMotor.toFixed(3)} 6f=${groundWall.tangentialAfter6.toFixed(3)} 15f=${groundWall.tangentialAfter15.toFixed(3)} planes=${groundWall.planes} support=${groundWall.support}`,
 );
 console.log(
-  `  airborne wall glance: clipTick=${airWall.contactIndex} before=${fmt(airWall.beforePre)} afterMotor=${fmt(airWall.afterPre)} afterContact=${fmt(airWall.afterContact)} tangentRetention=${(100 * airWall.contactRetention).toFixed(1)}% nextMotorTangent=${airWall.tangentialAfterNextMotor.toFixed(3)} 6f=${airWall.tangentialAfter6.toFixed(3)} 15f=${airWall.tangentialAfter15.toFixed(3)} planes=${airWall.planes} support=${airWall.support}`,
+  `  airborne wall plane isolate: before=${fmt(airWall.beforePre)} afterMotor=${fmt(airWall.afterPre)} afterClip=${fmt(airWall.afterContact)} tangentRetention=${(100 * airWall.contactRetention).toFixed(1)}% nextMotorTangent=${airWall.tangentialAfterNextMotor.toFixed(3)} 6f=${airWall.tangentialAfter6.toFixed(3)} 15f=${airWall.tangentialAfter15.toFixed(3)} planes=${airWall.planes} support=${airWall.support}`,
 );
 console.log(
   `  owner-1 A-double-prime first clean no-contact tick=${owner1.separationFrame}: beforeMotor=${fmt(owner1.beforeSeparationMotor)} afterMotor=${fmt(owner1.afterSeparationMotor)} motorDelta=${fmt(owner1.motorDelta)} speed=${owner1.speedBeforeMotor.toFixed(3)}->${owner1.speedAfterMotor.toFixed(3)} 6f=${owner1.speedAfter6.toFixed(3)} support=${owner1.supportAtSeparation}`,
 );
 
-if (Math.abs(groundWall.normalAfterContact) > 0.15) {
-  throw new Error(`E2.3 grounded wall fixture did not clip normal motion: vx=${groundWall.normalAfterContact}`);
+if (groundWall.planes < 2 || Math.abs(groundWall.normalAfterContact) > 0.15) {
+  throw new Error(`E2.3 grounded wall plane isolate failed: planes=${groundWall.planes} vx=${groundWall.normalAfterContact}`);
 }
-if (groundWall.contactRetention < 0.90) {
-  throw new Error(`E2.3 grounded wall fixture lost tangential momentum during contact solve: retention=${groundWall.contactRetention}`);
+if (airWall.planes < 1 || Math.abs(airWall.normalAfterContact) > 0.15) {
+  throw new Error(`E2.3 airborne wall plane isolate failed: planes=${airWall.planes} vx=${airWall.normalAfterContact}`);
 }
-if (airWall.contactRetention < 0.90) {
-  throw new Error(`E2.3 airborne wall fixture lost tangential momentum during contact solve: retention=${airWall.contactRetention}`);
+if (groundWall.contactRetention < 0.90 || airWall.contactRetention < 0.90) {
+  throw new Error(`E2.3 b3ClipVector did not preserve glancing tangent: ground=${groundWall.contactRetention} air=${airWall.contactRetention}`);
 }
 if (!(groundFree.after6 < airFree.after6 - 2.0)) {
   throw new Error('E2.3 fixture did not expose the intended grounded-vs-air motor authority boundary');
 }
 
-console.log('  structural gate PASS: contact/clip preserves glancing tangent; post-contact retention is governed primarily by locomotion motor policy.');
+console.log('  structural gate PASS: overlap-plane solve/clip preserves glancing tangent; rapid grounded momentum loss occurs in locomotion motor policy after/before contact, not in the clip itself.');
 console.log('  no runtime behavior or recovery constant is selected by this diagnostic.');
