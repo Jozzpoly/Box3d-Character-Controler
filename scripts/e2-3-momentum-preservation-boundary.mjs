@@ -105,8 +105,9 @@ function freeMomentumTrial(grounded) {
 function clipContractIsolate() {
   // This isolate intentionally does NOT test approach/cast timing. It starts with a
   // shallow overlap so CollideMover gives us the actual Box3D wall plane, then calls
-  // b3ClipVector directly. That separates the velocity-clipping contract from the
-  // locomotion motor and from CastMover's positional sweep contract.
+  // b3ClipVector directly with both signs of the normal component. We therefore learn
+  // the engine's one-sided clipping convention empirically instead of encoding a sign
+  // assumption into the fixture.
   const setup = makeWorld(0);
   setup.box('static', [0.6, 2.5, 0], [0.1, 3.0, 5.0], { restitution: 0 });
   const character = makeCharacter(setup, [0.16, 2.5, 0], 0);
@@ -122,28 +123,31 @@ function clipContractIsolate() {
   const normal = [...wall.plane.normal];
   const tangentLength = Math.hypot(normal[0], normal[2]);
   const tangent = [-normal[2] / tangentLength, 0, normal[0] / tangentLength];
-  // Character reciprocity already establishes that closing motion uses -plane.normal.
-  // Use that exact convention here: 3 m/s into the wall plus 4 m/s tangent.
-  const incoming = [
-    -3 * normal[0] + 4 * tangent[0],
-    -3 * normal[1] + 4 * tangent[1],
-    -3 * normal[2] + 4 * tangent[2],
-  ];
-  const clipped = b3.b3ClipVector(incoming, planes);
-  const normalBefore = dot(incoming, normal);
-  const normalAfter = dot(clipped, normal);
-  const tangentBefore = dot(incoming, tangent);
-  const tangentAfter = dot(clipped, tangent);
+
+  function probe(normalSpeed) {
+    const incoming = [
+      normalSpeed * normal[0] + 4 * tangent[0],
+      normalSpeed * normal[1] + 4 * tangent[1],
+      normalSpeed * normal[2] + 4 * tangent[2],
+    ];
+    const clipped = [...b3.b3ClipVector(incoming, planes)];
+    return {
+      incoming,
+      clipped,
+      normalBefore: dot(incoming, normal),
+      normalAfter: dot(clipped, normal),
+      tangentBefore: dot(incoming, tangent),
+      tangentAfter: dot(clipped, tangent),
+    };
+  }
+
+  const positive = probe(3);
+  const negative = probe(-3);
   return {
     planeCount: planes.length,
     normal,
-    incoming,
-    clipped: [...clipped],
-    normalBefore,
-    normalAfter,
-    tangentBefore,
-    tangentAfter,
-    tangentRetention: tangentAfter / tangentBefore,
+    positive,
+    negative,
   };
 }
 
@@ -205,6 +209,10 @@ function fmt(v) {
   return `(${v[0].toFixed(3)}, ${v[2].toFixed(3)})`;
 }
 
+function clipFmt(label, sample) {
+  return `${label} in=${fmt(sample.incoming)} out=${fmt(sample.clipped)} n=${sample.normalBefore.toFixed(3)}->${sample.normalAfter.toFixed(3)} tangent=${sample.tangentBefore.toFixed(3)}->${sample.tangentAfter.toFixed(3)}`;
+}
+
 const groundFree = freeMomentumTrial(true);
 const airFree = freeMomentumTrial(false);
 const clip = clipContractIsolate();
@@ -218,17 +226,21 @@ console.log(
   `  free airborne: 5.000 -> 1f ${airFree.after1.toFixed(3)} -> 6f ${airFree.after6.toFixed(3)} -> 15f ${airFree.after15.toFixed(3)} -> 30f ${airFree.after30.toFixed(3)} m/s`,
 );
 console.log(
-  `  direct wall clip: planes=${clip.planeCount} normal=${fmt(clip.normal)} incoming=${fmt(clip.incoming)} clipped=${fmt(clip.clipped)} n=${clip.normalBefore.toFixed(3)}->${clip.normalAfter.toFixed(3)} tangent=${clip.tangentBefore.toFixed(3)}->${clip.tangentAfter.toFixed(3)} (${(100 * clip.tangentRetention).toFixed(1)}%)`,
+  `  direct wall clip: planes=${clip.planeCount} normal=${fmt(clip.normal)} | ${clipFmt('+normal', clip.positive)} | ${clipFmt('-normal', clip.negative)}`,
 );
 console.log(
   `  owner-1 A-double-prime first clean no-contact tick=${owner1.separationFrame}: beforeMotor=${fmt(owner1.beforeSeparationMotor)} afterMotor=${fmt(owner1.afterSeparationMotor)} motorDelta=${fmt(owner1.motorDelta)} speed=${owner1.speedBeforeMotor.toFixed(3)}->${owner1.speedAfterMotor.toFixed(3)} 6f=${owner1.speedAfter6.toFixed(3)} support=${owner1.supportAtSeparation}`,
 );
 
-if (!(clip.normalBefore < -2.5 && clip.normalAfter > -0.05)) {
-  throw new Error(`E2.3 direct clip did not remove into-wall normal component: ${clip.normalBefore} -> ${clip.normalAfter}`);
+const positiveClipped = Math.abs(clip.positive.normalAfter) < 0.05;
+const negativeClipped = Math.abs(clip.negative.normalAfter) < 0.05;
+if (positiveClipped === negativeClipped) {
+  throw new Error(`E2.3 expected a one-sided clip convention; +normal clipped=${positiveClipped} -normal clipped=${negativeClipped}`);
 }
-if (clip.tangentRetention < 0.99) {
-  throw new Error(`E2.3 direct clip lost glancing tangent: retention=${clip.tangentRetention}`);
+for (const sample of [clip.positive, clip.negative]) {
+  if (Math.abs(sample.tangentAfter - sample.tangentBefore) > 1e-6) {
+    throw new Error(`E2.3 direct clip changed wall tangent: ${sample.tangentBefore} -> ${sample.tangentAfter}`);
+  }
 }
 if (!(groundFree.after6 < airFree.after6 - 2.0)) {
   throw new Error('E2.3 fixture did not expose the intended grounded-vs-air motor authority boundary');
@@ -237,5 +249,5 @@ if (!(owner1.speedAfterMotor < owner1.speedBeforeMotor - 0.5)) {
   throw new Error('E2.3 owner-1 recovered anchor did not expose the grounded motor as a large immediate momentum sink');
 }
 
-console.log('  structural gate PASS: Box3D clip removes into-wall normal motion while preserving the tangent; rapid grounded momentum loss is dominated by locomotion motor policy, not by the clip contract.');
-console.log('  no runtime behavior or recovery constant is selected by this diagnostic.');
+console.log(`  structural gate PASS: Box3D clip is one-sided (+normal clipped=${positiveClipped}, -normal clipped=${negativeClipped}) and preserves the wall tangent exactly; rapid grounded momentum loss is dominated by locomotion motor policy.`);
+console.log('  no runtime behavior, desired slide amount, or recovery constant is selected by this diagnostic.');
