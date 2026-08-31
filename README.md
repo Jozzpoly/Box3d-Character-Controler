@@ -6,152 +6,128 @@ This repository is a public browser laboratory for a broader question:
 
 The working tension is **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**.
 
-## Current research state — E2.2c-2 momentum semantics falsifier
+The implementation is disposable; accepted observations are not. Detailed stage documents are the research record. This README is intentionally a compact map of the current state rather than a second copy of every experiment.
 
-The current line of research compares deliberately different ownership/state models rather than assuming one final character-controller architecture:
+## Current research state — E2.3 momentum / constraint boundary
+
+Current public specimens deliberately keep different hypotheses alive:
 
 - **A** — frozen Foundation 02.1 controller-owned mover;
 - **B** — frozen E2 solver-owned finite-mass translational root;
 - **A′** — A with E2.2 causal-component dynamic reciprocity;
-- **A″** — disposable Owner-test probe: same A′ contact path, but dynamic-contact `Δv` is not retained as a persistent `externalVelocity` target.
+- **A″** — A′ physical contact with dynamic-contact `Δv` no longer retained as a persistent `externalVelocity` target.
 
-Owner free play established that A′ is preferable to A for the original dynamic-edge launch pathology, but still shows an exaggerated residual slide after some physical bounce interactions. The first E2.2c-1 Owner-marked capture sharpened that complaint: some residual motion also felt as if it failed to preserve the direction of momentum.
+A″ is the current **Owner-preferred contact-semantics specimen** for the pathology under investigation, not an accepted final controller architecture.
 
-The capture supported a specific code-level concern. A′ applies dynamic-contact reaction once to current `velocity`, but also writes the same reaction into horizontal `externalVelocity`; locomotion later targets `desiredVelocity + externalVelocity`. In clear marked events, the physical contact largely arrested incoming motion while leaving a large remembered external target in a different or opposite direction. Grounded zero-input recovery could then accelerate current velocity toward that old contact `Δv` after dynamic contact had ended.
+Owner free play of A″ removed the previously objectionable delayed wrong-direction slide and produced wall reactions described as appropriate. That success does **not** justify immediately adding slide back or declaring the entire momentum model solved.
 
-E2.2c-2 therefore tests the smallest semantic alternative before designing a new momentum framework: keep the full A′ physical collision and body impulse, but do not remember dynamic-contact `Δv` as an absolute external target. A recovered-state `owner-1` anchor preserved the identical first collision and moving-support inheritance while reducing the measured 0.50 s tail from `0.773 m` to `0.110 m` and peak reversal relative to incoming direction from `2.547 m/s` to `0.418 m/s`.
+E2.3 challenged that direction and found two independent boundaries:
 
-A″ is now a machine-qualified **Owner comparison probe**, not an accepted baseline.
+1. **Grounded locomotion is a strong momentum sink.** With zero input, `groundDeceleration = 36 m/s²` can remove `0.6 m/s` of horizontal velocity every 60 Hz tick. A clean `5 m/s` grounded state stops in about `0.15 s`, while the same airborne state still has about `4.4 m/s` after `0.50 s`.
+2. **The apparent Box3D mover velocity clip is currently inert because of a box3d.js@0.1.1 binding-state loss.** Native `b3SolvePlanes` writes `b3CollisionPlane.push`, and native `b3ClipVector` uses that state. The JS wrapper copies planes into temporary vectors for each call and does not copy solved `push` values back to JavaScript, so the later JS `b3ClipVector` call receives stale `push = 0` planes.
 
-Detailed evidence:
+A faithful JS reconstruction of the exact vendored native plane solver matches native solved deltas to tiny numerical error and proves the missing state boundary. Diagnostic propagation of the missing `push` activates native-intended clipping, but that is **not a neutral fix**: in the recovered Owner anchor the dynamic contact episode changes from `7` frames to `1`, the first clean-separation speed changes from about `1.52 m/s` to `0.25 m/s`, and support state changes as well.
 
-- [`docs/E2_1_LOCALIZATION.md`](docs/E2_1_LOCALIZATION.md) — terrain/support boundary localization;
-- [`docs/E2_2_RECIPROCITY.md`](docs/E2_2_RECIPROCITY.md) — reciprocity falsifier and A′ qualification;
-- [`docs/E2_2B_MOMENTUM_PERSISTENCE.md`](docs/E2_2B_MOMENTUM_PERSISTENCE.md) — momentum-persistence diagnostic;
-- [`docs/E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md`](docs/E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md) — bounded reproduction gate and negative Owner-like verdict;
-- [`docs/E2_2C1_OWNER_FREEPLAY_CAPTURE.md`](docs/E2_2C1_OWNER_FREEPLAY_CAPTURE.md) — Owner-marked capture contract and non-interference gate;
-- [`docs/E2_2C2_MOMENTUM_SEMANTICS.md`](docs/E2_2C2_MOMENTUM_SEMANTICS.md) — real-capture diagnosis and A″ falsifier.
+Therefore the project should not patch the binding for API purity or tune slide/recovery blindly. Current A″ feel is evidence about the **actual runtime we have**, and the next falsifier should ask whether the discovered latent constraint-velocity behavior causes a real gameplay pathology before choosing an explicit constraint-velocity policy.
 
-## A — frozen Foundation 02.1 baseline
+## Detailed evidence
+
+- [`docs/E2_1_LOCALIZATION.md`](docs/E2_1_LOCALIZATION.md) — terrain/support and A-vs-B boundary localization;
+- [`docs/E2_2_RECIPROCITY.md`](docs/E2_2_RECIPROCITY.md) — causal-component reciprocity falsifier and A′ qualification;
+- [`docs/E2_2B_MOMENTUM_PERSISTENCE.md`](docs/E2_2B_MOMENTUM_PERSISTENCE.md) — post-contact persistence diagnostic;
+- [`docs/E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md`](docs/E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md) — bounded reproduction gate;
+- [`docs/E2_2C1_OWNER_FREEPLAY_CAPTURE.md`](docs/E2_2C1_OWNER_FREEPLAY_CAPTURE.md) — Owner-marked free-play capture contract;
+- [`docs/E2_2C2_MOMENTUM_SEMANTICS.md`](docs/E2_2C2_MOMENTUM_SEMANTICS.md) — real-capture diagnosis and A″ falsifier;
+- [`docs/E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md`](docs/E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md) — grounded momentum sink, box3d.js binding contract and intended-clip comparison.
+
+## Current-best facts
+
+### Foundation / A
+
+Foundation 02.1 established a useful controller-owned embodied-player baseline:
 
 - controller-owned capsule position/state;
 - `80 kg` virtual interaction mass;
-- rounded mover plane solve;
-- original normal-directed effective-mass exchange with dynamic contacts;
-- body-local support transport;
-- persistent external recoil component;
+- rounded Box3D mover plane solve;
+- dynamic-body reciprocity;
+- body-local moving-support transport;
 - camera-relative bounded locomotion and shaped jump;
-- exact Owner-tested Foundation 02.1 specimen: `12841bd5c095827092ee5aae0acc19981a848490`.
+- natural traversal of the `0.22 m` stairs and a `0.52 m` jump boundary.
 
-E2.1 reproduced A's dynamic-edge problem deterministically. A vertical drop near a dynamic cube edge produced about `1.10 m` lateral drift and `1.34 m/s` horizontal speed with about `259 N·s` of manual contact impulse. Removing dynamic reciprocity reduced that case to the mover's underlying positional correction of about `0.23 m`.
+Exact Owner-tested Foundation 02.1 specimen:
 
-A remains frozen as a historical comparison control.
+`12841bd5c095827092ee5aae0acc19981a848490`
 
-## A′ — causal-component reciprocity survivor
+A remains frozen as a historical comparison.
 
-A′ uses the same controller-owned mover and locomotion/support mechanisms as A. The E2.2 variable is only how manual dynamic reciprocity distributes momentum across axes.
+### E2 / B
 
-The working separation is:
+B uses a real `80 kg` solver-owned Box3D capsule with locked angular motion and bounded COM impulses for locomotion. E2.1 showed that this deliberately minimal solver-owned implementation does not negotiate rough terrain well: it passes only roughly `0.05–0.10 m` vertical steps and remains blocked by `0.15–0.22 m` steps even with much stronger horizontal authority.
 
-> **The mover owns geometric deflection. Reciprocity transfers causal momentum rather than using the mover's edge normal to manufacture a new momentum axis.**
+B is evidence about this implementation, not a verdict against the entire solver-owned/hybrid representation class.
 
-Machine qualification included:
+### E2.2 / A′
 
-- dynamic edge at `x≈0.74`: A `1.10 m / 1.34 m/s` → A′ `0.23 m / 0.02 m/s`;
-- isolated ordinary push: both `-1.48 m / 169.4 N·s`;
-- reverse ram: both about `-0.16 m / 0.32 m/s` external response;
-- central dynamic landing: both `159` dynamic-support frames / `474.5 N·s`;
-- ordinary stairs: PASS;
-- `0.52 m` ledge remains a jump boundary: PASS;
-- broader matrix: `21/21` problematic A cases improved, `0` meaningfully worse, with physical response retained.
+A′ changed only dynamic reciprocity direction semantics. Instead of letting an oblique rounded-edge contact normal manufacture a new momentum axis, reciprocity transfers the horizontal/vertical components that actually contributed to closing the contact.
 
-A′ remains a survivor, not an accepted final baseline or architecture verdict.
+Working interpretation:
 
-## E2.2b — persistence boundary
+> **The mover owns geometric deflection. Reciprocity transfers causal momentum.**
 
-The corrected airborne isolate measured current A′ at:
+The broader E2.2 matrix improved all `21/21` targeted problematic A cases with no meaningful regression in that matrix while preserving ordinary push, reverse contact, landing, stairs and ledge behavior.
 
-- `0.623 m` tail after `0.25 s`;
-- `1.212 m` after `0.50 s`;
-- `2.298 m` after `1.00 s`;
-- about `2.30 m/s` horizontal `velocity` and `externalVelocity` still present at `0.50 s`.
+A′ remained a survivor, not a final baseline.
 
-Test-local damping showed that ordinary `velocity` was the larger immediate displacement carrier while remembered `externalVelocity` still materially participated. A global policy strong enough to reduce contact persistence also materially reduced translating-support jump carry, so E2.2b did not justify blind drag/deceleration tuning.
+### E2.2c-2 / A″
 
-## E2.2c-0 — representative reproduction gate
+The first real Owner-marked capture exposed a narrower state-semantics defect in A′:
 
-Bounded normal-gravity candidates were deterministic but did not qualify as representative Owner complaint specimens. A separate normal-gravity side-ram did independently corroborate post-contact persistence under natural separation.
+1. dynamic reciprocity computes a contact reaction that is a **delta velocity** (`Δv`);
+2. A′ adds it to current `velocity`;
+3. A′ also adds the same vector to horizontal `externalVelocity`;
+4. locomotion later targets `desiredVelocity + externalVelocity`.
 
-Verdict:
+That can turn a contact impulse already used to change momentum into a later absolute velocity target.
 
-> **Owner-like laboratory reproduction NOT QUALIFIED; normal-gravity persistence independently corroborated.**
-
-The project therefore changed evidence-acquisition method rather than searching offsets, masses and speeds until a desired pathology appeared.
-
-## E2.2c-1 — Owner-marked free-play capture
-
-Capture remains available for A′:
-
-`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=causal&capture=1`
-
-In capture mode:
-
-- play normally;
-- press `C` when the problematic residual slide has just occurred;
-- the ring buffer preserves up to `3.0 s` before that marker and continues for `1.5 s` after it;
-- press `X` to export marked events as JSON.
-
-Each frame records the exact camera-relative input basis, character position/velocity/external state/support/contact summary, and the transform plus linear/angular velocity of all `11` bounded resettable playground bodies. Reset boundaries create explicit capture epochs.
-
-The capture-on and capture-off deterministic runs ended in the same character and world state at the `1e-12` comparison tolerance used by the gate.
-
-## E2.2c-2 — A″ contact-momentum semantics probe
-
-The first real Owner capture exposed a narrower defect than generic "too much slide": dynamic-contact reaction is a `Δv`, yet A′ also stores that same vector as future `externalVelocity` target state.
-
-A″ is intentionally implemented as a disposable adapter around A′ instead of a new controller architecture. The complete A′ `postStep` still performs mover solve, causal reciprocity, current-velocity reaction, rigid-body impulse, clipping and support discovery. Only the newly added horizontal dynamic-contact memory is removed afterward; non-contact external state and moving-support inheritance remain untouched.
-
-Recovered `owner-1` anchor results:
+A″ keeps the same A′ contact/body response but removes only that dynamic-contact memory write. In the recovered Owner anchor:
 
 | metric | A′ | A″ |
 | --- | ---: | ---: |
 | contact episode | `7f` | `7f` |
 | first impulse | `86.86 N·s` | `86.86 N·s` |
 | peak external speed | `3.222 m/s` | `0.488 m/s` |
-| post-contact tail at `0.25 s` | `0.395 m` | `0.054 m` |
-| post-contact tail at `0.50 s` | `0.773 m` | `0.110 m` |
-| peak reversal relative to incoming direction | `2.547 m/s` | `0.418 m/s` |
+| tail at `0.25 s` | `0.395 m` | `0.054 m` |
+| tail at `0.50 s` | `0.773 m` | `0.110 m` |
+| peak reversal vs incoming direction | `2.547 m/s` | `0.418 m/s` |
 
-The contacted body's first linear and angular responses were identical at the diagnostic tolerance. Translating-support jump carry was also identical in both variants: `1.501 m/s` inherited external speed and `0.735 m` displacement after `0.50 s`.
+Moving-support inheritance remained unchanged in that falsifier.
 
-Working interpretation:
+Owner free play then confirmed the perceptual result: the objectionable residual slide disappeared and wall rebounds felt appropriate.
 
-> **Dynamic-contact `Δv` should not automatically be treated as a persistent absolute velocity target.**
+### E2.3 / actual substrate boundary
 
-This does not settle the remaining contact-impulse magnitude, multi-frame accumulation, player recovery law or final use of `externalVelocity`.
+The current runtime calls `b3SolvePlanes(...)` and later `b3ClipVector(...)`, but with `box3d.js@0.1.1` these two calls do not share the native `plane.push` state required by the exact vendored Box3D implementation. Current A/A′/A″ therefore behave as if this mover-plane velocity clip were absent.
 
-## B — frozen E2 solver-owned root
+This is explicit substrate debt, not a reason to silently change gameplay.
 
-- real `80 kg` Box3D dynamic capsule;
-- translation/collision response owned by the solver;
-- angular motion intentionally locked;
-- locomotion/jump through bounded centre-of-mass impulses;
-- no mover position solve;
-- no manual dynamic reciprocity;
-- no manual support-position transport.
+The E2.3 diagnostic recovered the missing native-equivalent `push` state and verified the JS reconstruction against native solved deltas. On a shallow wall isolate:
 
-E2.1 showed that its rough-terrain limitation is not fixed by ordinary friction or stronger horizontal authority. B naturally passed only roughly `0.05–0.10 m` vertical steps in the diagnostic and remained blocked on `0.15–0.22 m` steps even at `104 m/s²` ground authority.
+- native solve delta and reconstructed solve delta differ by only about `1.12e-10` in the measured case;
+- JS-visible push after native solve: `0`;
+- reconstructed push: `0.015`;
+- stale-plane `b3ClipVector`: no velocity change;
+- push-propagated `b3ClipVector`: removes the constrained normal component as native design intends.
 
-B remains evidence, not a discarded representation and not a current winner. Current upstream Box2D research also demonstrates richer solver-owned mover designs than this intentionally minimal B, so B's terrain failure must not be generalized to the entire representation class.
+On the recovered Owner anchor, activating this intended clip changes contact lifecycle substantially, so it remains diagnostic only.
 
 ## Public controls
 
-Mode changes reload the world so one specimen does not inherit another specimen's disturbed playground.
+Mode changes reload the playground so one specimen does not inherit another specimen's disturbed state.
 
 - `1` — A frozen normal-reciprocity baseline
 - `2` — B frozen solver-owned root
-- `3` — A′ causal-component reciprocity with current contact memory
-- `4` — A″ same A′ physical contact, but contact `Δv` is not remembered as external target
+- `3` — A′ causal-component reciprocity with old contact memory
+- `4` — A″ same A′ physical contact without dynamic-contact `Δv` memory
 - `WASD` — camera-relative movement
 - `Space` — jump
 - `Shift` — sprint
@@ -161,23 +137,45 @@ Mode changes reload the world so one specimen does not inherit another specimen'
 - `H` — telemetry
 - A′ capture URL only: `C` mark event, `X` export events
 
-Public build: https://jozzpoly.github.io/Box3d-Character-Controler/
+Public build:
 
-Direct A′: https://jozzpoly.github.io/Box3d-Character-Controler/?mode=causal
+`https://jozzpoly.github.io/Box3d-Character-Controler/`
 
-Direct A″: https://jozzpoly.github.io/Box3d-Character-Controler/?mode=momentum
+Direct A′:
 
-Owner capture: https://jozzpoly.github.io/Box3d-Character-Controler/?mode=causal&capture=1
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=causal`
+
+Direct A″:
+
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=momentum`
+
+Owner capture:
+
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=causal&capture=1`
 
 ## Playground
 
-The yard remains intentionally open rather than a prescribed obstacle course. It contains rigid bodies with different mass/shape affordances, a loose stack, slab, beam, static elevation changes and one translating/rotating support.
+The yard remains intentionally open rather than a prescribed obstacle course. It includes dynamic rigid bodies with different mass/shape affordances, a loose stack, slab, beam, static elevation changes, four `0.22 m` stair rises, a nearby `0.52 m` jump boundary, and one translating/rotating support.
 
-Known traversal fixtures include four `0.22 m` static stair rises, a nearby `0.52 m` jump boundary and low dynamic props that remain physical/pushable matter.
+## Runtime provenance
+
+Current browser substrate:
+
+- `box3d.js@0.1.1`
+- `three@0.183.0`
+- `vite@7.0.0`
+
+`box3d.js@0.1.1` release commit:
+
+`5d5a3af049cccd9948b2b55bac4342414af0ef64`
+
+That release vendors native Box3D commit:
+
+`8441b4a06d6d09dcfb0b0f704df4d847d1437b92`
+
+Binding version and native engine snapshot are distinct provenance facts.
 
 ## Evidence history
-
-The implementation is disposable; accepted observations are not.
 
 - `cadb9405097ede149e64a64d8070c6127e8849a5` — E1-A1 physical-contact baseline.
 - `5fd2aabdff35e79944bd82901175a9f64e73578f` — E1-A2 static gravity/support gate.
@@ -186,22 +184,13 @@ The implementation is disposable; accepted observations are not.
 - `9d6e8ca77d024e784ed6aa5d71786ee3e223733d` — Foundation 02 quality/feel baseline.
 - `12841bd5c095827092ee5aae0acc19981a848490` — exact Owner-tested Foundation 02.1 runtime.
 - `ca7316da9d80ae1bf0fd009629316352991c9733` — machine-qualified E2 A/B runtime before documentation.
-- `3725586c6369a978afbdb0f63a8c02fb1f03a451` — machine-qualified E2.1 diagnostic specimen before documentation.
-- `cedf8a0315787d315445929d289651b6780d6b65` — machine-qualified E2.2 A/A′/B runtime before documentation.
-- `462334ce98199eb1f66f832c032ab49e408567c5` — corrected E2.2b persistence diagnostic before documentation.
-- `d786c0882aed950a64ada583ae521a878b48c09c` — completed E2.2c-0 reproduction-gate branch record before canonical merge.
-- `c92183869ad9978f866863f91fda6fc4cdb9f148` — E2.2c-1 capture substrate machine qualification before documentation.
-- `3293a92cf26ab73e28de23d769e700accdeec804` — first machine-qualified E2.2c-2 semantic falsifier before public A″ exposure.
-
-## Runtime provenance
-
-Current browser substrate remains intentionally small:
-
-- `box3d.js@0.1.1`
-- `three@0.183.0`
-- `vite@7.0.0`
-
-`box3d.js@0.1.1` vendors native Box3D commit `8441b4a06d6d09dcfb0b0f704df4d847d1437b92`. Binding version and native engine snapshot are distinct provenance facts.
+- `3725586c6369a978afbdb0f63a8c02fb1f03a451` — E2.1 diagnostic specimen before documentation.
+- `cedf8a0315787d315445929d289651b6780d6b65` — E2.2 A/A′/B runtime before documentation.
+- `462334ce98199eb1f66f832c032ab49e408567c5` — corrected E2.2b persistence diagnostic.
+- `d786c0882aed950a64ada583ae521a878b48c09c` — completed E2.2c-0 reproduction gate before canonical merge.
+- `c92183869ad9978f866863f91fda6fc4cdb9f148` — E2.2c-1 capture substrate qualification.
+- `3293a92cf26ab73e28de23d769e700accdeec804` — first machine-qualified E2.2c-2 semantic falsifier.
+- `4ed1a2c5555af2a59369784cc376f2153fdb1733` — first complete E2.3 binding-contract + intended-clip diagnostic before documentation.
 
 ## Validation
 
@@ -211,28 +200,28 @@ npm run smoke
 npm run build
 ```
 
-Canonical smoke runs the frozen Foundation/E2 gates first, then E2.1 localization, E2.2 falsifiers, E2.2b persistence, E2.2c-0 reproduction, E2.2c-1 capture non-interference and the E2.2c-2 momentum-semantics falsifier.
+Canonical smoke preserves the older Foundation/E2 gates and then runs E2.1 localization, E2.2 falsifiers, E2.2b persistence, E2.2c capture/semantics gates and E2.3 momentum/binding boundary.
 
 ## Current stage boundary
 
-Confirmed current-best facts:
+Confirmed current-best interpretation:
 
-1. E2.2 causal-component reciprocity materially improved the old cross-axis dynamic-edge amplification.
-2. Owner still finds some A′ residual post-bounce slide excessive and reports that its direction can feel inconsistent with the physical momentum.
-3. Real Owner capture confirms that contact can largely arrest incoming motion while leaving a large remembered `externalVelocity` target in another direction; zero-input grounded control can then rebuild velocity toward that target after dynamic contact ends.
-4. A recovered-state anchor shows that removing only dynamic-contact memory preserves the first collision and body response while reducing the 0.50 s tail from `0.773 m` to `0.110 m` and peak reversal from `2.547 m/s` to `0.418 m/s`.
-5. Moving-support inheritance remains exactly unchanged in that falsifier.
-6. This strongly supports a contact-memory semantic defect but does not settle remaining impulse magnitude/contact accumulation or final agency recovery.
-7. A″ is therefore exposed only as an Owner comparison probe.
+1. The old A′ delayed wrong-direction slide was a real contact-memory semantic pathology, and A″ removes it while preserving immediate contact consequence.
+2. Owner free play currently prefers A″ behavior and reports appropriate wall rebounds.
+3. There is no evidence yet that the absence of a visible grounded slide tail is itself a defect requiring "slide" to be added.
+4. Grounded zero-input locomotion is independently a very strong momentum sink.
+5. The current box3d.js binding silently prevents the intended native mover-plane velocity clipping contract from operating across separate JS solve/clip calls.
+6. Restoring that clip changes contact lifecycle and therefore cannot be treated as a neutral substrate repair.
+7. The next high-information question is whether current retention of geometrically blocked velocity causes an actual unwanted release/corner/moving-constraint behavior in ordinary A″ use.
 
 Do not automatically:
 
-- replace A′ with A″ as the accepted baseline;
-- remove `externalVelocity` globally;
-- change moving-support inheritance;
-- tune drag constants to force a desired answer;
-- cap contact impulses before remaining magnitude is isolated;
-- add B terrain negotiation;
-- infer that controller-owned or solver-owned representation has won.
+- patch `box3d.js` / propagate `plane.push` into production;
+- add a slide or recoil-memory system;
+- tune `groundDeceleration` because A″ stops quickly;
+- reopen causal-component reciprocity;
+- cap contact impulses;
+- delete `externalVelocity` globally;
+- promote A″ to a final architecture winner.
 
-The next evidence is **Owner A′↔A″ free play**. If A″ preserves credible physical consequence while removing the wrong-direction / excessive tail, the next distinct research target becomes remaining impulse magnitude/contact accumulation and bounded player recovery. If A″ feels too dead or still directionally wrong, the next falsifier should be chosen from that failure rather than restoring the old duplicated target semantics.
+The next experiment should be chosen from a demonstrated gameplay consequence of the **constraint-velocity** or **agency-recovery** boundary, not from a desire to match an abstract physics-purity model.
