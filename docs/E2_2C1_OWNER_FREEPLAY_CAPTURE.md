@@ -90,7 +90,7 @@ Capture changes are limited to:
 
 Without `?mode=causal&capture=1`, `capture` is not instantiated and the normal public A/A-prime/B runtime does not execute the per-tick body snapshot path.
 
-## Non-interference falsifier
+## Non-interference and reset-boundary falsifier
 
 The machine gate runs the same deterministic A-prime scenario twice in separate worlds:
 
@@ -99,19 +99,28 @@ The machine gate runs the same deterministic A-prime scenario twice in separate 
 
 The fixture deliberately exercises a real dynamic contact. Final character and playground state are recursively compared at `1e-12` numeric tolerance.
 
-Qualified result at implementation commit `c92183869ad9978f866863f91fda6fc4cdb9f148`:
+The hardened gate additionally marks a second event shortly before an explicit capture-epoch reset. It requires that the first event complete its full post-roll while the second is retained as incomplete with an explicit truncation reason, without any frame crossing into the next epoch.
 
-`E2.2c-1 capture non-interference PASS: dynamicContacts=1 finalPos=0.0000,0.8950,3.7237 eventFrames=270 pre=180 post=90 bodiesPerFrame=11`
+Final machine-qualified result at `3750db8b32e8b255169f2d6ece99b63bb81caaa8`:
 
-The full historical smoke suite and Vite production build also passed on that commit.
+`E2.2c-1 capture non-interference PASS: dynamicContacts=1 finalPos=0.0000,0.8950,3.7237 completeFrames=270 truncatedFrames=189 resetBoundary=PASS bodiesPerFrame=11`
 
-This does not prove that browser UI/export operations are incapable of affecting wall-clock frame pacing. It demonstrates the narrower required fact: the read-only snapshot path does not change the fixed-step physics result in the deterministic machine fixture.
+Thus the qualified contract includes:
+
+- complete event: `180` pre-roll + `90` post-roll = `270` frames;
+- reset-truncated event: `189` retained frames in one epoch, explicitly tagged with the reset reason;
+- `11` resettable body snapshots per captured frame;
+- identical final physics state between capture-off and capture-on runs at the gate tolerance.
+
+The full historical smoke suite and Vite production build also passed on the hardened commit.
+
+This does not prove that browser UI/export operations are incapable of affecting wall-clock frame pacing. It demonstrates the narrower required fact: the read-only snapshot path does not change the fixed-step physics result in the deterministic machine fixture, and the capture contract does not silently splice reset discontinuities.
 
 ## What this stage establishes
 
 - a low-burden Owner marker can preserve the causal history before the subjective complaint is recognized;
 - capture includes player intent, character state and enough bounded playground state to attempt event recovery;
-- reset boundaries are explicit;
+- reset boundaries are explicit and machine-tested;
 - machine evidence found no physics-state interference from the capture read path;
 - no recovery policy or controller representation has been selected.
 
