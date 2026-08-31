@@ -90,12 +90,10 @@ function runTrial(spec) {
   const frames = [];
   const angular = [0, 0, 0];
   let firstContact = -1;
-  let lastContact = -1;
-  let contactFrames = 0;
-  let peakImpulse = 0;
-  let peakSpeed = 0;
-  let peakExternal = 0;
-  let peakAngular = 0;
+  let firstEpisodeEnd = -1;
+  let firstEpisodeFrames = 0;
+  let episodeActive = false;
+  let firstRecontact = -1;
 
   for (let i = 0; i < 180; i++) {
     character.preStep(dt, input());
@@ -104,15 +102,18 @@ function runTrial(spec) {
 
     const contacts = character.lastDynamicContacts;
     if (contacts > 0) {
-      if (firstContact < 0) firstContact = i;
-      lastContact = i;
-      contactFrames += 1;
+      if (firstContact < 0) {
+        firstContact = i;
+        episodeActive = true;
+      }
+      if (episodeActive) firstEpisodeFrames += 1;
+      else if (firstEpisodeEnd >= 0 && firstRecontact < 0) firstRecontact = i;
+    } else if (episodeActive) {
+      firstEpisodeEnd = i - 1;
+      episodeActive = false;
     }
+
     b3.b3Body_GetAngularVelocity(angular, body);
-    peakImpulse = Math.max(peakImpulse, character.lastContactImpulse);
-    peakSpeed = Math.max(peakSpeed, horizontal(character.velocity));
-    peakExternal = Math.max(peakExternal, horizontal(character.externalVelocity));
-    peakAngular = Math.max(peakAngular, Math.hypot(angular[0], angular[1], angular[2]));
     frames.push({
       i,
       x: character.position[0],
@@ -123,41 +124,52 @@ function runTrial(spec) {
       contacts,
       support: character.currentSupport?.type ?? 'AIR',
       impulse: character.lastContactImpulse,
+      angular: Math.hypot(angular[0], angular[1], angular[2]),
     });
   }
 
-  const sampleAfter = (frame, offset) => frames[Math.min(frame + offset, frames.length - 1)];
-  let tail15 = null;
-  let tail30 = null;
-  let speed30 = null;
-  let ext30 = null;
-  let support30 = null;
-  if (lastContact >= 0 && lastContact + 30 < frames.length) {
-    const end = frames[lastContact];
-    const f15 = sampleAfter(lastContact, 15);
-    const f30 = sampleAfter(lastContact, 30);
-    const displacement = (f) => Math.hypot(f.x - end.x, f.z - end.z);
-    tail15 = displacement(f15);
-    tail30 = displacement(f30);
-    speed30 = f30.speed;
-    ext30 = f30.external;
-    support30 = f30.support;
-  }
+  if (episodeActive) firstEpisodeEnd = frames.length - 1;
+
+  const episodeFrames = firstContact >= 0 && firstEpisodeEnd >= firstContact
+    ? frames.slice(firstContact, firstEpisodeEnd + 1)
+    : [];
+  const maxOf = (key) => episodeFrames.reduce((max, frame) => Math.max(max, frame[key]), 0);
+  const peakImpulse = maxOf('impulse');
+  const peakSpeed = maxOf('speed');
+  const peakExternal = maxOf('external');
+  const peakAngular = episodeFrames.reduce((max, frame) => Math.max(max, frame.angular), 0);
+
+  const uncontaminatedSample = (offset) => {
+    if (firstEpisodeEnd < 0) return null;
+    const index = firstEpisodeEnd + offset;
+    if (index >= frames.length) return null;
+    if (firstRecontact >= 0 && firstRecontact <= index) return null;
+    return frames[index];
+  };
+
+  const end = firstEpisodeEnd >= 0 ? frames[firstEpisodeEnd] : null;
+  const f15 = uncontaminatedSample(15);
+  const f30 = uncontaminatedSample(30);
+  const displacement = (frame) => end && frame ? Math.hypot(frame.x - end.x, frame.z - end.z) : null;
 
   return {
     name: spec.name,
     firstContact,
-    lastContact,
-    contactFrames,
+    firstEpisodeEnd,
+    firstEpisodeFrames,
+    firstRecontact,
     peakImpulse,
     peakSpeed,
     peakExternal,
     peakAngular,
-    tail15,
-    tail30,
-    speed30,
-    ext30,
-    support30,
+    tail15: displacement(f15),
+    tail30: displacement(f30),
+    speed15: f15?.speed ?? null,
+    speed30: f30?.speed ?? null,
+    ext15: f15?.external ?? null,
+    ext30: f30?.external ?? null,
+    support15: f15?.support ?? null,
+    support30: f30?.support ?? null,
   };
 }
 
@@ -196,19 +208,22 @@ const repeats = 3;
 const groups = specs.map((spec) => Array.from({ length: repeats }, () => runTrial(spec)));
 
 console.log('E2.2c-0 residual-slide reproduction probe (production A-prime, normal gravity, no forced separation):');
-for (let s = 0; s < specs.length; s++) {
-  const runs = groups[s];
+for (const runs of groups) {
   for (let r = 0; r < runs.length; r++) {
     const x = runs[r];
     const fmt = (value) => value == null ? 'n/a' : value.toFixed(3);
     console.log(
-      `  ${x.name} #${r + 1}: contact=${x.firstContact}-${x.lastContact} frames=${x.contactFrames} I=${x.peakImpulse.toFixed(1)}Ns peakV=${x.peakSpeed.toFixed(2)} peakExt=${x.peakExternal.toFixed(2)} ang=${x.peakAngular.toFixed(2)} tail=.25 ${fmt(x.tail15)}m/.50 ${fmt(x.tail30)}m v=.50 ${fmt(x.speed30)} ext=.50 ${fmt(x.ext30)} support=.50 ${x.support30 ?? 'n/a'}`,
+      `  ${x.name} #${r + 1}: episode=${x.firstContact}-${x.firstEpisodeEnd} frames=${x.firstEpisodeFrames} recontact=${x.firstRecontact} I=${x.peakImpulse.toFixed(1)}Ns peakV=${x.peakSpeed.toFixed(2)} peakExt=${x.peakExternal.toFixed(2)} ang=${x.peakAngular.toFixed(2)} tail=.25 ${fmt(x.tail15)}m/.50 ${fmt(x.tail30)}m v=.25 ${fmt(x.speed15)}/.50 ${fmt(x.speed30)} ext=.25 ${fmt(x.ext15)}/.50 ${fmt(x.ext30)} support=.25 ${x.support15 ?? 'n/a'}/.50 ${x.support30 ?? 'n/a'}`,
     );
   }
 }
 
 function stable(a, b) {
-  const numericKeys = ['firstContact', 'lastContact', 'contactFrames', 'peakImpulse', 'peakSpeed', 'peakExternal', 'peakAngular', 'tail15', 'tail30', 'speed30', 'ext30'];
+  const numericKeys = [
+    'firstContact', 'firstEpisodeEnd', 'firstEpisodeFrames', 'firstRecontact',
+    'peakImpulse', 'peakSpeed', 'peakExternal', 'peakAngular',
+    'tail15', 'tail30', 'speed15', 'speed30', 'ext15', 'ext30',
+  ];
   for (const key of numericKeys) {
     if (a[key] == null || b[key] == null) {
       if (a[key] !== b[key]) return false;
@@ -216,7 +231,7 @@ function stable(a, b) {
     }
     if (Math.abs(a[key] - b[key]) > 1e-6) return false;
   }
-  return a.support30 === b.support30;
+  return a.support15 === b.support15 && a.support30 === b.support30;
 }
 
 for (const runs of groups) {
@@ -225,7 +240,9 @@ for (const runs of groups) {
   }
 }
 
-const contacted = groups.flatMap((runs) => runs.slice(0, 1)).filter((x) => x.firstContact >= 0 && x.lastContact >= x.firstContact);
-if (contacted.length === 0) {
-  throw new Error('E2.2c-0 bounded candidates produced no dynamic contact');
+const naturallySeparated = groups
+  .map((runs) => runs[0])
+  .filter((x) => x.firstContact >= 0 && x.firstEpisodeEnd >= x.firstContact && x.firstEpisodeEnd < 179);
+if (naturallySeparated.length === 0) {
+  throw new Error('E2.2c-0 bounded candidates produced no naturally separated first contact episode');
 }
