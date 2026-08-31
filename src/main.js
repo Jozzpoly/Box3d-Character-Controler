@@ -5,6 +5,7 @@ import { SolverOwnedCharacter } from './solver-owned-character.js';
 import { createCharacterVisual } from './character-visual.js';
 import { FollowCamera } from './follow-camera.js';
 import { createFreePlayCapture } from './free-play-capture.js';
+import { installVelocityOnlyContactMemoryProbe } from './momentum-semantics-probe.js';
 import { createPlayground } from './playground.js';
 import { createWorldRenderer } from './world-renderer.js';
 import './style.css';
@@ -13,7 +14,13 @@ const FIXED_DT = 1 / 60;
 const SUBSTEPS = 4;
 const urlParams = new URLSearchParams(window.location.search);
 const requestedMode = urlParams.get('mode');
-const EMBODIMENT_MODE = requestedMode === 'solver' ? 'solver' : requestedMode === 'causal' ? 'causal' : 'controller';
+const EMBODIMENT_MODE = requestedMode === 'solver'
+  ? 'solver'
+  : requestedMode === 'momentum'
+    ? 'momentum'
+    : requestedMode === 'causal'
+      ? 'causal'
+      : 'controller';
 const CAPTURE_MODE = EMBODIMENT_MODE === 'causal' && urlParams.get('capture') === '1';
 
 const canvas = document.querySelector('#app');
@@ -40,7 +47,9 @@ function loadMode(mode) {
   const url = new URL(window.location.href);
   if (mode === 'solver') url.searchParams.set('mode', 'solver');
   else if (mode === 'causal') url.searchParams.set('mode', 'causal');
+  else if (mode === 'momentum') url.searchParams.set('mode', 'momentum');
   else url.searchParams.delete('mode');
+  url.searchParams.delete('capture');
   window.location.assign(url);
 }
 
@@ -62,6 +71,10 @@ window.addEventListener('keydown', (event) => {
   }
   if (key === '3' && !event.repeat) {
     loadMode('causal');
+    return;
+  }
+  if (key === '4' && !event.repeat) {
+    loadMode('momentum');
     return;
   }
   if (key === 'c' && !event.repeat && captureControls) {
@@ -154,8 +167,11 @@ async function main() {
       startPosition: playground.spawn,
       gravity: playground.gravity,
       virtualMass: 80,
-      reciprocityMode: EMBODIMENT_MODE === 'causal' ? 'causal-components' : 'normal',
+      reciprocityMode: EMBODIMENT_MODE === 'causal' || EMBODIMENT_MODE === 'momentum'
+        ? 'causal-components'
+        : 'normal',
     });
+    if (EMBODIMENT_MODE === 'momentum') installVelocityOnlyContactMemoryProbe(character);
   }
 
   const worldView = createWorldRenderer(b3, playground.world, {
@@ -191,6 +207,11 @@ async function main() {
     debugLabels.impulse.textContent = 'causal contact impulse';
     debugLabels.transport.textContent = 'support transport';
     secondaryControlsEl.insertAdjacentHTML('beforeend', ' · <strong>C</strong> mark slide · <strong>X</strong> export captures');
+  } else if (EMBODIMENT_MODE === 'momentum') {
+    phaseEl.textContent = 'E2.2c-2 A″ · VELOCITY-ONLY CONTACT CONSEQUENCE';
+    debugLabels.external.textContent = 'non-contact external';
+    debugLabels.impulse.textContent = 'causal contact impulse';
+    debugLabels.transport.textContent = 'support transport';
   } else if (EMBODIMENT_MODE === 'causal') {
     phaseEl.textContent = 'E2.2 A′ · CAUSAL-COMPONENT RECIPROCITY';
     debugLabels.external.textContent = 'external';
@@ -209,6 +230,8 @@ async function main() {
     baseStatus = `Ready · B solver-owned · real 80 kg body · rotation locked · ${counts.dynamicCount} playground bodies`;
   } else if (CAPTURE_MODE) {
     baseStatus = `Ready · A′ capture · causal-component reciprocity unchanged · ${counts.dynamicCount} dynamic bodies`;
+  } else if (EMBODIMENT_MODE === 'momentum') {
+    baseStatus = `Ready · A″ probe · contact Δv stays in current velocity only · support carry unchanged · ${counts.dynamicCount} dynamic bodies`;
   } else if (EMBODIMENT_MODE === 'causal') {
     baseStatus = `Ready · A′ controller-owned · causal-component reciprocity · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
   } else {
