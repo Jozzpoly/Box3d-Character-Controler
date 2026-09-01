@@ -1,75 +1,74 @@
-# Donor stabilization — A″ current-behavior contract
+# Donor stabilization — historical A″ qualification
 
-Status: **machine-qualified donor candidate; public/runtime behavior unchanged; not an architecture verdict**.
+Status: **historical foundation stage; superseded as the live downstream contract by `docs/DONOR_CONTRACT.md`**.
 
-## Why this exists
+This document records the first step that separated a downstream donor from the research comparison runtime. It should be read as provenance, not as the current import/API description.
 
-The repository is now also a donor for downstream projects. Before adding mobile controls or copying character logic into another project, the current useful behavior needs one explicit import boundary that is distinct from the research comparison UI and from future architecture claims.
+## Boundary recovered before stabilization
 
-Continuity recovery established the latest confirmed project boundary as the E2.3 merge on `main`:
+Continuity recovery established the latest confirmed mechanics boundary as merged E2.3:
 
 `02d3528cae47f4b04f594dda4ed0a66727033edd`
 
-No later Box3d-Character-Controler implementation stage or unmerged E2.4 line was recovered from repository branches, open PRs, or available conversation context. E2.3 is diagnostic-complete and deliberately leaves production behavior unchanged.
+No later unmerged E2.4 implementation line was recovered at that point. E2.3 was diagnostic-complete and deliberately left production behavior unchanged.
 
-## Donor behavior selected
+## Behavior selected
 
-The donor candidate is the existing Owner-preferred **A″** behavior, not a new controller:
+The donor candidate was the existing Owner-preferred **A″** behavior:
 
 - controller-owned capsule state;
 - causal-component dynamic reciprocity;
 - dynamic-contact reaction changes current velocity and the contacted body;
-- that dynamic-contact `Δv` is not retained as a persistent `externalVelocity` target;
+- that reaction is not retained as a persistent horizontal `externalVelocity` target;
 - moving-support inheritance remains unchanged;
-- all current locomotion/jump/support parameters remain unchanged;
-- current box3d.js@0.1.1 constraint-velocity behavior remains unchanged.
+- current locomotion/jump/support parameters remain unchanged;
+- current `box3d.js@0.1.1` constraint-velocity behavior remains unchanged.
 
-This choice is pragmatic provenance, not proof that A″ is the final embodiment architecture. It is the latest current-behavior specimen with positive Owner free-play evidence and no demonstrated reason to regress to A′ or silently activate E2.3's recovered native clipping contract.
+This was a pragmatic current-best choice, not a claim that A″ was the final embodiment architecture.
 
-## Stabilization change
+## Original stabilization implementation
 
-`src/donor-character.js` is a small explicit factory for the already-existing A″ composition. It deliberately reuses:
+The first stabilized entry point composed the already-qualified runtime behavior from:
 
-1. `ControllerOwnedCharacter` with `reciprocityMode: 'causal-components'`;
-2. `installVelocityOnlyContactMemoryProbe(...)`.
+1. `ControllerOwnedCharacter` with causal-component reciprocity;
+2. the E2.2c-2 velocity-only contact-memory adapter.
 
-The adapter remains internally visible as provenance/technical debt. This stage does not rewrite the core contact state model merely to make the code look cleaner.
+At this historical stage the adapter was still owned by `momentum-semantics-probe.js`. The later Donor Contract v0 foundation moved ownership of that behavior into `src/donor/contact-memory.js` while keeping the old probe import as a compatibility/provenance alias.
 
-## Qualification
+## Qualification evidence
 
-Candidate head after adding the donor entry point and gate:
+Original candidate head:
 
 `8271642aa794f2c0e50218d71b3044b77b07b14e`
 
 GitHub Actions run `33541996531`:
 
-- complete historical `npm run smoke`: **PASS**;
-- donor equivalence gate: **PASS** as part of canonical smoke;
-- production `npm run build`: **PASS**;
-- Pages deployment: intentionally skipped because qualification ran on a non-main branch.
+- complete historical smoke: **PASS**;
+- donor equivalence gate: **PASS**;
+- production build: **PASS**.
 
-The donor equivalence gate drives the current public A″ construction and the donor factory through separate but identical playground worlds for 360 fixed ticks. It compares character state and resettable world-body state every tick, requires dynamic contact to occur, and fails on divergence above `1e-9`.
+The equivalence gate advanced the existing public A″ composition and the donor factory through separate identical worlds for 360 fixed ticks, compared character/world state every tick, required dynamic contact, and failed on divergence above `1e-9`.
 
-Therefore this stage establishes a narrow claim:
+Merged stabilization main:
 
-> The donor entry point reproduces the current public A″ composition under the qualification route without changing the existing character mechanics.
+`d4e98787c179ab14816b87ca6073f353a50386b6`
 
-It does **not** establish mobile/device suitability or solve open embodiment research questions.
+Its full smoke/build and Pages deployment also passed.
 
-## Known boundaries carried into the donor
+## Known boundaries deliberately inherited
 
-These remain explicit and must not be silently "fixed" during mobile work:
+The stabilization did not hide or repair:
 
-- E2.3: box3d.js@0.1.1 loses native `b3CollisionPlane.push` state between JS solve/clip calls, so current mover-plane `b3ClipVector` behavior is effectively inert for freshly collected planes;
-- activating native-intended clipping materially changes contact lifecycle and is not a neutral dependency repair;
-- grounded zero-input locomotion remains a strong horizontal momentum sink (`groundDeceleration = 36 m/s²`);
-- controller-owned representation still uses virtual interaction mass, manual dynamic reciprocity and explicit moving-support transport;
-- A″ is Owner-preferred current contact semantics, not a final representation winner.
+- E2.3 `b3CollisionPlane.push` binding-state loss;
+- the fact that activating native-intended clipping materially changes contact lifecycle;
+- strong grounded horizontal momentum consumption (`groundDeceleration = 36 m/s²`);
+- virtual interaction mass/manual dynamic reciprocity/explicit support transport;
+- the fact that A″ is current-best evidence, not a final representation winner.
 
-## Boundary before mobile
+## Current continuation
 
-Mobile work should consume `createDonorCharacter(...)` rather than independently reconstruct A″ or copy a different research mode.
+For new downstream work, use the live contract documented in:
 
-The first mobile stage should change interaction/presentation only: touch input, camera interaction, HUD/layout/viewport and device-performance constraints. Character mechanics remain frozen unless mobile evidence demonstrates a specific mechanical problem.
+`docs/DONOR_CONTRACT.md`
 
-A downstream multiplayer project should inherit this qualified donor behavior rather than independently rebuilding mobile character semantics.
+The historical lesson preserved here is important: donor promotion began by **reusing qualified behavior and proving equivalence**, not by rewriting the controller for architectural neatness.
