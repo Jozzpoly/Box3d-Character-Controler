@@ -8,27 +8,30 @@ The working tension is **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**.
 
 The implementation is disposable; accepted observations are not. Detailed stage documents are the research record. This README is intentionally a compact map of the current state rather than a second copy of every experiment.
 
-## Current research state — E2.3 momentum / constraint boundary
+## Current research state — E2.3b constraint-release relevance
 
 Current public specimens deliberately keep different hypotheses alive:
 
 - **A** — frozen Foundation 02.1 controller-owned mover;
 - **B** — frozen E2 solver-owned finite-mass translational root;
 - **A′** — A with E2.2 causal-component dynamic reciprocity;
-- **A″** — A′ physical contact with dynamic-contact `Δv` no longer retained as a persistent `externalVelocity` target.
+- **A″** — A′ physical contact with dynamic-contact `Δv` no longer retained as a persistent `externalVelocity` target;
+- **donor A″** — the behavior-preserving, explicitly profiled downstream contract for the current A″ semantics.
 
-A″ is the current **Owner-preferred contact-semantics specimen** for the pathology under investigation, not an accepted final controller architecture.
+A″ is the current **Owner-preferred contact-semantics specimen**, not an accepted final controller architecture.
 
 Owner free play of A″ removed the previously objectionable delayed wrong-direction slide and produced wall reactions described as appropriate. That success does **not** justify immediately adding slide back or declaring the entire momentum model solved.
 
-E2.3 challenged that direction and found two independent boundaries:
+E2.3 then found two independent boundaries:
 
 1. **Grounded locomotion is a strong momentum sink.** With zero input, `groundDeceleration = 36 m/s²` can remove `0.6 m/s` of horizontal velocity every 60 Hz tick. A clean `5 m/s` grounded state stops in about `0.15 s`, while the same airborne state still has about `4.4 m/s` after `0.50 s`.
 2. **The apparent Box3D mover velocity clip is currently inert because of a box3d.js@0.1.1 binding-state loss.** Native `b3SolvePlanes` writes `b3CollisionPlane.push`, and native `b3ClipVector` uses that state. The JS wrapper copies planes into temporary vectors for each call and does not copy solved `push` values back to JavaScript, so the later JS `b3ClipVector` call receives stale `push = 0` planes.
 
 A faithful JS reconstruction of the exact vendored native plane solver matches native solved deltas to tiny numerical error and proves the missing state boundary. Diagnostic propagation of the missing `push` activates native-intended clipping, but that is **not a neutral fix**: in the recovered Owner anchor the dynamic contact episode changes from `7` frames to `1`, the first clean-separation speed changes from about `1.52 m/s` to `0.25 m/s`, and support state changes as well.
 
-Therefore the project should not patch the binding for API purity or tune slide/recovery blindly. Current A″ feel is evidence about the **actual runtime we have**, and the next falsifier should ask whether the discovered latent constraint-velocity behavior causes a real gameplay pathology before choosing an explicit constraint-velocity policy.
+E2.3b answered the remaining relevance question. In a normal locomotion/jump scenario, current A″ spent `53` frames geometrically blocked by a low obstacle while still retaining `5.2 m/s` into the blocker. After directional input was neutral for three grounded ticks, it still retained `3.4 m/s` — the same velocity as an open-space inertia control. A neutral jump then cleared the geometry and released `1.282 m` of forward movement with no directional input. The intended-clip diagnostic retained `0.0 m/s` and produced `0.0 m` release displacement.
+
+Therefore the constraint-velocity mismatch is no longer merely substrate debt: **retained blocked velocity can re-enter gameplay motion when geometry stops constraining the character**. That establishes a real policy question, but it still does not select native-intended full clipping as the answer.
 
 ## Detailed evidence
 
@@ -38,7 +41,9 @@ Therefore the project should not patch the binding for API purity or tune slide/
 - [`docs/E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md`](docs/E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md) — bounded reproduction gate;
 - [`docs/E2_2C1_OWNER_FREEPLAY_CAPTURE.md`](docs/E2_2C1_OWNER_FREEPLAY_CAPTURE.md) — Owner-marked free-play capture contract;
 - [`docs/E2_2C2_MOMENTUM_SEMANTICS.md`](docs/E2_2C2_MOMENTUM_SEMANTICS.md) — real-capture diagnosis and A″ falsifier;
-- [`docs/E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md`](docs/E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md) — grounded momentum sink, box3d.js binding contract and intended-clip comparison.
+- [`docs/E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md`](docs/E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md) — grounded momentum sink, box3d.js binding contract and intended-clip comparison;
+- [`docs/E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md`](docs/E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md) — gameplay-level proof that blocked velocity can re-enter motion after constraint release;
+- [`docs/DONOR_CONTRACT.md`](docs/DONOR_CONTRACT.md) — preliminary long-term donor profile/API boundary, separate from research promotion.
 
 ## Current-best facts
 
@@ -108,8 +113,6 @@ Owner free play then confirmed the perceptual result: the objectionable residual
 
 The current runtime calls `b3SolvePlanes(...)` and later `b3ClipVector(...)`, but with `box3d.js@0.1.1` these two calls do not share the native `plane.push` state required by the exact vendored Box3D implementation. Current A/A′/A″ therefore behave as if this mover-plane velocity clip were absent.
 
-This is explicit substrate debt, not a reason to silently change gameplay.
-
 The E2.3 diagnostic recovered the missing native-equivalent `push` state and verified the JS reconstruction against native solved deltas. On a shallow wall isolate:
 
 - native solve delta and reconstructed solve delta differ by only about `1.12e-10` in the measured case;
@@ -120,6 +123,30 @@ The E2.3 diagnostic recovered the missing native-equivalent `push` state and ver
 
 On the recovered Owner anchor, activating this intended clip changes contact lifecycle substantially, so it remains diagnostic only.
 
+### E2.3b / constraint-release relevance
+
+The neutral-jump falsifier establishes that current blocked locomotion velocity can survive sustained geometric blocking and later re-enter movement.
+
+Current A″:
+
+- sustained blocker contact: `53f`;
+- velocity into blocker after that contact: `5.200 m/s`;
+- after `3f` of neutral grounded input: `3.400 m/s`;
+- low blocker vertically clears after jump: `6f`;
+- far face crossed: `24f`;
+- max forward velocity after clearance: `2.680 m/s`;
+- zero-direction release displacement: `1.282 m`.
+
+Intended-clip diagnostic:
+
+- same `53f` blocker episode;
+- blocked-axis velocity: `0.000 m/s`;
+- zero-direction release displacement: `0.000 m`.
+
+Open-space inertia control also has `3.400 m/s` after the same three neutral grounded ticks and travels `1.412 m` during the neutral jump. The wall therefore leaves current A″ with essentially the same stored horizontal locomotion state as free space even though displacement was constrained for almost a second.
+
+This is now a demonstrated gameplay-mechanics consequence, not merely an API-purity concern.
+
 ## Public controls
 
 Mode changes reload the playground so one specimen does not inherit another specimen's disturbed state.
@@ -127,13 +154,14 @@ Mode changes reload the playground so one specimen does not inherit another spec
 - `1` — A frozen normal-reciprocity baseline
 - `2` — B frozen solver-owned root
 - `3` — A′ causal-component reciprocity with old contact memory
-- `4` — A″ same A′ physical contact without dynamic-contact `Δv` memory
-- `WASD` — camera-relative movement
-- `Space` — jump
-- `Shift` — sprint
-- mouse drag — orbit camera
+- `4` — historical A″ composition
+- `5` — stabilized donor A″ entry point
+- `WASD` / touch left stick — camera-relative movement
+- `Space` / `JUMP` — jump
+- `Shift` / `SPRINT` — sprint
+- mouse/touch drag — orbit camera
 - mouse wheel — zoom
-- `R` — reset world + player
+- `R` / `RESET` — reset world + player
 - `H` — telemetry
 - A′ capture URL only: `C` mark event, `X` export events
 
@@ -148,6 +176,10 @@ Direct A′:
 Direct A″:
 
 `https://jozzpoly.github.io/Box3d-Character-Controler/?mode=momentum`
+
+Stable donor A″:
+
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=donor`
 
 Owner capture:
 
@@ -200,7 +232,7 @@ npm run smoke
 npm run build
 ```
 
-Canonical smoke preserves the older Foundation/E2 gates and then runs E2.1 localization, E2.2 falsifiers, E2.2b persistence, E2.2c capture/semantics gates and E2.3 momentum/binding boundary.
+Canonical smoke preserves the older Foundation/E2 gates and then runs E2.1 localization, E2.2 falsifiers, E2.2b persistence, E2.2c capture/semantics gates, E2.3 momentum/binding boundary, E2.3b constraint-release relevance and donor/mobile contract gates.
 
 ## Current stage boundary
 
@@ -208,20 +240,22 @@ Confirmed current-best interpretation:
 
 1. The old A′ delayed wrong-direction slide was a real contact-memory semantic pathology, and A″ removes it while preserving immediate contact consequence.
 2. Owner free play currently prefers A″ behavior and reports appropriate wall rebounds.
-3. There is no evidence yet that the absence of a visible grounded slide tail is itself a defect requiring "slide" to be added.
+3. There is no evidence that the absence of a visible grounded slide tail is itself a defect requiring "slide" to be added.
 4. Grounded zero-input locomotion is independently a very strong momentum sink.
 5. The current box3d.js binding silently prevents the intended native mover-plane velocity clipping contract from operating across separate JS solve/clip calls.
-6. Restoring that clip changes contact lifecycle and therefore cannot be treated as a neutral substrate repair.
-7. The next high-information question is whether current retention of geometrically blocked velocity causes an actual unwanted release/corner/moving-constraint behavior in ordinary A″ use.
+6. Restoring full intended clipping changes contact lifecycle and therefore cannot be treated as a neutral substrate repair.
+7. E2.3b establishes that current A″ can retain velocity through sustained geometric blocking and later release it into motion when the constraint clears, even after directional input has gone neutral.
+8. The next high-information question is therefore no longer *whether* the constraint-velocity boundary matters, but **what smallest explicit blocked-velocity policy removes stale constraint debt while preserving useful momentum, support behavior, contact continuity and player agency**.
 
 Do not automatically:
 
-- patch `box3d.js` / propagate `plane.push` into production;
+- patch `box3d.js` / propagate `plane.push` into production as a presumed fix;
+- adopt native-intended full clipping as a winner merely because it removes the E2.3b release;
 - add a slide or recoil-memory system;
-- tune `groundDeceleration` because A″ stops quickly;
+- tune `groundDeceleration` or `airDeceleration` to hide blocked-velocity debt;
 - reopen causal-component reciprocity;
 - cap contact impulses;
 - delete `externalVelocity` globally;
 - promote A″ to a final architecture winner.
 
-The next experiment should be chosen from a demonstrated gameplay consequence of the **constraint-velocity** or **agency-recovery** boundary, not from a desire to match an abstract physics-purity model.
+The next experiment should compare explicit constraint-velocity policy candidates against **both** the newly reproduced neutral-release pathology and the previously protected Owner/contact/support behaviors. It should remain a bounded policy falsifier rather than a broad controller rewrite.
