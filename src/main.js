@@ -1,11 +1,13 @@
 import Box3D from 'box3d.js/inline';
 import * as THREE from 'three';
 import { ControllerOwnedCharacter } from './character.js';
+import { createDonorCharacter } from './donor-character.js';
 import { SolverOwnedCharacter } from './solver-owned-character.js';
 import { createCharacterVisual } from './character-visual.js';
 import { FollowCamera } from './follow-camera.js';
 import { createFreePlayCapture } from './free-play-capture.js';
 import { installVelocityOnlyContactMemoryProbe } from './momentum-semantics-probe.js';
+import { PlayerInput } from './player-input.js';
 import { createPlayground } from './playground.js';
 import { createWorldRenderer } from './world-renderer.js';
 import './style.css';
@@ -18,16 +20,25 @@ const EMBODIMENT_MODE = requestedMode === 'solver'
   ? 'solver'
   : requestedMode === 'momentum'
     ? 'momentum'
-    : requestedMode === 'causal'
-      ? 'causal'
-      : 'controller';
+    : requestedMode === 'donor'
+      ? 'donor'
+      : requestedMode === 'causal'
+        ? 'causal'
+        : 'controller';
 const CAPTURE_MODE = EMBODIMENT_MODE === 'causal' && urlParams.get('capture') === '1';
+const forceTouch = urlParams.get('touch') === '1'
+  ? true
+  : urlParams.get('touch') === '0'
+    ? false
+    : null;
 
 const canvas = document.querySelector('#app');
 const statusEl = document.querySelector('#status');
 const phaseEl = document.querySelector('#phase');
 const debugEl = document.querySelector('#debug');
 const secondaryControlsEl = document.querySelector('#hud .secondary');
+const touchRoot = document.querySelector('#touch-controls');
+const touchResetButton = document.querySelector('#touch-reset');
 const debugValues = {
   speed: document.querySelector('#d-speed'),
   external: document.querySelector('#d-external'),
@@ -42,19 +53,19 @@ const debugLabels = {
   impulse: document.querySelector('#l-impulse'),
   transport: document.querySelector('#l-transport'),
 };
+const playerInput = new PlayerInput({ touchRoot, forceTouch });
 
 function loadMode(mode) {
   const url = new URL(window.location.href);
   if (mode === 'solver') url.searchParams.set('mode', 'solver');
   else if (mode === 'causal') url.searchParams.set('mode', 'causal');
   else if (mode === 'momentum') url.searchParams.set('mode', 'momentum');
+  else if (mode === 'donor') url.searchParams.set('mode', 'donor');
   else url.searchParams.delete('mode');
   url.searchParams.delete('capture');
   window.location.assign(url);
 }
 
-const keys = new Set();
-let jumpQueued = false;
 let resetQueued = false;
 let debugVisible = false;
 let captureControls = null;
@@ -77,6 +88,10 @@ window.addEventListener('keydown', (event) => {
     loadMode('momentum');
     return;
   }
+  if (key === '5' && !event.repeat) {
+    loadMode('donor');
+    return;
+  }
   if (key === 'c' && !event.repeat && captureControls) {
     captureControls.mark();
     return;
@@ -85,23 +100,30 @@ window.addEventListener('keydown', (event) => {
     captureControls.export();
     return;
   }
-
-  keys.add(key);
-  if (event.code === 'Space' && !event.repeat) {
-    jumpQueued = true;
-    event.preventDefault();
-  }
   if (key === 'r' && !event.repeat) resetQueued = true;
   if (key === 'h' && !event.repeat) {
     debugVisible = !debugVisible;
     debugEl.hidden = !debugVisible;
   }
 });
-window.addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
-window.addEventListener('blur', () => {
-  keys.clear();
-  jumpQueued = false;
-});
+
+if (touchResetButton) {
+  const releaseReset = (event) => {
+    touchResetButton.classList.remove('is-held');
+    if (touchResetButton.hasPointerCapture?.(event.pointerId)) {
+      touchResetButton.releasePointerCapture?.(event.pointerId);
+    }
+  };
+  touchResetButton.addEventListener('pointerdown', (event) => {
+    event.preventDefault();
+    resetQueued = true;
+    touchResetButton.classList.add('is-held');
+    touchResetButton.setPointerCapture?.(event.pointerId);
+  });
+  touchResetButton.addEventListener('pointerup', releaseReset);
+  touchResetButton.addEventListener('pointercancel', releaseReset);
+  touchResetButton.addEventListener('lostpointercapture', () => touchResetButton.classList.remove('is-held'));
+}
 
 function setupScene() {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -162,6 +184,11 @@ async function main() {
       gravity: playground.gravity,
       mass: 80,
     });
+  } else if (EMBODIMENT_MODE === 'donor') {
+    character = createDonorCharacter(b3, playground.world, {
+      startPosition: playground.spawn,
+      gravity: playground.gravity,
+    });
   } else {
     character = new ControllerOwnedCharacter(b3, playground.world, {
       startPosition: playground.spawn,
@@ -207,6 +234,11 @@ async function main() {
     debugLabels.impulse.textContent = 'causal contact impulse';
     debugLabels.transport.textContent = 'support transport';
     secondaryControlsEl.insertAdjacentHTML('beforeend', ' · <strong>C</strong> mark slide · <strong>X</strong> export captures');
+  } else if (EMBODIMENT_MODE === 'donor') {
+    phaseEl.textContent = 'DONOR · STABILIZED A″ CURRENT BEHAVIOR';
+    debugLabels.external.textContent = 'non-contact external';
+    debugLabels.impulse.textContent = 'causal contact impulse';
+    debugLabels.transport.textContent = 'support transport';
   } else if (EMBODIMENT_MODE === 'momentum') {
     phaseEl.textContent = 'E2.2c-2 A″ · VELOCITY-ONLY CONTACT CONSEQUENCE';
     debugLabels.external.textContent = 'non-contact external';
@@ -230,6 +262,10 @@ async function main() {
     baseStatus = `Ready · B solver-owned · real 80 kg body · rotation locked · ${counts.dynamicCount} playground bodies`;
   } else if (CAPTURE_MODE) {
     baseStatus = `Ready · A′ capture · causal-component reciprocity unchanged · ${counts.dynamicCount} dynamic bodies`;
+  } else if (EMBODIMENT_MODE === 'donor') {
+    baseStatus = playerInput.touchEnabled
+      ? `Ready · donor A″ · touch controls active · ${counts.dynamicCount} dynamic bodies`
+      : `Ready · donor A″ · qualified current behavior · ${counts.dynamicCount} dynamic bodies`;
   } else if (EMBODIMENT_MODE === 'momentum') {
     baseStatus = `Ready · A″ probe · contact Δv stays in current velocity only · support carry unchanged · ${counts.dynamicCount} dynamic bodies`;
   } else if (EMBODIMENT_MODE === 'causal') {
@@ -280,26 +316,9 @@ async function main() {
     if (resetQueued) resetAll();
     playground.preStep(dt);
     const basis = followCamera.basis();
-    let moveForward = 0;
-    let moveRight = 0;
-    if (keys.has('w')) moveForward += 1;
-    if (keys.has('s')) moveForward -= 1;
-    if (keys.has('d')) moveRight += 1;
-    if (keys.has('a')) moveRight -= 1;
-
-    const intent = {
-      moveForward,
-      moveRight,
-      forward: [...basis.forward],
-      right: [...basis.right],
-      jump: jumpQueued,
-      jumpHeld: keys.has(' '),
-      sprint: keys.has('shift'),
-    };
+    const intent = playerInput.sample(basis);
 
     character.preStep(dt, intent);
-    jumpQueued = false;
-
     b3.b3World_Step(playground.world, dt, SUBSTEPS);
     character.postStep(dt);
     capture?.record(intent);
