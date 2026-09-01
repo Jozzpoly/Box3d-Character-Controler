@@ -1,6 +1,6 @@
 # Mobile Pages — touch donor surface
 
-Status: **machine-qualified mobile interaction candidate; Owner device free-play pending; character mechanics unchanged**.
+Status: **machine-qualified; initial Owner real-device smoke PASS for automatic touch activation and basic free play; ergonomics/performance acceptance still open; character mechanics unchanged**.
 
 ## Goal
 
@@ -78,19 +78,19 @@ No device-specific physics constants are introduced.
 
 ## Mechanical non-regression boundary
 
-The mobile branch does not edit:
+The mobile branch did not edit:
 
 - `src/character.js`;
-- `src/donor-character.js`;
+- `src/donor-character.js` at the time of the mobile stage;
 - `src/solver-owned-character.js`;
 - `src/playground.js`;
 - Box3D parameters or fixed timestep/substeps.
 
-Camera pointer routing changes only from a single global dragging flag to tracking the active pointer ID. This prevents a second simultaneous pointer from stealing an existing camera drag while preserving ordinary one-pointer desktop drag behavior.
+Camera pointer routing changed only from a single global dragging flag to tracking the active pointer ID. This prevents a second simultaneous pointer from stealing an existing camera drag while preserving ordinary one-pointer desktop drag behavior.
 
 ## Machine qualification
 
-Candidate head before this document:
+Candidate head before the original mobile documentation:
 
 `62595249d87d945fc55cfb029b05997b80e47967`
 
@@ -100,32 +100,58 @@ GitHub Actions run `33542671489`:
 - stabilized donor equivalence gate: **PASS** as part of canonical smoke;
 - synthetic mobile-input gate: **PASS** as part of canonical smoke;
 - production build: **PASS**;
-- Pages deployment intentionally skipped because the run is on a branch.
+- Pages deployment intentionally skipped because the run was on a branch.
+
+Merged mobile main:
+
+`5e4aedc48ea01f8794ee779953355d0aa11a23d8`
+
+GitHub Actions run `33542853906`:
+
+- complete smoke/build: **PASS**;
+- Pages artifact: **PASS**;
+- GitHub Pages deployment: **PASS**.
 
 The synthetic mobile-input gate checks dead-zone behavior, axial input, diagonal magnitude clamping, out-of-radius stick clamping and keyboard+touch movement composition.
 
+## Initial Owner real-device evidence
+
+On 2026-09-01 the public `?mode=donor` Pages build was opened on a real Android phone. Touch controls appeared automatically without using the diagnostic `?touch=1` override.
+
+The accompanying ~39 s screen recording provides direct evidence that:
+
+- the touch surface renders correctly in the real mobile browser viewport;
+- the virtual stick can drive the player through the playground;
+- jump input is used during the same session;
+- the donor runtime remains interactive during ordinary free play.
+
+Owner judgement immediately after opening the build was positive: the touch version worked from the first attempt and was already perceived as genuinely usable.
+
+This is a **mobile feasibility / initial interaction PASS**, not full ergonomic acceptance.
+
 ## What remains unproven
 
-Machine qualification does not establish:
+Current evidence still does not establish:
 
-- that virtual-stick size/placement feels good on the Owner's phone;
-- that camera sensitivity feels right under a real thumb;
+- that virtual-stick size/placement is the preferred long-term layout;
+- that camera sensitivity is ideal under a real thumb;
 - that Sprint deserves its current hold-button placement;
-- that portrait orientation is enjoyable;
-- that renderer performance/thermal behavior is adequate on the target phone;
-- that touch targets are ideal across phone sizes;
-- that downstream multiplayer integration is complete.
+- that portrait orientation is the preferred game orientation;
+- sustained renderer performance, thermal behavior or battery cost;
+- touch-target quality across multiple phone/tablet sizes;
+- accessibility requirements;
+- downstream multiplayer integration.
 
-Those require real-device evidence.
+Those should be resolved from real consumer/device evidence rather than speculative framework work.
 
-## Owner device gate
+## Next Owner device gate
 
-The first public mobile Owner test should answer only:
+Further mobile work should answer concrete experience questions rather than reopen character mechanics by default:
 
-1. Can movement + camera be used simultaneously without pointer conflicts?
-2. Is ordinary movement/jump/sprint controllable enough for free play?
-3. Are controls readable and reachable without obscuring the important play area?
-4. Does the existing A″ physical feel appear preserved rather than mechanically different?
-5. Is performance obviously unacceptable on the actual phone?
+1. Can movement + camera be used simultaneously without pointer conflicts during longer free play?
+2. Are joystick range/dead-zone and camera sensitivity comfortable enough to stop thinking about the controls?
+3. Are Jump/Sprint/Reset reachable without obscuring important play space?
+4. Does the existing A″ physical feel remain recognizable under touch input?
+5. Is sustained performance acceptable on the actual phone?
 
-If the mechanics feel different, first distinguish input/camera ergonomics from an actual physics regression before changing controller parameters.
+If the mechanics seem different, first distinguish input/camera ergonomics from an actual physics regression before changing donor parameters.
