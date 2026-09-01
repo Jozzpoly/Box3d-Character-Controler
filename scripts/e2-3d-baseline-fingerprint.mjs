@@ -7,6 +7,9 @@ const b3 = await Box3D();
 const DT = 1 / 60;
 const SUBSTEPS = 4;
 const SCALE = 1e8;
+const EXPECTED_FINGERPRINT = 'e13a64ccd6cbd5c82ba4f18f1abf9fa1a7eae4ac06ba07a71ca08860f8e330c2';
+const EXPECTED_DYNAMIC_CONTACT_FRAMES = 106;
+const EXPECTED_SUPPORT_FRAMES = 312;
 
 function q(value) {
   return Number.isFinite(value) ? Math.round(value * SCALE) : String(value);
@@ -97,8 +100,17 @@ try {
   }
 
   const fingerprint = crypto.createHash('sha256').update(parts.join('|')).digest('hex');
+  if (fingerprint !== EXPECTED_FINGERPRINT) {
+    throw new Error(`Pre-E2.3d A″ trajectory changed: ${fingerprint} != ${EXPECTED_FINGERPRINT}`);
+  }
+  if (dynamicContactFrames !== EXPECTED_DYNAMIC_CONTACT_FRAMES || supportFrames !== EXPECTED_SUPPORT_FRAMES) {
+    throw new Error(
+      `Pre-E2.3d A″ coverage changed: dynamic=${dynamicContactFrames}/${EXPECTED_DYNAMIC_CONTACT_FRAMES} support=${supportFrames}/${EXPECTED_SUPPORT_FRAMES}`,
+    );
+  }
+
   console.log(
-    `E2.3d pre-change A″ fingerprint: sha256=${fingerprint} dynamicContactFrames=${dynamicContactFrames} supportFrames=${supportFrames} finalPos=${character.position.map((v) => v.toFixed(8)).join(',')} finalV=${character.velocity.map((v) => v.toFixed(8)).join(',')}`,
+    `E2.3d frozen A″ fingerprint PASS: sha256=${fingerprint} dynamicContactFrames=${dynamicContactFrames} supportFrames=${supportFrames}`,
   );
 } finally {
   b3.b3DestroyWorld(playground.world);
