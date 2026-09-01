@@ -1,6 +1,7 @@
 import Box3D from 'box3d.js/inline';
 import * as THREE from 'three';
 import { ControllerOwnedCharacter } from './character.js';
+import { createConstraintVelocityCharacter } from './constraint-velocity-character.js';
 import { createDonorCharacter } from './donor-character.js';
 import { SolverOwnedCharacter } from './solver-owned-character.js';
 import { createCharacterVisual } from './character-visual.js';
@@ -22,9 +23,11 @@ const EMBODIMENT_MODE = requestedMode === 'solver'
     ? 'momentum'
     : requestedMode === 'donor'
       ? 'donor'
-      : requestedMode === 'causal'
-        ? 'causal'
-        : 'controller';
+      : requestedMode === 'constraint'
+        ? 'constraint'
+        : requestedMode === 'causal'
+          ? 'causal'
+          : 'controller';
 const CAPTURE_MODE = EMBODIMENT_MODE === 'causal' && urlParams.get('capture') === '1';
 const forceTouch = urlParams.get('touch') === '1'
   ? true
@@ -47,6 +50,8 @@ const debugValues = {
   contacts: document.querySelector('#d-contacts'),
   impulse: document.querySelector('#d-impulse'),
   transport: document.querySelector('#d-transport'),
+  constraintClips: document.querySelector('#d-constraint-clips'),
+  constraintSolve: document.querySelector('#d-constraint-solve'),
 };
 const debugLabels = {
   external: document.querySelector('#l-external'),
@@ -61,6 +66,7 @@ function loadMode(mode) {
   else if (mode === 'causal') url.searchParams.set('mode', 'causal');
   else if (mode === 'momentum') url.searchParams.set('mode', 'momentum');
   else if (mode === 'donor') url.searchParams.set('mode', 'donor');
+  else if (mode === 'constraint') url.searchParams.set('mode', 'constraint');
   else url.searchParams.delete('mode');
   url.searchParams.delete('capture');
   window.location.assign(url);
@@ -90,6 +96,10 @@ window.addEventListener('keydown', (event) => {
   }
   if (key === '5' && !event.repeat) {
     loadMode('donor');
+    return;
+  }
+  if (key === '6' && !event.repeat) {
+    loadMode('constraint');
     return;
   }
   if (key === 'c' && !event.repeat && captureControls) {
@@ -189,6 +199,11 @@ async function main() {
       startPosition: playground.spawn,
       gravity: playground.gravity,
     });
+  } else if (EMBODIMENT_MODE === 'constraint') {
+    character = createConstraintVelocityCharacter(b3, playground.world, {
+      startPosition: playground.spawn,
+      gravity: playground.gravity,
+    });
   } else {
     character = new ControllerOwnedCharacter(b3, playground.world, {
       startPosition: playground.spawn,
@@ -234,6 +249,11 @@ async function main() {
     debugLabels.impulse.textContent = 'causal contact impulse';
     debugLabels.transport.textContent = 'support transport';
     secondaryControlsEl.insertAdjacentHTML('beforeend', ' · <strong>C</strong> mark slide · <strong>X</strong> export captures');
+  } else if (EMBODIMENT_MODE === 'constraint') {
+    phaseEl.textContent = 'E2.3d A‴ · INTENT-CAPPED RELATIVE CONSTRAINT VELOCITY';
+    debugLabels.external.textContent = 'non-contact external';
+    debugLabels.impulse.textContent = 'causal contact impulse';
+    debugLabels.transport.textContent = 'support transport';
   } else if (EMBODIMENT_MODE === 'donor') {
     phaseEl.textContent = 'DONOR · STABILIZED A″ CURRENT BEHAVIOR';
     debugLabels.external.textContent = 'non-contact external';
@@ -262,6 +282,10 @@ async function main() {
     baseStatus = `Ready · B solver-owned · real 80 kg body · rotation locked · ${counts.dynamicCount} playground bodies`;
   } else if (CAPTURE_MODE) {
     baseStatus = `Ready · A′ capture · causal-component reciprocity unchanged · ${counts.dynamicCount} dynamic bodies`;
+  } else if (EMBODIMENT_MODE === 'constraint') {
+    baseStatus = playerInput.touchEnabled
+      ? `Ready · A‴ constraint candidate · touch controls active · Owner free-play gate · ${counts.dynamicCount} dynamic bodies`
+      : `Ready · A‴ constraint candidate · machine-qualified · Owner free-play gate · ${counts.dynamicCount} dynamic bodies`;
   } else if (EMBODIMENT_MODE === 'donor') {
     baseStatus = playerInput.touchEnabled
       ? `Ready · donor A″ · touch controls active · ${counts.dynamicCount} dynamic bodies`
@@ -350,6 +374,12 @@ async function main() {
     debugValues.contacts.textContent = `${data.dynamicContacts}`;
     debugValues.impulse.textContent = `${data.contactImpulse.toFixed(1)} N·s`;
     debugValues.transport.textContent = `${(data.supportTransport * 100).toFixed(1)} cm/tick`;
+    debugValues.constraintClips.textContent = Number.isFinite(data.constraintClips)
+      ? `${data.constraintClips}/tick`
+      : '—';
+    debugValues.constraintSolve.textContent = Number.isFinite(data.constraintSolveError)
+      ? data.constraintSolveError.toExponential(2)
+      : '—';
     if (capture) refreshStatus();
   }
 

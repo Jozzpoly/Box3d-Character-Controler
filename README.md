@@ -8,7 +8,7 @@ The working tension is **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**.
 
 The implementation is disposable; accepted observations are not. Detailed stage documents are the research record. This README is intentionally a compact map of the current state rather than a second copy of every experiment.
 
-## Current research state — E2.3c constraint-velocity policy boundary
+## Current research state — E2.3d production-path Owner gate
 
 Current public specimens deliberately keep different hypotheses alive:
 
@@ -16,9 +16,10 @@ Current public specimens deliberately keep different hypotheses alive:
 - **B** — frozen E2 solver-owned finite-mass translational root;
 - **A′** — A with E2.2 causal-component dynamic reciprocity;
 - **A″** — A′ physical contact with dynamic-contact `Δv` no longer retained as a persistent `externalVelocity` target;
-- **donor A″** — the behavior-preserving, explicitly profiled downstream contract for the current A″ semantics.
+- **donor A″** — the behavior-preserving, explicitly profiled downstream contract for the current A″ semantics;
+- **A‴** — isolated E2.3d production-path candidate implementing intent-capped surface-relative constraint velocity, pending Owner free-play judgement.
 
-A″ is the current **Owner-preferred contact-semantics specimen**, not an accepted final controller architecture.
+A″ remains the current **Owner-preferred contact-semantics specimen**, not an accepted final controller architecture. A‴ is machine-qualified for direct comparison, not yet preferred and not donor-promoted.
 
 Owner free play of A″ removed the previously objectionable delayed wrong-direction slide and produced wall reactions described as appropriate. That success does **not** justify immediately adding slide back or declaring the entire momentum model solved.
 
@@ -33,7 +34,7 @@ E2.3b then established gameplay relevance. Current A″ spent `53` frames geomet
 
 E2.3c tested explicit policies rather than assuming the native clip was the answer. Immediate full/horizontal clipping removed the stale release but **broke ordinary `0.22 m` stair traversal**. Separating static/kinematic geometry from dynamic reciprocity preserved the Owner dynamic anchor but still failed stairs when clipping was immediate.
 
-The current research survivor is instead **intent-capped relative constraint velocity** for active horizontal static/kinematic constraints:
+The E2.3c research survivor is **intent-capped relative constraint velocity** for active horizontal static/kinematic constraints:
 
 - evaluate character and desired velocity relative to the constraint surface velocity;
 - preserve at most the inward relative normal component still justified by current player intent;
@@ -41,9 +42,9 @@ The current research survivor is instead **intent-capped relative constraint vel
 - leave tangent velocity unchanged;
 - leave dynamic-body consequence to the separately qualified causal reciprocity path.
 
-In the falsifier this reduced neutral and tangent stale release to `0.000 m`, capped a 45° diagonal stale component from `4.763` to the currently justified `3.677 m/s`, preserved held-forward `5.200 m/s`, preserved stairs/ledge traversal, preserved the exact `7f` Owner dynamic anchor and moving-support carry, and correctly reduced a `5.2 m/s` character against a receding `4.0 m/s` kinematic wall to the wall's `4.0 m/s` rather than incorrectly zeroing world velocity.
+E2.3d now implements that policy as the separate A‴ runtime specimen. The real implementation reproduces the E2.3c results, preserves stairs/ledge, the exact `7f` Owner dynamic anchor and moving-support carry, handles moving kinematic constraints in the relative frame, passes a two-plane corner release, and passes an oblique-wall projection falsifier. A frozen 360-tick A″/Donor trajectory fingerprint remains unchanged, demonstrating that candidate work has not altered the accepted A″ path.
 
-This is a **research survivor only**. E2.3c changes no production controller behavior and does not mutate Donor v0. A production-path candidate must be introduced as a new explicit specimen and earn free-play qualification separately.
+The next evidence is **Owner free play**, not another arbitrary policy sweep. A‴ remains a candidate until hands-on comparison establishes whether the mechanically cleaner constraint semantics actually improve embodied control without making ordinary traversal feel artificially sanitized.
 
 ## Detailed evidence
 
@@ -55,8 +56,9 @@ This is a **research survivor only**. E2.3c changes no production controller beh
 - [`docs/E2_2C2_MOMENTUM_SEMANTICS.md`](docs/E2_2C2_MOMENTUM_SEMANTICS.md) — real-capture diagnosis and A″ falsifier;
 - [`docs/E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md`](docs/E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md) — grounded momentum sink, box3d.js binding contract and intended-clip comparison;
 - [`docs/E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md`](docs/E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md) — gameplay-level proof that blocked velocity can re-enter motion after constraint release;
-- [`docs/E2_3C_CONSTRAINT_VELOCITY_POLICY.md`](docs/E2_3C_CONSTRAINT_VELOCITY_POLICY.md) — policy falsifiers, rejected clip classes and the current intent-capped relative survivor;
-- [`docs/DONOR_CONTRACT.md`](docs/DONOR_CONTRACT.md) — preliminary long-term donor profile/API boundary, separate from research promotion.
+- [`docs/E2_3C_CONSTRAINT_VELOCITY_POLICY.md`](docs/E2_3C_CONSTRAINT_VELOCITY_POLICY.md) — policy falsifiers, rejected clip classes and the intent-capped relative survivor;
+- [`docs/E2_3D_PRODUCTION_SPECIMEN.md`](docs/E2_3D_PRODUCTION_SPECIMEN.md) — isolated A‴ implementation, non-interference fingerprint, real-runtime qualification and Owner gate;
+- [`docs/DONOR_CONTRACT.md`](docs/DONOR_CONTRACT.md) — preliminary long-term donor profile/API boundary, still describing frozen A″ rather than A‴.
 
 ## Current-best facts
 
@@ -124,7 +126,7 @@ Owner free play then confirmed the perceptual result: the objectionable residual
 
 ### E2.3 / actual substrate boundary
 
-The current runtime calls `b3SolvePlanes(...)` and later `b3ClipVector(...)`, but with `box3d.js@0.1.1` these two calls do not share the native `plane.push` state required by the exact vendored Box3D implementation. Current A/A′/A″ therefore behave as if this mover-plane velocity clip were absent.
+The current A/A′/A″ runtime calls `b3SolvePlanes(...)` and later `b3ClipVector(...)`, but with `box3d.js@0.1.1` these two calls do not share the native `plane.push` state required by the exact vendored Box3D implementation. Those specimens therefore behave as if this mover-plane velocity clip were absent.
 
 The E2.3 diagnostic recovered the missing native-equivalent `push` state and verified the JS reconstruction against native solved deltas. On a shallow wall isolate:
 
@@ -134,7 +136,7 @@ The E2.3 diagnostic recovered the missing native-equivalent `push` state and ver
 - stale-plane `b3ClipVector`: no velocity change;
 - push-propagated `b3ClipVector`: removes the constrained normal component as native design intends.
 
-On the recovered Owner anchor, activating this intended clip changes contact lifecycle substantially, so it remains diagnostic only.
+On the recovered Owner anchor, activating full intended clip changes contact lifecycle substantially, so it remains rejected as a neutral substrate repair.
 
 ### E2.3b / constraint-release relevance
 
@@ -150,27 +152,19 @@ Current A″:
 - max forward velocity after clearance: `2.680 m/s`;
 - zero-direction release displacement: `1.282 m`.
 
-Intended-clip diagnostic:
-
-- same `53f` blocker episode;
-- blocked-axis velocity: `0.000 m/s`;
-- zero-direction release displacement: `0.000 m`.
-
 Open-space inertia control also has `3.400 m/s` after the same three neutral grounded ticks and travels `1.412 m` during the neutral jump. The wall therefore leaves current A″ with essentially the same stored horizontal locomotion state as free space even though displacement was constrained for almost a second.
-
-This is now a demonstrated gameplay-mechanics consequence, not merely an API-purity concern.
 
 ### E2.3c / constraint-velocity policy
 
 E2.3c rejected three tempting shortcuts before identifying a survivor.
 
-**Immediate clipping is too aggressive.** Full native-intended clipping, all-horizontal clipping and static/kinematic-only horizontal clipping all removed the E2.3b release, but all failed the ordinary stair traversal. Full/all clipping additionally changed the dynamic Owner contact from `7f` to `1f`; static/kinematic-only clipping preserved that contact but still destroyed step negotiation.
+**Immediate clipping is too aggressive.** Full native-intended clipping, all-horizontal clipping and static/kinematic-only horizontal clipping all removed the E2.3b release, but all failed ordinary stair traversal. Full/all clipping additionally changed the dynamic Owner contact from `7f` to `1f`; static/kinematic-only clipping preserved that contact but still destroyed step negotiation.
 
 **Binary intent ownership is too permissive.** A policy that removes blocked velocity only when current intent has zero inward component fixes neutral/tangent release, but a 45° input still allowed the old `4.763 m/s` normal component to survive even though current intent justified only `3.677 m/s`.
 
 **World-space capping is wrong for moving kinematic constraints.** Against a wall receding at `4.000 m/s`, world-space capping dropped the character from `5.200` to `0.000 m/s`; relative-frame capping dropped it to the surface velocity `4.000 m/s`, retiring only the `1.200 m/s` relative closing excess.
 
-The current survivor therefore uses **intent-capped relative constraint velocity** for active horizontal static/kinematic planes:
+The survivor uses:
 
 ```text
 v_rel_in = (velocity - surfaceVelocity) · horizontalNormal
@@ -181,23 +175,41 @@ if v_rel_in < allowed_rel_in:
     retire only the excess normal component
 ```
 
-Measured survivor invariants:
-
-- neutral stale release: `1.282 m → 0.000 m`;
-- tangent unwanted-forward release: `1.714 m → 0.000 m`;
-- 45° diagonal normal velocity: `4.763 → 3.677 m/s` (`0.000 m/s` stale excess);
-- held-forward low-blocker jump: retains `5.200 m/s`, crosses after `13f`;
-- `0.22 m` stairs: PASS;
-- ledge blocker: PASS;
-- Owner dynamic anchor: remains `7f`, same impulse/tail/support;
-- moving-support jump carry: unchanged;
-- receding `4.000 m/s` kinematic wall, neutral intent: converges to `4.000 m/s` rather than `0` or stale `5.200`.
-
 Working interpretation:
 
 > **Constraint velocity is relative, and the player may retain only the constrained normal authority still justified by current intent.**
 
-This remains diagnostic. No runtime specimen implements it yet.
+### E2.3d / A‴ production-path candidate
+
+A‴ implements the E2.3c survivor as a real character path without changing `src/character.js` or Donor v0. A separate helper reconstructs only the missing Box3D plane-push state and every candidate solve cross-checks its reconstructed delta against native `b3SolvePlanes`.
+
+Before candidate code was added, A″/Donor behavior was frozen with a 360-tick world+character trajectory fingerprint:
+
+`e13a64ccd6cbd5c82ba4f18f1abf9fa1a7eae4ac06ba07a71ca08860f8e330c2`
+
+That fingerprint still passes after A‴ implementation.
+
+Corrected real-runtime qualification:
+
+- neutral release: `0.000 m`;
+- tangent normal leak: `0.000 m`, tangent travel `4.936 m`;
+- 45° diagonal allowed normal velocity: `3.677 m/s`;
+- held-forward velocity: `5.200 m/s`, cross `13f`;
+- stationary kinematic release: `0.000 m`;
+- stairs/ledge: PASS;
+- Owner anchor: `7f`, `87.697 N·s`, tails `0.074/0.128 m`, STATIC after separation;
+- moving-support carry: `1.501 m/s`, `0.710 m @ .50s`;
+- receding `4.000 m/s` wall: neutral `4.000 m/s`, held `5.200 m/s`;
+- two-plane corner neutral release: `0.000 / 0.000 m`;
+- max recovered/native solve error: `6.61e-9`.
+
+Oblique-wall qualification on an actual `150°` collision normal additionally produced:
+
+- tangent switch: `0.000 m/s` normal velocity, `0.000 m` normal travel, `2.735 m` tangent travel;
+- partial inward intent: expected `-2.326 m/s`, measured `-2.326 m/s` normal component while retaining `2.954 m/s` tangent velocity;
+- max recovered/native solve error: `5.08e-9`.
+
+This establishes **machine qualification for Owner testing**, not behavioral promotion.
 
 ## Public controls
 
@@ -208,32 +220,33 @@ Mode changes reload the playground so one specimen does not inherit another spec
 - `3` — A′ causal-component reciprocity with old contact memory
 - `4` — historical A″ composition
 - `5` — stabilized donor A″ entry point
+- `6` — A‴ E2.3d constraint-velocity candidate
 - `WASD` / touch left stick — camera-relative movement
 - `Space` / `JUMP` — jump
 - `Shift` / `SPRINT` — sprint
 - mouse/touch drag — orbit camera
 - mouse wheel — zoom
 - `R` / `RESET` — reset world + player
-- `H` — telemetry
+- `H` — telemetry; A‴ additionally exposes constraint caps/tick and reconstructed/native solve delta
 - A′ capture URL only: `C` mark event, `X` export events
 
 Public build:
 
 `https://jozzpoly.github.io/Box3d-Character-Controler/`
 
-Direct A′:
-
-`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=causal`
-
-Direct A″:
-
-`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=momentum`
-
 Stable donor A″:
 
 `https://jozzpoly.github.io/Box3d-Character-Controler/?mode=donor`
 
-Owner capture:
+A‴ Owner gate:
+
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=constraint`
+
+Direct A″ historical composition:
+
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=momentum`
+
+Owner capture for A′:
 
 `https://jozzpoly.github.io/Box3d-Character-Controler/?mode=causal&capture=1`
 
@@ -284,7 +297,7 @@ npm run smoke
 npm run build
 ```
 
-Canonical smoke preserves the older Foundation/E2 gates and then runs E2.1 localization, E2.2 falsifiers, E2.2b persistence, E2.2c capture/semantics gates, E2.3 momentum/binding boundary, E2.3b constraint-release relevance, the E2.3c immediate/intent/relative policy falsifiers and donor/mobile contract gates.
+Canonical smoke preserves the older Foundation/E2 gates and then runs E2.1 localization, E2.2 falsifiers, E2.2b persistence, E2.2c capture/semantics gates, E2.3 momentum/binding boundary, E2.3b constraint-release relevance, the E2.3c policy falsifiers, frozen A″ fingerprint, E2.3d real-runtime/corner/oblique qualification, and donor/mobile contract gates.
 
 ## Current stage boundary
 
@@ -297,18 +310,20 @@ Confirmed current-best interpretation:
 5. The current box3d.js binding silently prevents the intended native mover-plane velocity clipping contract from operating across separate JS solve/clip calls.
 6. Restoring full intended clipping changes contact lifecycle and stair traversal, so it cannot be treated as a neutral substrate repair.
 7. E2.3b establishes that current A″ can retain velocity through sustained geometric blocking and later release it into motion when the constraint clears, even after directional input has gone neutral.
-8. E2.3c rejects immediate clipping and binary intent-release policies, then identifies intent-capped **surface-relative** normal velocity as the current research survivor for static/kinematic constraints while leaving dynamic consequence to causal reciprocity.
-9. The survivor preserves the tested Foundation/E2 traversal, Owner dynamic-contact and moving-support invariants, but it is not yet production-qualified.
-10. The next high-information stage is a **new explicit production-path specimen** implementing the survivor with the smallest justified runtime mechanism, followed by public/free-play and regression qualification. A″ and Donor v0 remain frozen references during that work.
+8. E2.3c rejects immediate clipping and binary intent-release policies, then identifies intent-capped **surface-relative** normal velocity as the research survivor for static/kinematic constraints while leaving dynamic consequence to causal reciprocity.
+9. E2.3d implements that survivor in isolated A‴ and machine-qualifies the real runtime against neutral/tangent/diagonal/held, stairs/ledge, Owner dynamic anchor, support carry, moving kinematic, multi-plane corner and oblique projection gates.
+10. A″/Donor v0 non-interference is independently guarded by the frozen pre-E2.3d trajectory fingerprint.
+11. The next high-information question is **Owner judgement of A‴ in ordinary free play against A″/Donor v0**, not more machine tuning. Does retiring stale blocked authority feel physically correct and controllable without making contact response feel sanitized or sticky?
 
 Do not automatically:
 
 - patch `box3d.js` / propagate `plane.push` into existing A″ or Donor v0;
-- adopt native-intended full clipping as a winner merely because it removes the E2.3b release;
-- mutate Donor v0 to the E2.3c survivor before a new profile/specimen earns promotion;
+- adopt native-intended full clipping;
+- mutate Donor v0 or `DONOR_PROFILE_V0` to A‴ before Owner acceptance and a separate promotion decision;
+- refactor A‴ back into `ControllerOwnedCharacter` merely to remove temporary duplication;
+- tune constraint thresholds or locomotion deceleration without a reproduced perceptual problem;
 - add a slide or recoil-memory system;
-- tune `groundDeceleration` or `airDeceleration` to hide blocked-velocity debt;
 - reopen causal-component reciprocity;
 - cap contact impulses;
 - delete `externalVelocity` globally;
-- promote A″ or the E2.3c diagnostic survivor to a final architecture winner.
+- promote A″ or A‴ to a final architecture winner.
