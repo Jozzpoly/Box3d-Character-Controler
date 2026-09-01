@@ -19,20 +19,21 @@ export class FollowCamera {
     this.smoothedTarget = new THREE.Vector3();
     this.desiredPosition = new THREE.Vector3();
     this.verticalFocus = 0;
-    this.dragging = false;
+    this.dragPointerId = null;
     this.lastX = 0;
     this.lastY = 0;
 
     canvas.addEventListener('contextmenu', (event) => event.preventDefault());
     canvas.addEventListener('pointerdown', (event) => {
       if (event.button !== 0 && event.button !== 2) return;
-      this.dragging = true;
+      if (this.dragPointerId !== null) return;
+      this.dragPointerId = event.pointerId;
       this.lastX = event.clientX;
       this.lastY = event.clientY;
       canvas.setPointerCapture?.(event.pointerId);
     });
     canvas.addEventListener('pointermove', (event) => {
-      if (!this.dragging) return;
+      if (event.pointerId !== this.dragPointerId) return;
       const dx = event.clientX - this.lastX;
       const dy = event.clientY - this.lastY;
       this.lastX = event.clientX;
@@ -41,11 +42,17 @@ export class FollowCamera {
       this.desiredPitch = clamp(this.desiredPitch - dy * 0.0038, -0.04, 0.92);
     });
     const stopDrag = (event) => {
-      this.dragging = false;
-      if (event?.pointerId !== undefined) canvas.releasePointerCapture?.(event.pointerId);
+      if (event?.pointerId !== this.dragPointerId) return;
+      this.dragPointerId = null;
+      if (event?.pointerId !== undefined && canvas.hasPointerCapture?.(event.pointerId)) {
+        canvas.releasePointerCapture?.(event.pointerId);
+      }
     };
     canvas.addEventListener('pointerup', stopDrag);
     canvas.addEventListener('pointercancel', stopDrag);
+    canvas.addEventListener('lostpointercapture', (event) => {
+      if (event.pointerId === this.dragPointerId) this.dragPointerId = null;
+    });
     canvas.addEventListener('wheel', (event) => {
       event.preventDefault();
       this.desiredDistance = clamp(this.desiredDistance * Math.exp(event.deltaY * 0.0008), 4.0, 10.5);
@@ -59,6 +66,7 @@ export class FollowCamera {
     this.yaw = this.desiredYaw;
     this.pitch = this.desiredPitch;
     this.distance = this.desiredDistance;
+    this.dragPointerId = null;
   }
 
   basis() {
