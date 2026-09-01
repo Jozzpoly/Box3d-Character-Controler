@@ -2,16 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#aebfc8" />
-    <title>Box3D Character Controler — E2.2c Momentum Semantics</title>
+    <title>Box3D Character Controler — Embodied Player Laboratory</title>
   </head>
   <body>
     <canvas id="app"></canvas>
     <section id="hud" aria-label="controls">
-      <div class="eyebrow" id="phase">EMBODIED PLAYER · E2.2c</div>
+      <div class="eyebrow" id="phase">EMBODIED PLAYER · LOADING</div>
       <div class="controls"><strong>WASD</strong> move · <strong>Space</strong> jump · <strong>Shift</strong> sprint · <strong>Drag</strong> camera · <strong>Wheel</strong> zoom</div>
-      <div class="secondary"><strong>1</strong> A baseline · <strong>2</strong> B solver-owned · <strong>3</strong> A′ causal reciprocity · <strong>4</strong> A″ velocity-only contact · <strong>R</strong> reset · <strong>H</strong> telemetry</div>
+      <div class="secondary"><strong>1</strong> A baseline · <strong>2</strong> B solver-owned · <strong>3</strong> A′ causal reciprocity · <strong>4</strong> A″ probe · <strong>5</strong> donor A″ · <strong>R</strong> reset · <strong>H</strong> telemetry</div>
       <div id="status">Loading…</div>
     </section>
     <section id="debug" hidden aria-label="debug telemetry">
@@ -23,6 +23,19 @@
       <div><span id="l-impulse">contact impulse</span><strong id="d-impulse">—</strong></div>
       <div><span id="l-transport">support transport</span><strong id="d-transport">—</strong></div>
     </section>
+
+    <section id="touch-controls" hidden aria-label="Touch game controls">
+      <div id="touch-move-pad" class="touch-move-pad" aria-label="Move joystick">
+        <div class="touch-move-ring" aria-hidden="true"></div>
+        <div id="touch-move-knob" class="touch-move-knob" aria-hidden="true"></div>
+      </div>
+      <div class="touch-actions">
+        <button id="touch-reset" class="touch-button touch-reset" type="button" aria-label="Reset world">RESET</button>
+        <button id="touch-sprint" class="touch-button touch-sprint" type="button" aria-pressed="false">SPRINT</button>
+        <button id="touch-jump" class="touch-button touch-jump" type="button" aria-pressed="false">JUMP</button>
+      </div>
+    </section>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
