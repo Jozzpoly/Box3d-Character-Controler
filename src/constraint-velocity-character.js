@@ -12,11 +12,11 @@ const SOLVE_EQUIVALENCE_TOLERANCE = 2e-5;
 
 export const E23D_BEHAVIOR = Object.freeze({
   specimen: 'A‴',
-  base: 'A″ / Donor v0 mechanics profile',
+  base: 'A″ / Donor v0 mechanical constants',
   reciprocity: 'causal-components',
   dynamicContactMemory: 'velocity-only-contact-consequence',
   constraintVelocityPolicy: 'intent-capped surface-relative active horizontal static/kinematic normal velocity',
-  status: 'production-path candidate; not donor-promoted',
+  status: 'Owner-qualified current-best mechanics; Donor v1 source behavior',
 });
 
 export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
