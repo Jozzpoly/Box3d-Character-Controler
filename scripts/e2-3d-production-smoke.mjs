@@ -94,15 +94,24 @@ function lowBlockerJump(mode, blockerType = 'static') {
 
   let blocked = 0;
   let maxSolveError = 0;
+  let clipCount = 0;
   for (let i = 0; i < 75; i++) {
     const frame = tick(setup, character, intent({ moveForward: 1 }));
     if (frame.planes > 1) blocked += 1;
+    clipCount += frame.clips;
     maxSolveError = Math.max(maxSolveError, frame.solveError);
   }
   if (blocked < 20) throw new Error(`E2.3d ${mode}/${blockerType} never established sustained blocking`);
 
-  if (mode !== 'held-forward') {
-    for (let i = 0; i < 3; i++) tick(setup, character);
+  // Faithfully preserve the E2.3c timing: only the neutral case waits three
+  // grounded ticks before jumping. Tangent and diagonal intent switch
+  // immediately so stale blocked velocity is still present when policy acts.
+  if (mode === 'neutral') {
+    for (let i = 0; i < 3; i++) {
+      const frame = tick(setup, character);
+      clipCount += frame.clips;
+      maxSolveError = Math.max(maxSolveError, frame.solveError);
+    }
   }
 
   const start = [...character.position];
@@ -111,7 +120,6 @@ function lowBlockerJump(mode, blockerType = 'static') {
   let clearAt = -1;
   let crossAt = -1;
   let maxVxAfterClear = -Infinity;
-  let clipCount = 0;
 
   for (let i = 0; i < 75; i++) {
     const base = mode === 'neutral'
@@ -326,12 +334,18 @@ function cornerReleaseTrial() {
   setup.box('static', [0.9, top / 2, 2.0], [1.2, top / 2, 0.1]);
   const character = makeCandidate(setup);
   settle(setup, character);
-  for (let i = 0; i < 90; i++) tick(setup, character, intent({ moveForward: 1, moveRight: 1 }));
-  for (let i = 0; i < 3; i++) tick(setup, character);
+  let clipCount = 0;
+  for (let i = 0; i < 90; i++) {
+    const frame = tick(setup, character, intent({ moveForward: 1, moveRight: 1 }));
+    clipCount += frame.clips;
+  }
+  for (let i = 0; i < 3; i++) {
+    const frame = tick(setup, character);
+    clipCount += frame.clips;
+  }
   const start = [...character.position];
   let maxDx = 0;
   let maxDz = 0;
-  let clipCount = 0;
   for (let i = 0; i < 75; i++) {
     const control = i === 0 ? intent({ jump: true, jumpHeld: true }) : intent({ jumpHeld: i < 8 });
     const frame = tick(setup, character, control);
