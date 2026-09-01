@@ -1,8 +1,7 @@
 import Box3D from 'box3d.js/inline';
 import * as THREE from 'three';
 import { ControllerOwnedCharacter } from './character.js';
-import { createConstraintVelocityCharacter } from './constraint-velocity-character.js';
-import { createDonorCharacter } from './donor-character.js';
+import { createCurrentDonorCharacter, createDonorCharacter } from './donor/index.js';
 import { SolverOwnedCharacter } from './solver-owned-character.js';
 import { createCharacterVisual } from './character-visual.js';
 import { FollowCamera } from './follow-camera.js';
@@ -21,13 +20,13 @@ const EMBODIMENT_MODE = requestedMode === 'solver'
   ? 'solver'
   : requestedMode === 'momentum'
     ? 'momentum'
-    : requestedMode === 'donor'
-      ? 'donor'
-      : requestedMode === 'constraint'
-        ? 'constraint'
-        : requestedMode === 'causal'
-          ? 'causal'
-          : 'controller';
+    : requestedMode === 'donor' || requestedMode === 'previous'
+      ? 'previous'
+      : requestedMode === 'causal'
+        ? 'causal'
+        : requestedMode === 'controller'
+          ? 'controller'
+          : 'current';
 const CAPTURE_MODE = EMBODIMENT_MODE === 'causal' && urlParams.get('capture') === '1';
 const forceTouch = urlParams.get('touch') === '1'
   ? true
@@ -60,48 +59,12 @@ const debugLabels = {
 };
 const playerInput = new PlayerInput({ touchRoot, forceTouch });
 
-function loadMode(mode) {
-  const url = new URL(window.location.href);
-  if (mode === 'solver') url.searchParams.set('mode', 'solver');
-  else if (mode === 'causal') url.searchParams.set('mode', 'causal');
-  else if (mode === 'momentum') url.searchParams.set('mode', 'momentum');
-  else if (mode === 'donor') url.searchParams.set('mode', 'donor');
-  else if (mode === 'constraint') url.searchParams.set('mode', 'constraint');
-  else url.searchParams.delete('mode');
-  url.searchParams.delete('capture');
-  window.location.assign(url);
-}
-
 let resetQueued = false;
 let debugVisible = false;
 let captureControls = null;
 
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
-  if (key === '1' && !event.repeat) {
-    loadMode('controller');
-    return;
-  }
-  if (key === '2' && !event.repeat) {
-    loadMode('solver');
-    return;
-  }
-  if (key === '3' && !event.repeat) {
-    loadMode('causal');
-    return;
-  }
-  if (key === '4' && !event.repeat) {
-    loadMode('momentum');
-    return;
-  }
-  if (key === '5' && !event.repeat) {
-    loadMode('donor');
-    return;
-  }
-  if (key === '6' && !event.repeat) {
-    loadMode('constraint');
-    return;
-  }
   if (key === 'c' && !event.repeat && captureControls) {
     captureControls.mark();
     return;
@@ -194,13 +157,13 @@ async function main() {
       gravity: playground.gravity,
       mass: 80,
     });
-  } else if (EMBODIMENT_MODE === 'donor') {
+  } else if (EMBODIMENT_MODE === 'previous') {
     character = createDonorCharacter(b3, playground.world, {
       startPosition: playground.spawn,
       gravity: playground.gravity,
     });
-  } else if (EMBODIMENT_MODE === 'constraint') {
-    character = createConstraintVelocityCharacter(b3, playground.world, {
+  } else if (EMBODIMENT_MODE === 'current') {
+    character = createCurrentDonorCharacter(b3, playground.world, {
       startPosition: playground.spawn,
       gravity: playground.gravity,
     });
@@ -239,38 +202,38 @@ async function main() {
     : null;
 
   if (EMBODIMENT_MODE === 'solver') {
-    phaseEl.textContent = 'E2 B · SOLVER-OWNED TRANSLATIONAL ROOT';
+    phaseEl.textContent = 'HISTORY · E2 B SOLVER-OWNED ROOT';
     debugLabels.external.textContent = 'intent residual';
     debugLabels.impulse.textContent = 'solver Δp proxy';
     debugLabels.transport.textContent = 'manual transport';
   } else if (CAPTURE_MODE) {
-    phaseEl.textContent = 'E2.2c-1 A′ · OWNER-MARKED FREE-PLAY CAPTURE';
+    phaseEl.textContent = 'HISTORY · E2.2c-1 A′ OWNER CAPTURE';
     debugLabels.external.textContent = 'external';
     debugLabels.impulse.textContent = 'causal contact impulse';
     debugLabels.transport.textContent = 'support transport';
     secondaryControlsEl.insertAdjacentHTML('beforeend', ' · <strong>C</strong> mark slide · <strong>X</strong> export captures');
-  } else if (EMBODIMENT_MODE === 'constraint') {
-    phaseEl.textContent = 'E2.3d A‴ · INTENT-CAPPED RELATIVE CONSTRAINT VELOCITY';
+  } else if (EMBODIMENT_MODE === 'current') {
+    phaseEl.textContent = 'CURRENT · DONOR V1 · A‴';
     debugLabels.external.textContent = 'non-contact external';
     debugLabels.impulse.textContent = 'causal contact impulse';
     debugLabels.transport.textContent = 'support transport';
-  } else if (EMBODIMENT_MODE === 'donor') {
-    phaseEl.textContent = 'DONOR · STABILIZED A″ CURRENT BEHAVIOR';
+  } else if (EMBODIMENT_MODE === 'previous') {
+    phaseEl.textContent = 'HISTORY · DONOR V0 · A″';
     debugLabels.external.textContent = 'non-contact external';
     debugLabels.impulse.textContent = 'causal contact impulse';
     debugLabels.transport.textContent = 'support transport';
   } else if (EMBODIMENT_MODE === 'momentum') {
-    phaseEl.textContent = 'E2.2c-2 A″ · VELOCITY-ONLY CONTACT CONSEQUENCE';
+    phaseEl.textContent = 'HISTORY · E2.2c-2 A″ PROBE';
     debugLabels.external.textContent = 'non-contact external';
     debugLabels.impulse.textContent = 'causal contact impulse';
     debugLabels.transport.textContent = 'support transport';
   } else if (EMBODIMENT_MODE === 'causal') {
-    phaseEl.textContent = 'E2.2 A′ · CAUSAL-COMPONENT RECIPROCITY';
+    phaseEl.textContent = 'HISTORY · E2.2 A′';
     debugLabels.external.textContent = 'external';
     debugLabels.impulse.textContent = 'causal contact impulse';
     debugLabels.transport.textContent = 'support transport';
   } else {
-    phaseEl.textContent = 'E2 A · FOUNDATION 02.1 H-A';
+    phaseEl.textContent = 'HISTORY · E2 A FOUNDATION 02.1';
     debugLabels.external.textContent = 'external';
     debugLabels.impulse.textContent = 'contact impulse';
     debugLabels.transport.textContent = 'support transport';
@@ -279,23 +242,21 @@ async function main() {
   const counts = playground.stats();
   let baseStatus;
   if (EMBODIMENT_MODE === 'solver') {
-    baseStatus = `Ready · B solver-owned · real 80 kg body · rotation locked · ${counts.dynamicCount} playground bodies`;
+    baseStatus = `History only · B solver-owned · ${counts.dynamicCount} playground bodies`;
   } else if (CAPTURE_MODE) {
-    baseStatus = `Ready · A′ capture · causal-component reciprocity unchanged · ${counts.dynamicCount} dynamic bodies`;
-  } else if (EMBODIMENT_MODE === 'constraint') {
+    baseStatus = `History only · A′ capture · ${counts.dynamicCount} dynamic bodies`;
+  } else if (EMBODIMENT_MODE === 'current') {
     baseStatus = playerInput.touchEnabled
-      ? `Ready · A‴ constraint candidate · touch controls active · Owner free-play gate · ${counts.dynamicCount} dynamic bodies`
-      : `Ready · A‴ constraint candidate · machine-qualified · Owner free-play gate · ${counts.dynamicCount} dynamic bodies`;
-  } else if (EMBODIMENT_MODE === 'donor') {
-    baseStatus = playerInput.touchEnabled
-      ? `Ready · donor A″ · touch controls active · ${counts.dynamicCount} dynamic bodies`
-      : `Ready · donor A″ · qualified current behavior · ${counts.dynamicCount} dynamic bodies`;
+      ? `Ready · current donor v1 / A‴ · touch controls active · ${counts.dynamicCount} dynamic bodies`
+      : `Ready · current donor v1 / A‴ · Owner-qualified feel · ${counts.dynamicCount} dynamic bodies`;
+  } else if (EMBODIMENT_MODE === 'previous') {
+    baseStatus = `Previous reference · frozen donor v0 / A″ · ${counts.dynamicCount} dynamic bodies`;
   } else if (EMBODIMENT_MODE === 'momentum') {
-    baseStatus = `Ready · A″ probe · contact Δv stays in current velocity only · support carry unchanged · ${counts.dynamicCount} dynamic bodies`;
+    baseStatus = `History only · A″ research probe · ${counts.dynamicCount} dynamic bodies`;
   } else if (EMBODIMENT_MODE === 'causal') {
-    baseStatus = `Ready · A′ controller-owned · causal-component reciprocity · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
+    baseStatus = `History only · A′ causal reciprocity · ${counts.dynamicCount} playground bodies`;
   } else {
-    baseStatus = `Ready · A controller-owned · baseline normal reciprocity · 80 kg virtual interaction mass · ${counts.dynamicCount} playground bodies`;
+    baseStatus = `History only · A Foundation 02.1 · ${counts.dynamicCount} playground bodies`;
   }
 
   function refreshStatus(note = '') {
