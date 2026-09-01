@@ -1,3 +1,5 @@
+import { createDonorIntent, normalizeMoveAxes } from './donor/intent.js';
+
 function clampUnit(value) {
   return Math.max(-1, Math.min(1, value));
 }
@@ -24,14 +26,10 @@ export function normalizeVirtualStick(dx, dy, radius, deadZone = 0.12) {
 }
 
 export function mergeMovement(keyboardForward, keyboardRight, touchForward, touchRight) {
-  let forward = keyboardForward + touchForward;
-  let right = keyboardRight + touchRight;
-  const length = Math.hypot(forward, right);
-  if (length > 1) {
-    forward /= length;
-    right /= length;
-  }
-  return { moveForward: forward, moveRight: right };
+  return normalizeMoveAxes(
+    keyboardForward + touchForward,
+    keyboardRight + touchRight,
+  );
 }
 
 export function detectTouchCapability(force = null) {
@@ -196,13 +194,13 @@ export class PlayerInput {
     const jump = this.jumpQueued;
     this.jumpQueued = false;
 
-    return {
+    return createDonorIntent({
       ...movement,
-      forward: [...basis.forward],
-      right: [...basis.right],
+      forward: basis.forward,
+      right: basis.right,
       jump,
       jumpHeld: this.keys.has(' ') || this.touchJumpHeld,
       sprint: this.keys.has('shift') || this.touchSprintHeld,
-    };
+    });
   }
 }
