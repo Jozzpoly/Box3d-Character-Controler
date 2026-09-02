@@ -1,22 +1,31 @@
 # Mobile Pages — touch donor surface
 
-Status: **machine-qualified; initial Owner real-device smoke PASS for automatic touch activation and basic free play; ergonomics/performance acceptance still open; character mechanics unchanged**.
+Status: **touch/input feasibility is qualified and initial Owner real-device smoke passed; current mobile mechanics are Donor v1 / A‴; ergonomics, sustained performance and thermal/device acceptance remain open.**
+
+## Current-state overlay after E2.3e
+
+The original mobile stage was built and first tested while Donor v0 / A″ was the current donor. That historical evidence remains valid for the touch/input surface, but the project has since promoted A‴ to **current Donor v1**.
+
+Current rules:
+
+- the normal public URL uses Donor v1 / A‴ on desktop and touch devices;
+- mobile does not own a separate character controller or separate physics constants;
+- `?mode=donor` / `?mode=previous` now means the frozen previous Donor v0 / A″ reference;
+- the old numeric mode shortcuts, including key `5`, are no longer part of the normal public UI;
+- `?touch=1` / `?touch=0` remain diagnostic UI overrides only;
+- touch and keyboard still feed the same device-independent donor intent contract.
+
+The initial Android recording therefore proves the **touch substrate and v0-era mobile feasibility**, not a complete post-E2.3e device qualification of v1. Donor v1 itself is mechanically qualified independently by the canonical donor/research smoke matrix.
 
 ## Goal
 
-Expose the stabilized A″ donor behavior on the same GitHub Pages runtime with phone/tablet controls, so downstream projects can inherit one qualified controller/input contract instead of independently rebuilding mobile character semantics.
+Expose the current qualified donor behavior through the same GitHub Pages runtime on desktop and phone/tablet without creating device-specific character semantics.
 
-This is an interaction/presentation stage, not a new embodiment experiment.
+This remains an interaction/presentation concern, not a separate embodiment architecture.
 
-Base before mobile work:
+## Input contract
 
-`d4e98787c179ab14816b87ca6073f353a50386b6`
-
-That base already contains the machine-qualified `createDonorCharacter(...)` entry point for current Owner-preferred A″ behavior.
-
-## Runtime contract
-
-Mobile does **not** create a second controller. Keyboard and touch both produce the same intent shape consumed by the existing character runtime:
+Keyboard and touch produce the same intent shape consumed by the donor runtime:
 
 - `moveForward` / `moveRight` in `[-1, 1]` with unit-magnitude diagonal clamp;
 - camera-relative `forward` / `right` basis;
@@ -31,27 +40,7 @@ Touch controls:
 - `SPRINT` — held sprint;
 - `RESET` — restore playground + player.
 
-Pointer Events and pointer capture are used so simultaneous left-stick movement and right-side camera drag remain independent.
-
-## Donor mode
-
-A new explicit public mode selects the stabilized donor factory:
-
-`?mode=donor`
-
-Keyboard shortcut:
-
-`5`
-
-Historical research modes remain unchanged:
-
-- `1` — frozen A / Foundation 02.1;
-- `2` — frozen B solver-owned translational root;
-- `3` — A′ causal-component reciprocity;
-- `4` — historical A″ probe composition;
-- `5` — stabilized donor A″ entry point.
-
-The donor mode is intentionally explicit rather than silently changing the repository's historical default mode according to device type.
+Pointer Events and pointer capture keep simultaneous movement and camera drag independent.
 
 ## Touch activation
 
@@ -66,7 +55,7 @@ These switches affect only UI/input availability, not character mechanics.
 
 ## Layout boundary
 
-The Pages surface now includes:
+The Pages surface includes:
 
 - `viewport-fit=cover`;
 - safe-area inset positioning for HUD and controls;
@@ -76,19 +65,13 @@ The Pages surface now includes:
 
 No device-specific physics constants are introduced.
 
-## Mechanical non-regression boundary
+## Historical mobile-stage provenance
 
-The mobile branch did not edit:
+The original mobile work started from:
 
-- `src/character.js`;
-- `src/donor-character.js` at the time of the mobile stage;
-- `src/solver-owned-character.js`;
-- `src/playground.js`;
-- Box3D parameters or fixed timestep/substeps.
+`d4e98787c179ab14816b87ca6073f353a50386b6`
 
-Camera pointer routing changed only from a single global dragging flag to tracking the active pointer ID. This prevents a second simultaneous pointer from stealing an existing camera drag while preserving ordinary one-pointer desktop drag behavior.
-
-## Machine qualification
+At that time `createDonorCharacter(...)` represented the current A″ behavior and `?mode=donor` plus key `5` selected it. Those mode/key details are historical and have been superseded by E2.3e public cleanup; the underlying touch/input evidence remains useful.
 
 Candidate head before the original mobile documentation:
 
@@ -97,10 +80,10 @@ Candidate head before the original mobile documentation:
 GitHub Actions run `33542671489`:
 
 - complete historical mechanical smoke: **PASS**;
-- stabilized donor equivalence gate: **PASS** as part of canonical smoke;
-- synthetic mobile-input gate: **PASS** as part of canonical smoke;
+- donor equivalence gate: **PASS**;
+- synthetic mobile-input gate: **PASS**;
 - production build: **PASS**;
-- Pages deployment intentionally skipped because the run was on a branch.
+- Pages deployment skipped because the run was on a branch.
 
 Merged mobile main:
 
@@ -112,46 +95,59 @@ GitHub Actions run `33542853906`:
 - Pages artifact: **PASS**;
 - GitHub Pages deployment: **PASS**.
 
-The synthetic mobile-input gate checks dead-zone behavior, axial input, diagonal magnitude clamping, out-of-radius stick clamping and keyboard+touch movement composition.
+The synthetic mobile-input gate checks dead-zone behavior, axial input, diagonal magnitude clamping, out-of-radius stick clamping and keyboard+touch movement composition. It remains part of canonical `smoke:donor` after the v1 promotion.
 
 ## Initial Owner real-device evidence
 
-On 2026-09-01 the public `?mode=donor` Pages build was opened on a real Android phone. Touch controls appeared automatically without using the diagnostic `?touch=1` override.
+On 2026-09-01 the then-current public donor Pages build was opened on a real Android phone. Touch controls appeared automatically without the diagnostic `?touch=1` override.
 
-The accompanying ~39 s screen recording provides direct evidence that:
+The accompanying ~39 s screen recording established that:
 
-- the touch surface renders correctly in the real mobile browser viewport;
-- the virtual stick can drive the player through the playground;
-- jump input is used during the same session;
-- the donor runtime remains interactive during ordinary free play.
+- the touch surface rendered correctly in the real mobile browser viewport;
+- the virtual stick drove the player through the playground;
+- jump was usable during the same session;
+- the donor runtime remained interactive during ordinary free play.
 
-Owner judgement immediately after opening the build was positive: the touch version worked from the first attempt and was already perceived as genuinely usable.
+Owner judgement was positive: the touch version worked from the first attempt and was already perceived as genuinely usable.
 
-This is a **mobile feasibility / initial interaction PASS**, not full ergonomic acceptance.
+This is a **mobile feasibility / initial interaction PASS**, not full ergonomic or performance acceptance.
+
+## Mechanical non-regression boundary
+
+The original mobile stage did not alter character mechanics. After E2.3e, the same principle remains mandatory: mobile-specific fixes should first stay in input/camera/layout unless evidence demonstrates a real mechanics problem shared by the donor.
+
+If behavior feels different on phone, distinguish in this order:
+
+1. stick/dead-zone/sensitivity effects;
+2. camera ergonomics;
+3. frame pacing/performance;
+4. only then an actual physics regression.
+
+Do not retune Donor v1 merely to compensate for a touch-control problem.
 
 ## What remains unproven
 
 Current evidence still does not establish:
 
-- that virtual-stick size/placement is the preferred long-term layout;
-- that camera sensitivity is ideal under a real thumb;
-- that Sprint deserves its current hold-button placement;
-- that portrait orientation is the preferred game orientation;
+- preferred long-term virtual-stick size/placement;
+- ideal real-thumb camera sensitivity;
+- whether Sprint deserves its current hold-button placement;
+- preferred orientation policy;
 - sustained renderer performance, thermal behavior or battery cost;
 - touch-target quality across multiple phone/tablet sizes;
 - accessibility requirements;
 - downstream multiplayer integration.
 
-Those should be resolved from real consumer/device evidence rather than speculative framework work.
+These remain consumer/device questions, not reasons to reopen character mechanics automatically.
 
-## Next Owner device gate
+## Next real-device gate
 
-Further mobile work should answer concrete experience questions rather than reopen character mechanics by default:
+When mobile work becomes relevant again, test the **normal current URL / Donor v1 / A‴** and answer concrete experience questions:
 
 1. Can movement + camera be used simultaneously without pointer conflicts during longer free play?
 2. Are joystick range/dead-zone and camera sensitivity comfortable enough to stop thinking about the controls?
 3. Are Jump/Sprint/Reset reachable without obscuring important play space?
-4. Does the existing A″ physical feel remain recognizable under touch input?
-5. Is sustained performance acceptable on the actual phone?
+4. Does the current A‴ feel remain intact under touch input?
+5. Is sustained performance acceptable on the actual target phone/tablet?
 
-If the mechanics seem different, first distinguish input/camera ergonomics from an actual physics regression before changing donor parameters.
+Until a real device/consumer need makes these questions important, no further mobile framework work is required.
