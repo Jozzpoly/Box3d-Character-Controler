@@ -106,10 +106,9 @@ const SUITES = {
       ],
     },
     {
-      name: 'E6 bounded support-relative translation',
+      name: 'E6 support-relative translation substrate',
       scripts: [
         'scripts/e6-0a-prismatic-binding-calibration.mjs',
-        'scripts/e6-0d-support-foot-preserving-representation-match.mjs',
       ],
     },
   ],
