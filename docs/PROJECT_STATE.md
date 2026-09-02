@@ -354,7 +354,43 @@ Every push runs full smoke + production build. Pages publishes only from `main`.
 
 Do not add CI ceremony without a concrete information/risk benefit.
 
-## 11. Durable invariants
+## 11. Durable evidence lineage
+
+This compact lineage is retained because old specimens remain useful falsifiers even when they are no longer current behavior.
+
+### Foundation / A
+
+Established useful controller-owned agency, gravity/support, dynamic push, moving support and workable capsule traversal.
+
+### B
+
+A real solver-owned finite-mass translational root demonstrated solver participation but performed poorly at ordinary traversal in that minimal specimen. This rejected the specimen, not every possible solver-owned/hybrid future.
+
+### A′
+
+Causal-component reciprocity removed artificial cross-axis momentum while preserving useful physical responses.
+
+### A″
+
+Dynamic contact reaction became current `Δv`, not a persistent future external-velocity target, removing delayed wrong-direction residual slide. This remains frozen Donor v0 compatibility/reference behavior.
+
+### E2.3 binding finding
+
+`box3d.js@0.1.1` loses solved `b3CollisionPlane.push` mutation across separate JS wrapper calls. Reconstructing native-intended clipping was not behavior-neutral and broke valid traversal, so the binding was not patched for purity.
+
+### A‴
+
+Intent-capped surface-relative constraint velocity survived the scenario matrix, entered the real production path, passed Owner free play and became current Donor v1.
+
+### E3.1
+
+Physically negotiated grounded posture became Owner-positive experimental evidence. Later falsification separated support-mediated balance from accidental unsupported attitude control and qualified a first support/contact-signal model.
+
+### E3.2
+
+A bounded internal angular-momentum specimen demonstrated a local canonical mechanism but failed solver-resolution robustness. The stage is retained as knowledge and falsification evidence, not promoted player behavior.
+
+## 12. Durable invariants
 
 Do not change these without a new reason and matching evidence:
 
@@ -375,7 +411,7 @@ Do not change these without a new reason and matching evidence:
 - articulation and locomotion integration must earn complexity through a separated question;
 - a local causal effect at one solver resolution must not be promoted as robust capability without substrate-sensitivity evidence.
 
-## 12. Known debts / open boundaries
+## 13. Known debts / open boundaries
 
 These are stored uncertainties, not automatic tasks.
 
@@ -411,7 +447,7 @@ Initial Android touch free play proved feasibility/usability of the accepted loc
 
 The pure intent boundary is useful, but this repository does not own a generic reconciliation/prediction/serialization framework. A real consumer must earn it.
 
-## 13. Current natural boundary / next-work rule
+## 14. Current natural boundary / next-work rule
 
 E3.2 is **closed as a research stage**. It earned knowledge, not promotion.
 
@@ -428,7 +464,7 @@ Serious families of future questions may include, without commitment:
 
 The previous E3.2 proposal is no longer an inherited obligation merely because it once looked promising.
 
-## 14. Execution loop
+## 15. Execution loop
 
 Default:
 
