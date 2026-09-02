@@ -33,17 +33,17 @@ The normal public/default player remains **A‴ / Donor v1** unless `PROJECT_STA
 - [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — authority placement, physical contact contribution and residual-authority accounting;
 - [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — rejection of two latent-translation representations in the primary ankle path before actuation;
 - [`E7_PARALLEL_SUPPORT_SET.md`](E7_PARALLEL_SUPPORT_SET.md) — parallel support representation, real finite ground acquisition, and failure of the tested single-hinge strut to establish stable body-load sharing;
-- [`E8_UNILATERAL_AXIAL_COMPLIANCE.md`](E8_UNILATERAL_AXIAL_COMPLIANCE.md) — qualification of a solver-native finite compression-only axial primitive and the topology boundary it exposes.
+- [`E8_UNILATERAL_AXIAL_COMPLIANCE.md`](E8_UNILATERAL_AXIAL_COMPLIANCE.md) — finite compression-only distance primitive plus qualified limit-guide/compliance composition for a minimal guided-telescopic candidate family.
 
 These are research ledgers. They do not automatically promote mechanics into the player runtime.
 
 ## Current E7 → E8 result in one paragraph
 
-E7 preserved the qualified primary E5 foot↔torso path and added a separate physical support branch. A `1 kg`, `0.9 m` parallel probe passed inactive representation matching, then finite equal-and-opposite internal actuation acquired a real mirrored probe↔platform contact while primary support remained active. Upright settling left almost all load on the primary foot; when current31 demand shifted the body far enough toward the second support, the primary foot unloaded/lost contact while the probe remained grounded and the organism fell instead of establishing a stable dual-support HOLD. This means the rigid E7 branch was capable of transmitting enough reaction to participate in support takeover, but did not provide stable/regulatable load sharing. E8.0a then qualified, at binding level only, a mirrored spring-only distance-joint primitive that saturates at finite compression force while exerting effectively zero tension. Therefore:
+E7 preserved the qualified primary E5 foot↔torso path and added a separate physical support branch. A `1 kg`, `0.9 m` probe passed inactive representation matching and finite internal actuation acquired real mirrored ground contact. Quiet settling still left almost all load on the primary foot; a stronger demand shift then unloaded/lost the primary support while the probe remained grounded, but the organism fell instead of establishing stable dual-support HOLD. Thus E7 had a real reaction path but not stable/regulatable load sharing. E8.0a qualified a solver-native distance spring with finite compression and effectively zero tension. E8.0b then qualified a minimal composition: a **limit-only prismatic guide** can physically suspend a real `1 kg` distal pad at an extension stop while the distance spring remains tension-free, and inside guide travel the stop disengages while the distance spring alone supplies material compression. Therefore:
 
-> **The next problem is not merely acquiring a second contact or discovering any load path; it is embedding finite unilateral compliance into a physically honest parallel topology that remains non-interfering while inactive and can later be tested for stable load sharing.**
+> **The current candidate direction is a guided telescopic parallel support that separates placement from finite axial load sharing; the next unresolved boundary is physically honest stow/release/deployment before any embodied representation or ground-load claim.**
 
-Do not rescue the E7 strut through torque/angle/length/mass sweeps, and do not treat the E8.0a primitive as an already qualified leg.
+Do not rescue the E7 strut through parameter sweeps, and do not treat E8.0a/b as an already qualified leg.
 
 ## Historical E1/E2 evidence
 
@@ -100,9 +100,12 @@ Negative E7 load-bearing falsifiers remain executable provenance outside mandato
 - `e7-2a-settled-support-load-transfer.mjs`;
 - `e7-2b-demand-aligned-load-transfer.mjs`.
 
-Current positive E8 binding smoke:
+Current positive E8 binding/composition smoke:
 
-- `e8-0a-distance-joint-axial-binding-calibration.mjs` — finite mirrored compression-only axial compliance; no embodied-support claim.
+- `e8-0a-distance-joint-axial-binding-calibration.mjs` — finite mirrored compression-only axial compliance;
+- `e8-0b-telescopic-guide-compliance-binding.mjs` — limit-only guide suspension + interior unilateral-compliance role separation.
+
+The first E8.0b run at head `9547c06b4ded38570618fae3403d0dd3d7112dd0` is retained as a confounded failure: pinned prismatic generic force telemetry reports the accumulated axial impulse in a vector component inconsistent with the actual local-X slide axis. The corrected gate uses prismatic translation/geometry for axis truth and generic guide-force magnitude only for load presence.
 
 Removing a probe from mandatory smoke must be an evidence decision, not cleanup by age. A negative experiment must not be rewritten into an artificial PASS merely to make CI green.
 
@@ -110,19 +113,19 @@ The GitHub Actions workflow remains deliberately simple: every push runs full sm
 
 ## Current physical-research boundary
 
-Do not run current31 translational-agency A/B on the failed E7 single-hinge strut. It did not pass the more fundamental stable-load-sharing prerequisite.
+Do not run current31 translational-agency A/B on the failed E7 single-hinge strut. It did not pass stable-load-sharing qualification.
 
-E8.0a has now answered the primitive-level question: the pinned Box3D binding can provide finite compression with effectively zero tension in an isolated axial specimen. That does **not** solve the embodied topology problem. In particular, a lone compression-only distance constraint cannot by itself suspend an elevated real distal body below the torso under gravity without entering tension or introducing some other placement/suspension mechanism.
+E8.0a answered the primitive question; E8.0b answered the immediate composition question. The guided-telescopic family is now justified enough to continue, but it has **not** passed embodied representation matching.
 
-The next physical question, if pursued, is:
+The next physical question is:
 
-> **What is the smallest physically honest parallel topology that can keep a real distal support element internally attached/placed under gravity, expose finite unilateral axial compliance for future load sharing, and still pass inactive current31/lead8 representation matching?**
+> **Can a real telescopic parallel branch be stowed and released/deployed internally — ground-clear, without unintended spring preload, world locks, kinematic holds or an impulsive mode change — before it is embedded into the exact E5 current31/lead8 representation gate?**
 
-A minimal telescopic or articulated parallel limb is a candidate, not a selected architecture. Before implementation, compare candidate DOFs/load paths and reject world locks, kinematic holds or duplicate hard constraints that would make the representation unfair.
+A finite internal latch/release mechanism is a promising candidate because a permanent bilateral axial motor would introduce a different authority class. It remains provisional until separately qualified.
 
-Any selected family then starts with inactive representation matching before contact acquisition or load-transfer claims.
+Only after deployment semantics are resolved should the branch be added to the `80 kg` organism. That first embodied gate must preserve the exact primary ankle path, total mass, zero initial auxiliary-ground contact and the established E6/E7 representation-match envelope before any active support/load-sharing test.
 
-External bounded gameplay authority remains a live alternative branch of the E5 fork; E7/E8.0a neither select nor reject it.
+External bounded gameplay authority remains a live alternative branch of the E5 fork; E7/E8 neither select nor reject it.
 
 ## Branch / provenance hygiene
 
