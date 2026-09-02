@@ -42,6 +42,14 @@ const AXIAL_FRAME = [0, 0, SQRT_HALF, SQRT_HALF];
 // proximal guide -- exact-locked prismatic --> distal segment
 // proximal guide -- compression-only distance spring --> distal segment
 //
+// The split creates one collision relationship that did not exist for E7's single
+// probe: distal <-> torso are no longer a directly joint-connected pair even though
+// the stowed geometry overlaps the torso by 0.10 m. E8.1a's contact-identity
+// diagnostic reproduced exactly that new self-contact. A shared negative Box3D
+// groupIndex is therefore assigned to torso + both auxiliary segments, restoring
+// the single-assembly self-collision semantics without suppressing contacts against
+// ordinary world shapes (which retain groupIndex 0 and normal category/mask rules).
+//
 // No auxiliary actuation, latch release, ground acquisition or world-external
 // authority is enabled here. Representation must match before actuation.
 const AUX_MASS = 1.0;
@@ -51,6 +59,7 @@ const BRANCH_LENGTH = 2 * SEGMENT_LENGTH;
 const SEGMENT_HALF = [0.06, SEGMENT_LENGTH / 2, 0.06];
 const CANDIDATE_TORSO_MASS = E3_SAGITTAL_DEFAULTS.torsoMass - AUX_MASS;
 const AUX_FRICTION = E3_SAGITTAL_DEFAULTS.footFriction;
+const INTERNAL_SELF_COLLISION_GROUP = -1;
 
 const AXIAL_LOCK = SEGMENT_LENGTH;
 const AXIAL_MIN = 0.15;
@@ -75,6 +84,16 @@ function bodyCom(body) { const p = [0, 0, 0]; b3.b3Body_GetWorldCenterOfMass(p, 
 function bodyVel(body) { const v = [0, 0, 0]; b3.b3Body_GetLinearVelocity(v, body); return v; }
 function bodyRot(body) { const q = [0, 0, 0, 1]; b3.b3Body_GetRotation(q, body); return q; }
 function magnitude(v) { return Math.hypot(v[0], v[1], v[2]); }
+
+function setInternalCollisionGroup(shape) {
+  const filter = b3.b3Shape_GetFilter(shape);
+  filter.groupIndex = INTERNAL_SELF_COLLISION_GROUP;
+  b3.b3Shape_SetFilter(shape, filter, false);
+  const qualified = b3.b3Shape_GetFilter(shape);
+  if (qualified.groupIndex !== INTERNAL_SELF_COLLISION_GROUP) {
+    throw new Error('E8.1a failed to bind internal negative collision group');
+  }
+}
 
 function boxSagittalInertia(mass, fullY, fullZ) {
   return mass * (fullY * fullY + fullZ * fullZ) / 12;
@@ -128,8 +147,8 @@ function makeSegment(world, position) {
   sd.density = densityForMass(SEGMENT_MASS, SEGMENT_HALF);
   sd.baseMaterial.friction = AUX_FRICTION;
   sd.baseMaterial.restitution = 0;
-  b3.b3CreateBoxShape(body, sd, ...SEGMENT_HALF);
-  return { body, mass: b3.b3Body_GetMass(body) };
+  const shape = b3.b3CreateBoxShape(body, sd, ...SEGMENT_HALF);
+  return { body, shape, mass: b3.b3Body_GetMass(body) };
 }
 
 function wrapBase(base) {
@@ -183,15 +202,25 @@ class InactiveTelescopicSupport {
       typeof b3.b3DefaultPrismaticJointDef !== 'function' ||
       typeof b3.b3CreatePrismaticJoint !== 'function' ||
       typeof b3.b3DefaultDistanceJointDef !== 'function' ||
-      typeof b3.b3CreateDistanceJoint !== 'function'
+      typeof b3.b3CreateDistanceJoint !== 'function' ||
+      typeof b3.b3Shape_GetFilter !== 'function' ||
+      typeof b3.b3Shape_SetFilter !== 'function'
     ) {
-      throw new Error('E8.1a requires revolute, prismatic and distance-joint bindings');
+      throw new Error('E8.1a requires revolute, prismatic, distance-joint and shape-filter bindings');
     }
 
     // Same upward 0.9 m branch placement as the qualified E7.0b representation.
     const pivot = base.startTorsoPosition;
     const proximal = makeSegment(world, [pivot[0], pivot[1] + SEGMENT_LENGTH / 2, pivot[2]]);
     const distal = makeSegment(world, [pivot[0], pivot[1] + SEGMENT_LENGTH * 1.5, pivot[2]]);
+
+    // Restore the self-collision semantics of E7's single torso-connected probe.
+    // Same negative group means these three shapes never collide with one another;
+    // category/mask bits remain untouched, so normal world contacts stay enabled.
+    setInternalCollisionGroup(base.torsoShape);
+    setInternalCollisionGroup(proximal.shape);
+    setInternalCollisionGroup(distal.shape);
+
     this.proximalBody = proximal.body;
     this.distalBody = distal.body;
     this.bodies = [
@@ -495,7 +524,7 @@ console.log(
 console.log(
   `  inactive topology: hinge=0deg locked; prismatic=${AXIAL_LOCK.toFixed(3)}m locked; ` +
   `distance spring rest=${SPRING_REST.toFixed(3)}m forceRange=[${SPRING_TENSION},${SPRING_COMPRESSION}]N; ` +
-  'no motors, no latch release, no auxiliary actuation',
+  `internalSelfCollisionGroup=${INTERNAL_SELF_COLLISION_GROUP}; no motors, no latch release, no auxiliary actuation`,
 );
 
 const rows = [];
@@ -561,5 +590,5 @@ if (
 }
 
 console.log(
-  'E8.1a PASS: the E7-qualified 1kg x 0.9m parallel branch can be split into a mass/COM/inertia-matched two-segment telescopic topology containing the E8 compression-only distance spring while exact-locked and contact-inactive, without perturbing the current31/lead8 organism outside the declared E7 representation envelope. This qualifies inactive embodied representation only; it does not qualify latch release, support placement, ground acquisition, load sharing or locomotion.',
+  'E8.1a PASS: after restoring the single-probe internal self-collision semantics identified by the dedicated falsifier, the E7-qualified 1kg x 0.9m parallel branch can be split into a mass/COM/inertia-matched two-segment telescopic topology containing the E8 compression-only distance spring while exact-locked and contact-inactive, without perturbing the current31/lead8 organism outside the declared E7 representation envelope. This qualifies inactive embodied representation only; it does not qualify latch release, support placement, ground acquisition, load sharing or locomotion.',
 );
