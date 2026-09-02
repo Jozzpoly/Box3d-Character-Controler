@@ -1,219 +1,369 @@
 # E3 — Rotational Embodiment & Balance
 
-Status: **active research line; machine-qualified through E3.1b, awaiting Owner judgement in E3.1c; experimental, not donor/current behavior**.
+Status: **active research line; Owner-positive at E3.1c and causally decomposed through E3.1h; experimental, not donor/current behavior**.
+
+Detailed post-Owner validation evidence is recorded in [`E3_1_VALIDATION_LOOP.md`](E3_1_VALIDATION_LOOP.md).
 
 ## Why E3 exists
 
-E2 through E2.3e established a current-best translational contract (A‴ / Donor v1). That line is deliberately not reopened here.
+E2 through E2.3e established the accepted translational contract: **A‴ / Donor v1**. E3 does not reopen that locomotion line.
 
 E3 asks:
 
-> Can maintaining posture become a finite, physically negotiated capability of the player's body rather than a guaranteed property of the controller?
+> Can maintaining posture become a physically negotiated capability of the player's body rather than a guaranteed property of the controller?
 
-The target is not cosmetic lean or a binary ragdoll switch. It is a continuum in which player intent can spend finite physical authority to retain or recover control, while sufficiently strong world consequences can exhaust that authority and produce a natural loss of balance.
+The target is not cosmetic lean or a binary ragdoll switch. It is a continuum in which physical authority can preserve or recover control, while sufficiently strong world consequences can exceed that capability and produce a natural loss of balance.
+
+## Current conceptual correction
+
+The initial E3 wording used “finite physical authority” too broadly.
+
+The evidence now distinguishes at least three physical channels:
+
+1. **support-mediated grounded balance** — the clean current E3.1 capability specimen;
+2. **internal airborne attitude control** — momentum-conserving reorientation through the foot as reaction mass;
+3. **support relocation** — material translation of the support, currently an observed mechanism rather than designed stepping.
+
+The current actuator has a finite instantaneous torque budget, but the spherical ankle does **not** yet impose a finite angular range or angular-momentum capacity. Therefore the always-active unsupported variant can use the foot as an effectively unbounded crude reaction wheel.
+
+That airborne channel is not required for the currently tested grounded balance behavior; E3.1h demonstrated that support-contact gating removes it while preserving the grounded direct and dynamic-ram boundaries.
 
 ## Invariants
 
-- Donor v1 / A‴ remains untouched and is the experiential control arm.
-- E3 specimens are disposable until evidence earns promotion.
-- Fall classification may observe state; it must never cause the fall.
-- No `if tilt > threshold => ragdoll` transition is allowed as the mechanism of failure.
-- Balance control must expose a finite authority budget.
-- The first active actuator is internal: equal torque on the torso and opposite torque on the dynamic support body. It cannot borrow reaction torque from a world anchor.
-- Locomotion, stepping, yaw, grabbing and articulated limbs remain out of scope until simpler balance evidence earns them.
+- Donor v1 / A‴ remains untouched and is the accepted locomotion control arm.
+- E3 specimens remain experimental until evidence earns promotion.
+- Fall classification observes state; it must never cause the fall.
+- No `if tilt > threshold => ragdoll` transition is allowed as the failure mechanism.
+- Internal actuation remains reaction-conserving: torso torque has equal-and-opposite reaction on the paired body.
+- Machine PASS and Owner judgement remain different evidence classes.
+- Locomotion, stepping, yaw, grabbing and articulated limbs remain separate questions.
+- Unsupported attitude control must not be silently treated as the same capability as grounded balance.
 
-## E3.0 — Angular substrate qualification
+---
 
-Before gameplay research, the exact qualified substrate (`box3d.js@0.1.1`) had to demonstrate through the JS binding:
+## E3.0 — angular substrate qualification
 
-- central point impulse does not create material angular velocity;
-- an off-center impulse creates signed angular velocity consistent with the lever arm;
-- mirrored lever arms mirror the response;
-- a larger lever arm produces a larger response;
-- direct angular impulse reaches the rigid body;
-- a spherical joint holds the shared point while still allowing angular motion.
+The exact qualified substrate (`box3d.js@0.1.1`) was tested through the JavaScript binding before gameplay research continued.
 
-Native API availability was not treated as proof of JS behavior.
+Qualified observations:
 
-### Result
-
-Initial E3.0 qualification passed on exact branch commit `d74df480c5141829a2b1e24c8d43f810ca6e3a11`:
-
-- central impulse: `0.00e+0 rad/s` angular X response;
+- central point impulse: effectively zero angular response;
 - +0.25 m lever arm: `+1.0417 rad/s`;
 - mirrored -0.25 m lever arm: `-1.0417 rad/s`;
 - +0.50 m lever arm: `+2.0833 rad/s`;
-- spherical-anchor drift after angular excitation: effectively `0 m` at reported precision;
-- pinned body retained `3.9418 rad/s` angular speed.
+- spherical shared-point drift: effectively `0 m` at reported precision;
+- angular motion survives the spherical joint.
 
-This is sufficient evidence to use the current JS binding for the first balance crucibles. It does **not** qualify every rotational/joint API for future articulated work.
+Initial qualifying commit:
 
-## E3.1a — Sagittal standing-balance crucible
+`d74df480c5141829a2b1e24c8d43f810ca6e3a11`
 
-The first organism contains only:
+This qualifies the substrate needed by E3. It does not qualify every future articulated/joint API.
 
-1. a dynamic support plate representing a finite base of support;
-2. a dynamic main body representing the majority of player mass;
-3. a spherical ankle joint fixing the shared ankle point while allowing rotation;
-4. an explicit finite internal pitch actuator.
+---
 
-The actuator uses torso world tilt and angular velocity to request a stabilizing torque, clamps that request to `maxTorque`, then applies equal-and-opposite angular impulses to torso and foot. The controller targets world-up without receiving a hidden world reaction. The foot/ground contact must carry the reaction physically.
+## E3.1a — sagittal standing-balance crucible
 
-The initial sagittal reduction locks lateral translation and non-pitch angular axes only to remove unrelated degrees of freedom. Translation in the tested support direction remains solver-owned.
+The first organism contains:
 
-### Authority scale
+1. a dynamic support plate;
+2. a dynamic torso carrying most player mass;
+3. a spherical ankle fixing the shared point while allowing orientation change;
+4. a finite internal pitch actuator.
 
-Raw torque is not interpreted as a human biomechanical claim. Project gravity is 20 m/s², so a useful normalization is:
+The controller computes a world-up correction, damps angular velocity, clamps the request to `maxTorque`, then applies equal-and-opposite angular impulses to torso and foot.
 
-`supportMomentScale = totalMass × gravity × supportHalfExtent`
+### Construction falsifier
 
-For the 80 kg first organism and 0.34 m sagittal support half-extent this is about `544 Nm`.
+The first harness failed because the initial ankle anchors were separated by `0.055 m`, pre-loading the joint and masquerading as spontaneous instability.
 
-This scale is a dimensional reference, **not** a universal balance predictor.
+The anchors were corrected to coincide in world space.
 
-### First implementation falsifier
+Durable lesson:
 
-The first E3.1a CI attempt failed before the perturbation sweep because the supposedly quiet rig drifted to `0.022684 rad` torso pitch during setup. Inspection found a construction error rather than a balance-law result: the initial torso and foot spherical-joint anchors were separated by `0.055 m` in world Y, pre-loading the ankle constraint at creation.
+> Initial joint pre-stress can masquerade as balance instability and must remain excluded from future specimens.
 
-The rig was corrected so the two local ankle anchors coincide exactly in the initial world transform. This failure is retained as evidence:
+### Clean 320 Nm sagittal frontier
 
-> Initial joint pre-stress can masquerade as spontaneous balance instability and must remain excluded from future specimens.
+After correction:
 
-### Clean sagittal recoverability frontier
+- passive falls throughout the tested `2..128 N·s` perturbation sweep;
+- finite 320 Nm recovers through `64 N·s`;
+- first demonstrated fall at `80 N·s`;
+- `64 N·s` recovery reaches about `11°` peak tilt and saturates authority;
+- `80 N·s` crosses about `93°` peak tilt;
+- maximum support translation among recovered trials is about `0.017 m`;
+- mirrored pushes match;
+- low-friction localization did not erase the recover/fall distinction.
 
-The corrected specimen demonstrated a bounded recovery region with `320 Nm` authority:
+Canonical clean-frontier run:
 
-- passive control: natural fall throughout the tested `2..128 N·s` perturbation sweep;
-- finite 320 Nm: recovery through `64 N·s`;
-- first demonstrated natural fall at `80 N·s`;
-- `64 N·s` recovery reached about `11°` peak tilt and saturated the torque budget;
-- `80 N·s` crossed into a physical fall at about `93°` peak tilt;
-- maximum foot translation among the recovered finite trials was only about `0.017 m`;
-- mirrored perturbations produced matching outcomes;
-- lowering foot friction to `0.18` did not materially move the demonstrated `48 recover / 80 fall` distinction.
+`33578418890`
 
-Canonical clean-frontier run: `33578418890`.
+### Authority dependence
 
-The result rejects the explanation that ordinary finite recovery is merely the whole support plate sliding under the body.
+Keeping geometry and `Kp/Kd` fixed while changing maximum torque moved the frontier:
 
-### Authority-dependence falsifier
+| max torque | max demonstrated recovery | first demonstrated fall |
+| ---: | ---: | ---: |
+| 80 Nm | 12 N·s | 24 N·s |
+| 160 Nm | 24 N·s | 36 N·s |
+| 240 Nm | 48 N·s | 64 N·s |
+| 320 Nm | 64 N·s | 80 N·s |
 
-Keeping geometry and `Kp/Kd` fixed while changing only maximum internal balance torque moved the empirical frontier:
+At `480 Nm`, stronger perturbations could be recovered, but a `128 N·s` trial moved the support about `1.24 m`. That is already recruitment of another channel rather than merely “more ankle balance”.
 
-| max torque | fraction of 544 Nm reference | max demonstrated recovery | first demonstrated fall |
-| ---: | ---: | ---: | ---: |
-| 80 Nm | 0.15× | 12 N·s | 24 N·s |
-| 160 Nm | 0.29× | 24 N·s | 36 N·s |
-| 240 Nm | 0.44× | 48 N·s | 64 N·s |
-| 320 Nm | 0.59× | 64 N·s | 80 N·s |
+Canonical authority run:
 
-At `480 Nm`, the organism recovered stronger tested perturbations, but the `128 N·s` trial moved the support about `1.24 m`. At that point the experiment is no longer cleanly ankle-dominant and begins recruiting **support relocation** as a different physical capability.
+`33578549695`
 
-Canonical authority run: `33578549695`, branch commit `5652e6ba06a1d8ff0d66b5aeeef6fef0bd920f64`.
+Durable result:
 
-This is a central E3 finding:
+> Recoverability changes with available authority, and sufficiently strong authority/perturbation combinations can recruit support relocation as a qualitatively different mechanism.
 
-> **Recoverability changes with finite physical authority, and increasing authority far enough can recruit a qualitatively different recovery channel rather than merely making the same controller stronger.**
+`320 Nm` is retained only as a useful research specimen with both recovery and natural failure. It is not final tuning or a biomechanical claim.
 
-`320 Nm` is therefore retained as the first clean research specimen, not because it is a final tuning value but because it provides both recovery and natural failure while keeping recovered support relocation small.
+---
 
-## E3.1b — 3D pitch/roll balance
+## E3.1b — 3D pitch/roll and real contact
 
-The same organism was then extended from sagittal pitch into world-space pitch + roll while keeping yaw outside the problem.
+The same hypothesis was extended to pitch + roll while keeping yaw outside the problem.
 
-The control law remains the same hypothesis:
+At 320 Nm the direct-perturbation frontier was:
 
-- derive body-up from the solver quaternion;
-- use `cross(bodyUp, worldUp)` as the pitch/roll correction axis;
-- damp horizontal angular velocity;
-- clamp the whole horizontal torque vector to one finite budget;
-- apply equal-and-opposite angular impulses to torso and dynamic support.
+- **forward:** recover through `64 N·s`, fall from `80 N·s`;
+- **side:** recover through `80 N·s`, fall from `96 N·s`;
+- **diagonal:** recover through `80 N·s`, fall from `96 N·s`;
+- mirrored controls passed;
+- every tested direction demonstrated both recovery and natural fall.
 
-The first passive 3D harness exposed another useful harness error: it required an unactuated inverted pendulum to remain exactly upright for a long quiet period. That assumption was removed. Passive now acts only as the physically unstable negative control; strict quiet-state qualification applies to the active specimen.
+Canonical 3D run:
 
-### 3D direct-perturbation result
+`33578768329`
 
-At `320 Nm`:
+The stronger side/diagonal boundary reinforces that static `mass × gravity × support radius` is only a normalization. Geometry, inertia, contact dynamics and actuator authority jointly shape the frontier.
 
-- **forward:** recover through `64 N·s`, fall from `80 N·s`; maximum recovered foot travel about `0.009 m`;
-- **side:** recover through `80 N·s`, fall from `96 N·s`; maximum recovered foot travel about `0.083 m`;
-- **diagonal:** recover through `80 N·s`, fall from `96 N·s`; maximum recovered foot travel about `0.033 m`;
-- mirrored perturbations passed their symmetry controls;
-- every direction demonstrated both recovery and natural fall.
+### 35 kg dynamic ram
 
-Canonical 3D run: `33578768329`, head `4be0f5310e12d85af5686969e411c2b4cb49989b`.
+A real dynamic rigid body was then used instead of only direct impulse injection.
 
-The forward 3D frontier closely reproduced the earlier sagittal frontier, strongly arguing that the first result was not merely a 1D harness artifact.
+With the same 320 Nm organism:
 
-The side result is also an important caution. Its recoverability was stronger by impulse than a naive comparison of the narrower static support dimension would predict. Therefore:
+- `1.0..3.0 m/s` — RECOVER;
+- `4.0..10.0 m/s` — FALL;
+- `3.0 m/s` reaches about `7.7°` peak tilt;
+- `4.0 m/s` crosses about `91°`;
+- maximum recovered support translation is about `0.038 m`.
 
-> static `mass × gravity × support radius` is a useful normalization, not a predictor of the dynamic recovery frontier.
+Canonical dynamic-ram run:
 
-Geometry, inertia, controller authority and contact dynamics jointly determine the result.
+`33578936583`
 
-### Real dynamic-body ram
+This demonstrates that the recover/fall distinction survives ordinary Box3D contact rather than existing only under idealized direct perturbation.
 
-Directly injected impulses are useful causal probes but not sufficient ecological evidence. A second E3.1b gate therefore used a real `35 kg` dynamic rigid-body ram striking the upper torso through ordinary Box3D contact.
+---
 
-With the same `320 Nm` organism:
+## E3.1c — Owner balance playground and experiential gate
 
-- `1.0 m/s` — recover;
-- `1.5 m/s` — recover;
-- `2.0 m/s` — recover;
-- `2.5 m/s` — recover;
-- `3.0 m/s` — recover, about `7.7°` peak tilt;
-- `4.0 m/s` — natural fall, about `91°` peak tilt;
-- `5.0..10.0 m/s` — natural fall;
-- maximum support translation in recovered ram trials was about `0.038 m`.
-
-Canonical dynamic-ram run: `33578936583`, branch commit `8adedbb3e26174f8e494f71578fffa94348a330b`.
-
-This establishes that the balance/fall distinction survives a real contact pathway rather than existing only under idealized direct impulse injection.
-
-## E3.1c — Owner balance playground
-
-After machine qualification, a deliberately small browser instrument was added behind:
+The browser instrument is exposed only through:
 
 - `?mode=balance`
 - `?mode=e3`
 
-It does **not** replace the normal runtime and is explicitly labeled experimental / not donor.
+Normal public runtime remains Donor v1 / A‴.
 
-The Owner playground provides:
+The E3 playground directly renders Box3D foot, torso and 35 kg ram and provides:
 
-- direct solver rendering of dynamic foot, torso and 35 kg ram;
-- no procedural character lean or animation authority;
-- world-up orbit camera;
-- selectable authority: `0 / 160 / 320 / 480 Nm`;
-- selectable ram speed and forward/back/left/right/diagonal launch directions;
+- authority selection `0 / 160 / 320 / 480 Nm`;
+- ram speed/direction selection;
 - reset;
-- live body tilt, horizontal angular speed, torque utilization and support travel.
+- world-up orbit camera;
+- live tilt/angular-speed/torque/support-travel telemetry.
 
-Changing authority resets the organism so comparisons remain understandable. The browser path intentionally contains **no locomotion**: this gate asks whether physical self-stabilization and loss of balance are experientially meaningful before locomotion contaminates the judgement.
+There is deliberately no locomotion in this gate.
 
-Branch browser/build qualification: run `33579122379`, head `930366d15eba7bcb02830f064eafdf00b0177907`, full smoke + production build PASS.
+Branch browser/build qualification:
 
-### Current evidence boundary
+`33579122379`
 
-Machine evidence now supports all of the following:
+### Owner evidence
 
-1. the exact JS angular substrate is sufficient for this research line;
-2. finite internal angular authority creates a real bounded recoverability frontier;
-3. the frontier moves when the authority budget changes;
-4. excessive authority can recruit support relocation as a distinct mechanism;
-5. the phenomenon survives 3D pitch/roll and ordinary dynamic rigid-body contact;
-6. current Donor v1/A‴ remains regression-clean throughout the experimental branch.
+Owner hands-on feedback:
 
-Machine evidence does **not** establish that this behavior is enjoyable, readable, appropriately physical or worth integrating into a controllable player.
+> `działa, feel rzeczywiście jest jakby primitywny manekin walczył o równowagę :D`
 
-The next required evidence class is therefore **Owner hands-on judgement** in E3.1c.
+This is a **positive experiential gate** for continuing the research direction.
 
-## Conditional continuation after Owner judgement
+It supports the claim that the physical struggle for posture is perceptually legible and meaningfully different from a decorative lean.
 
-If Owner judgement says the physical balance struggle is genuinely valuable, the next high-information question is not generic polish. It is whether one additional internal angular-momentum degree of freedom can recover states that the ankle-dominant organism cannot.
+It does **not** promote the organism to current behavior, a donor revision, final tuning, locomotion integration or final architecture.
 
-That would be the first E3.2 test of whether articulation earns its complexity as a new physical capability rather than decoration.
+A recording was supplied with the feedback, but the analysis environment did not expose that new upload at its grounded sandbox path. No claim in the research ledger depends on machine analysis of that recording; the written Owner judgement is the accepted evidence.
 
-Only if that result is valuable should support relocation / stepping be opened deliberately. Locomotion + balance integration comes later still.
+---
 
-No later stage is pre-approved merely by appearing here.
+## E3.1d–h — validation/falsification loop after Owner acceptance
+
+The Owner-positive result opened a harder causal question:
+
+> Is the grounded “fight for balance” actually support-mediated, or is it partly an artifact of the always-active world-up actuator using the foot as a reaction mass even without ground support?
+
+Detailed evidence, including failed harnesses and confounds, is preserved in [`E3_1_VALIDATION_LOOP.md`](E3_1_VALIDATION_LOOP.md).
+
+### E3.1d — support geometry + zero-g unsupported control
+
+Commit:
+
+`85def1db834817dc1569c54090dc54429fcd82f6`
+
+Run:
+
+`33580221854`
+
+Findings:
+
+- standard support reproduces `64 R / 80 F`;
+- wide support also reproduces that observed boundary while reducing recovered support travel;
+- narrow support begins large translation/relocation instead of simply producing a lower fall threshold;
+- without ground/gravity, always-active torque can return torso near world-up while the foot spins near `47 rad/s`.
+
+This identified **internal airborne attitude control** as a distinct capability.
+
+### E3.1e — mass-distribution sensitivity
+
+Commit:
+
+`8ee2c1b426e489d019e421b7f39f947eade14fe7`
+
+Run:
+
+`33580418472`
+
+Changing foot/torso mass distribution changed the behavior, but the experiment also changed torso inertia. It is retained only as mass-distribution sensitivity, not clean reaction-mass proof.
+
+### E3.1f — clean unsupported decomposition
+
+Commit:
+
+`7ae79b7a9fedab7777cad20fb012fe73cf380677`
+
+Run:
+
+`33580671628`
+
+Torso mass/geometry and direct perturbation were fixed while only foot mass changed.
+
+Initial torso response was identical across foot-mass variants:
+
+- `48 N·s` -> `2.2113 rad/s`;
+- `64 N·s` -> `2.9484 rad/s`.
+
+With finite world-up actuation, the torso returned near upright while the foot accumulated tens to hundreds of radians of angular travel.
+
+Therefore:
+
+> `maxTorque` bounds instantaneous torque, but the current spherical ankle does not bound the internal angular-momentum storage/range used for unsupported righting.
+
+This is a real momentum-conserving internal attitude channel, not evidence of ground balance.
+
+### E3.1g — exact support-contact sensing
+
+Initial run:
+
+`33580863378` — failed a new harness assumption.
+
+Corrected run:
+
+`33580930317` — PASS.
+
+Exact `box3d.js@0.1.1` body-contact data reliably distinguishes grounded foot support from unsupported control through persistent near-vertical manifold points.
+
+The failed harness also established that positive per-step `normalImpulse` is **not** a valid persistent-support boolean for a settled contact. Impulse remains transient load evidence; active manifold points define support presence for this experiment.
+
+### E3.1h — support-gated causal A/B
+
+Commit:
+
+`8597ecd7be4bb8cbbce0489d4b7e413f579c4ad1`
+
+Canonical run:
+
+`33581155856`
+
+Policies:
+
+- `always` — current E3 actuator up to 320 Nm every step;
+- `gated` — 320 Nm only with measured near-vertical foot support;
+- `passive` — 0 Nm.
+
+Unsupported zero-g result:
+
+- `always` strongly reorients torso and drives about `175 rad` of foot angular travel;
+- `gated` matches `passive` within deterministic asserted tolerance;
+- gated unsupported actuation frames = `0`.
+
+Grounded direct result:
+
+- both always and gated: `48 R / 64 R / 80 F / 96 F`;
+- observed peak tilts and support travel match in this matrix;
+- no support loss occurred, including during observed falls.
+
+35 kg ram boundary:
+
+- both always and gated: `3.0 m/s` RECOVER, `4.0 m/s` FALL;
+- measured peak tilts and support travel match in the tested cases.
+
+Strongest current causal conclusion:
+
+> **The Owner-positive grounded balance behavior in the tested E3.1 envelope does not require the accidental unsupported reaction-mass channel.**
+
+Support-mediated grounded balance is therefore the clean current E3.1 capability specimen.
+
+---
+
+## What E3.1 now proves
+
+Evidence now supports all of the following:
+
+1. exact JS angular mechanics are sufficient for this research line;
+2. finite torque authority produces a bounded grounded recoverability frontier;
+3. the frontier changes with authority;
+4. support relocation can emerge as a separate recovery channel;
+5. the phenomenon survives 3D and real rigid-body collision;
+6. Owner can perceive the result as a primitive body actively fighting for balance;
+7. the original always-active actuator also contains a separate unsupported attitude-control channel;
+8. that unsupported channel can be removed through measured support gating without changing the currently tested grounded direct/ram behavior;
+9. current A‴ / Donor v1 remains regression-clean throughout the research line.
+
+## What E3.1 does not prove
+
+E3.1 does not establish:
+
+- final human-like tuning;
+- realistic ankle/joint limits;
+- a final airborne-control policy;
+- a final support detector for every future terrain/contact case;
+- stepping;
+- yaw/facing control;
+- active ragdoll;
+- humanoid articulation;
+- balance + A‴ locomotion integration;
+- a new donor revision;
+- controller-owned vs solver-owned vs hybrid architecture winner.
+
+## Current natural boundary
+
+The post-Owner falsification loop answered its motivating question:
+
+> The grounded mannequin-like balance struggle survives causal removal of unsupported internal attitude control.
+
+The immediate next unknown is therefore **not** “is E3 just a reaction-wheel artifact?”.
+
+Before opening articulation or locomotion integration, the smallest high-information boundary is support-transition behavior:
+
+- support loss/takeoff;
+- support reacquisition/landing;
+- one-step contact-observation latency;
+- whether any airborne attitude authority is desirable, and if so what explicit finite physical resource should bound it.
+
+Those are new questions and must not be silently answered by the old always-active spherical-ankle actuator.
