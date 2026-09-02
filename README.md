@@ -26,9 +26,9 @@ Current static/kinematic constraint interpretation:
 
 > **Constraint velocity is relative, and the player may retain only constrained normal authority still justified by current intent.**
 
-Historical `createDonorCharacter(...)` deliberately remains frozen **Donor v0 / A″**. Do not silently retarget it.
+Historical `createDonorCharacter(...)` deliberately remains frozen **Donor v0 / A″**.
 
-Important current ground values:
+Important ground values:
 
 - max speed `5.2 m/s`;
 - ground acceleration `31 m/s²`;
@@ -50,24 +50,22 @@ E3 remains experimental and does not replace A‴.
 
 At the standard finite `320 Nm` E3.1 specimen:
 
-- direct `64 N·s` perturbation — RECOVER;
-- `80 N·s` — FALL;
+- direct `64 N·s` — RECOVER;
+- direct `80 N·s` — FALL;
 - real 35 kg ram `3.0 m/s` — RECOVER;
 - `4.0 m/s` — FALL.
 
-Owner feedback on the balance playground:
+Owner feedback:
 
 > `działa, feel rzeczywiście jest jakby primitywny manekin walczył o równowagę :D`
 
-Post-Owner work separated support-mediated grounded balance from unsupported internal attitude control and from support relocation. The Owner-positive grounded balance effect survives removal of the accidental unsupported reaction-wheel channel inside the tested envelope.
+Post-Owner work separated support-mediated grounded balance from unsupported internal attitude control and support relocation. The Owner-positive grounded balance effect survives removal of the accidental unsupported reaction-wheel channel inside the tested envelope.
 
-E3.2 then demonstrated a real local bounded internal-angular-momentum mechanism at canonical resolution, but its recoverability changed materially and non-monotonically across solver substeps.
+E3.2 demonstrated a real local bounded internal-angular-momentum mechanism at canonical resolution, but its recoverability changed materially and non-monotonically across solver substeps.
 
-Final E3.2 verdict:
+Verdict:
 
 > **Real local mechanism, not substrate-robust recovery capability in the tested representation.**
-
-Do not rescue E3.2 with another gain/torque/stroke/substep sweep.
 
 Ledgers:
 
@@ -78,17 +76,17 @@ Ledgers:
 
 ## E4 — locomotion ↔ finite-posture compatibility
 
-E4 is a closed **carriage-proxy** stage, not A‴ + E3 integration.
+E4 is a closed carriage-proxy stage, not A‴ + E3 integration.
 
-Naive world-upright finite posture could not survive the full accepted translational demand. But finite anticipatory physical preparation based on near-term intent produced a stronger result without increasing the `320 Nm` posture budget or weakening A‴ demand:
+Finite anticipatory physical preparation based on near-term intent preserved accepted-strength inertial demand without raising the `320 Nm` posture budget or weakening A‴ demand:
 
-- current `31 m/s²` launch: lead0 F/F, lead8 **R/R** at substeps `2/4/8`;
-- current `36 m/s²` braking: lead0 F/F, lead8 **R/R** at substeps `2/4/8`;
+- current `31 m/s²` launch: lead0 F/F, lead8 R/R at substeps `2/4/8`;
+- current `36 m/s²` braking: lead0 F/F, lead8 R/R at substeps `2/4/8`;
 - both lead8 cases fail at substep `1`.
 
-Thus E4 established **posture compatibility/survivability**, not full physical reproduction of A‴ translation.
+E4 established posture compatibility/survivability, not full physical reproduction of A‴ translation.
 
-`lead8` is a research survivor, not gameplay timing. Solver substeps are an evidence axis, not a tuning knob.
+`lead8` is research evidence, not gameplay timing. Solver substeps are an evidence axis, not a tuning knob.
 
 Ledger:
 
@@ -103,72 +101,85 @@ Retained results:
 - world-external authority works without support but injects net system momentum;
 - support-mediated exchange requires support and can preserve equal-and-opposite momentum;
 - ordinary Coulomb-limited exchange with `μ=.95` under static weight saturates near `19 m/s²`, below accepted `31/36 m/s²` demand in the simple specimen;
-- anticipatory posture recruits real support load and real horizontal momentum.
+- anticipatory posture recruits real support load and horizontal momentum.
 
-In recovered lead8 cases across substeps `2/4/8`, physical contact supplied about **64.6–71.0%** of the full ramp impulse requirement and body speed reached about **4.20–4.42 m/s** while support reached `5.2 m/s`.
+In recovered lead8 cases across substeps `2/4/8`, physical contact supplied about **64.6–71.0%** of full ramp impulse and body speed reached about **4.20–4.42 m/s** while support reached `5.2 m/s`.
 
 Therefore:
 
 > **Posture preparation materially increases physically earned translational authority, but the current single-support organism does not fully reproduce the accepted A‴ response through contact alone.**
 
-A support-gated world-external residual can close some of that gap, but it changes momentum accounting/contact contribution and can mask physical substrate insufficiency.
-
-E5 selects neither pure traction nor hybrid assist, no residual cap, no A‴ retune and no stepping mechanism.
+A support-gated world-external residual can close some gap, but changes momentum/contact accounting and can mask physical substrate insufficiency.
 
 Ledger:
 
 - [`docs/E5_AUTHORITY_PLACEMENT.md`](docs/E5_AUTHORITY_PLACEMENT.md)
 
-## E6.0 — support-relative translation substrate
+## E6 — latent support-relative translation representation
 
-E6.0 tested the smallest naive bridge toward physically earning more agency before selecting gameplay assist:
+E6 tested whether a future physical support-relocation DOF could be introduced **without changing the already-qualified E5 organism before actuation**.
 
-> **Can a real bounded support-relative translational DOF be added without changing the already-qualified E5 organism while that DOF is locked?**
+Hard rule:
 
-### Binding capability: PASS
+> **Representation match before actuation.**
 
-`box3d.js@0.1.1` exposes a mirrored, force-bounded prismatic joint aligned with the sagittal axis. The `±0.25 m` calibration reached approximately `±0.251407 m` without material off-axis leak.
+### E6.0 — serial prismatic carriage: binding PASS, representation FAIL
 
-### Serial representation: FAIL
+`box3d.js@0.1.1` exposes a clean bounded sagittal prismatic binding.
 
-The proposed locked topology was:
+But inserting a locked:
 
-`support foot ↔ prismatic carriage ↔ spherical ankle ↔ torso`
+`foot ↔ prismatic carriage ↔ spherical ankle ↔ torso`
 
-Before interpreting any active relocation, the locked proxy had to reproduce the E5 current-31 / lead8 finite-posture control.
+changed posture mechanics even when the strongest final control kept RECOVER/RECOVER, continuous ramp support and near-reference horizontal impulse/speed.
 
-Several causal corrections were tried without relaxing the declared match thresholds. The final support-foot-preserving proxy was the strongest:
+Final peak tilt moved:
 
-- exact original `10 kg` support foot;
-- `0.5 kg` locked carriage;
-- `69.5 kg` torso;
-- total `80 kg`;
-- finite balance reaction still closed torso ↔ support foot.
+- `14.08 → 20.38°`;
+- `14.98 → 19.26°`;
 
-It reproduced translation surprisingly closely:
+beyond the declared `4°` representation tolerance.
 
-- both directions remained RECOVER;
-- zero ramp support-loss frames;
-- `Jx / required`: `0.671 → 0.664` and `0.646 → 0.673`;
-- ramp-end speed: `4.204 → 4.279 m/s` and `4.216 → 4.319 m/s`.
-
-But posture dynamics still shifted beyond the predeclared representation tolerance:
-
-- peak tilt `14.08 → 20.38°`;
-- peak tilt `14.98 → 19.26°`;
-- allowed difference was `4°`.
-
-Final verdict:
-
-> **The prismatic binding is usable, but serially inserting the locked carriage changes the organism's posture mechanics enough that this topology is not a qualified E5-relative support-relocation substrate.**
-
-This does **not** reject support relocation generally. It rejects this naive serial representation as a clean causal bridge.
-
-No motorized E6.1 was opened.
-
-Important methodological result:
+Conclusion:
 
 > **Translational agreement alone is not representation equivalence. Topology itself is part of the mechanics.**
+
+### E6.1 — direct two-body replacement: much closer, still FAIL
+
+A wheel-like Box3D joint was used only as a solver primitive because it can expose world-Z translation plus world-X sagittal rotation **without an intermediate carriage**.
+
+Binding calibration passed cleanly.
+
+The candidate preserved the exact `10 kg` foot + `70 kg` torso and direct torso↔foot balance reaction. With translation locked it remained RECOVER/RECOVER, retained support and stayed close to E5 in each direction.
+
+But the complete representation contract still failed due persistent candidate direction asymmetry:
+
+- E6.1b speed mirror gap ≈ `0.189 m/s` > `0.15`;
+- impulse-fraction mirror gap ≈ `0.060` > `0.035`.
+
+A causal replay changed only the nominal lock from `±10 μm` to exact `0/0`; the asymmetry remained essentially unchanged:
+
+- speed gap ≈ `0.185 m/s`;
+- impulse-fraction gap ≈ `0.059`.
+
+Therefore the tiny nominal stroke was not the explanation.
+
+E6.1 was **not** unlocked or motorized.
+
+### Cumulative E6 result
+
+Two different ways of putting latent support-relative translation into the primary ankle path changed qualified mechanics before that translation was used:
+
+1. serial extra-body prismatic chain;
+2. direct two-body replacement constraint.
+
+Therefore:
+
+> **The next physical-support experiment should change mechanism family rather than keep searching for another ankle-joint translation variant.**
+
+If the physical branch continues, the next candidate should preserve the primary E5 foot↔torso path and test a **parallel/alternate support-set element**, beginning with inactive non-interference.
+
+This is not yet stepping, gait, humanoid legs or a selected architecture. Explicit bounded gameplay authority also remains a live alternative.
 
 Ledger:
 
@@ -176,27 +187,21 @@ Ledger:
 
 ## Current research boundary
 
-E5 left a fork between physically earning more agency and explicitly granting some bounded gameplay authority.
+The next high-information physical question is:
 
-E6.0 tested one minimal physical bridge and rejected its **representation**, not the whole physical direction.
+> **Can a minimal parallel/alternate support-capable element exist in an inactive state without materially perturbing the qualified E5 primary foot↔torso organism?**
 
-The next high-information physical question is now:
+Only if that control passes should support acquisition, load transfer or relocation be tested.
 
-> **What organism/contact representation can add a real support-relocation degree of freedom without materially changing the already-qualified finite-posture/support mechanics while that DOF is locked?**
+Do not by inertia:
 
-This is a representation-design problem before it is motor tuning.
-
-Do not, by inertia:
-
-- motor-tune the rejected serial prismatic chain;
-- open another mass/limit/tolerance sweep to make it pass;
-- call support relocation stepping;
-- build legs/humanoid gait;
+- tune either rejected E6 latent-translation representation until it passes;
+- unlock/motorize them;
+- call the next support-set experiment stepping;
+- build humanoid legs/gait;
 - weaken accepted A‴ `31/36 m/s²` agency;
-- select external assist merely because this representation failed;
+- select external assist merely because E6 failed;
 - tune solver substeps for a preferred outcome.
-
-The next stage should be selected separately by information gain.
 
 ## Public build
 

@@ -2,50 +2,56 @@
 
 Status: **closed research stage / negative representation boundary / evidence only**
 
-Stage base `main` at opening:
+E6.0 stage base:
 
 `2f341aed904ecdccf61b1264a77f849aeaa236fd`
+
+E6.1 stage base after canonical E6.0 closure:
+
+`17b040a5f83b39e8589bae48322f56de462d3725`
 
 E6 did **not** change A‴ / Donor v1, browser runtime, public controls or accepted locomotion parameters.
 
 ## 1. Why E6 existed
 
-E5 established two facts that create a genuine design fork:
+E5 established two facts that create a real design fork:
 
 1. anticipatory finite posture can recruit materially more real support load and horizontal contact momentum;
 2. the current single-support organism still does not reproduce the full accepted A‴ translational response through contact alone.
 
 A world-external residual can cover the gap, but E5 also showed that it changes system momentum accounting, displaces contact contribution and can mask a physically insufficient substrate.
 
-Before selecting bounded gameplay assist, E6 asked a narrower physical question:
+Before selecting bounded gameplay assist, E6 asked:
 
 > **Can we introduce a real bounded support-relative translational degree of freedom while preserving the already-qualified E5 finite-posture/support behavior closely enough to test whether support relocation can earn more translational agency physically?**
 
-This is intentionally earlier than stepping, gait or humanoid locomotion. A translational support DOF must first earn a clean causal substrate.
+This is intentionally earlier than stepping, gait or humanoid locomotion.
 
-## 2. Experimental rule: representation match before actuation
+## 2. Hard rule: representation match before actuation
 
-E6 adopted a hard ordering:
+E6 used a strict ordering:
 
-1. qualify the Box3D prismatic binding;
-2. insert the proposed DOF but lock it;
+1. qualify the candidate Box3D joint/binding;
+2. insert the proposed translational DOF but lock it;
 3. require the locked representation to reproduce the established E5 current-31 / lead-8 control within fixed tolerances;
-4. only then would active support-relative translation be interpretable.
+4. only then may active support-relative translation be interpreted.
 
-The representation gate required, in both sagittal directions:
+Representation gates required, in both sagittal directions:
 
-- reference E5 case remains `RECOVER`;
-- locked proxy remains `RECOVER`;
+- E5 reference remains `RECOVER`;
+- candidate remains `RECOVER`;
 - zero ramp support-loss frames;
 - whole-body ramp horizontal impulse fraction within `0.05` of reference;
 - ramp-end body speed within `0.25 m/s` of reference;
 - peak torso tilt within `4°` of reference;
-- mirrored locked speed within `0.15 m/s`;
-- mirrored locked impulse fraction within `0.035`.
+- mirrored candidate ramp-end speed within `0.15 m/s`;
+- mirrored candidate impulse fraction within `0.035`.
 
-Those thresholds were declared before the later representation corrections and were not relaxed after failures.
+E6.1 additionally measured direct world-space joint-anchor separation and required it to remain within `0.002 m` for the locked control.
 
-Central methodological rule:
+Those thresholds were declared before observing the later failures and were not relaxed afterward.
+
+Central methodological invariant:
 
 > **Do not interpret an active new DOF if merely inserting and locking its representation already changes the qualified organism materially.**
 
@@ -57,262 +63,435 @@ Probe:
 
 Purpose:
 
-> Establish whether `box3d.js@0.1.1` exposes a usable mirrored, force-bounded prismatic joint aligned with the project sagittal world-Z axis.
+> Establish whether `box3d.js@0.1.1` exposes a usable mirrored, force-bounded prismatic joint aligned with project sagittal world-Z.
 
-Declared calibration:
+Calibration:
 
 - zero gravity;
 - static reference frame;
 - dynamic slider;
-- local prismatic X rotated onto world Z;
+- prismatic local X rotated onto world Z;
 - translation limits `±0.25 m`;
 - motor speed `±2.0 m/s`;
-- maximum motor force `200 N`;
-- current `1/60 s × 4` execution substrate.
+- max motor force `200 N`;
+- `1/60 s × 4` substrate.
 
 Result:
 
-- positive motor: approximately `+0.251407 m` world Z;
-- negative motor: approximately `-0.251407 m` world Z;
+- positive motor ≈ `+0.251407 m` world Z;
+- negative motor ≈ `-0.251407 m` world Z;
 - no material X/Y leakage;
-- mirrored limit behavior qualified.
+- mirrored bounded translation qualified.
 
 Exact successful head:
 
 `6414e434f7af04f58130e9d93d1d707607bd39e9`
 
-Workflow run:
+Workflow:
 
-`33680794741`
-
-Result:
-
-- full preceding research smoke: SUCCESS;
-- E6.0a: SUCCESS;
-- production build: SUCCESS;
-- Pages skipped as expected off `main`.
+`33680794741` — SUCCESS.
 
 Verdict:
 
-> **The required bounded prismatic DOF exists in the pinned JS binding.**
+> **The required bounded prismatic binding capability exists.**
 
-This is binding/substrate evidence only. It says nothing yet about whether inserting that DOF yields a faithful embodied-player representation.
+This is substrate evidence only.
 
-## 4. E6.0b — first locked serial representation
+## 4. E6.0b–d — serial carriage representation
+
+Tested topology:
+
+`support foot ↔ locked prismatic carriage ↔ spherical ankle ↔ torso`
+
+All controls repeated the E5 current-strength launch:
+
+- `31 m/s²` support acceleration;
+- `5.2 m/s` target;
+- lead `8` preparation frames;
+- `320 Nm` finite posture authority;
+- `μ = 0.95`;
+- canonical `4` substeps.
+
+### E6.0b — first serial representation
 
 Probe:
 
 `scripts/e6-0b-support-translation-representation-match.mjs`
 
-Topology:
-
-`support foot ↔ locked prismatic carriage ↔ spherical ankle ↔ torso`
-
-First mass placement:
+Initial mass placement:
 
 - support foot `9.5 kg`;
 - carriage `0.5 kg`;
 - torso `70 kg`;
 - total `80 kg`.
 
-Finite balance torque initially closed through torso ↔ carriage.
-
-The control repeated the E5 current-strength launch:
-
-- `31 m/s²` support acceleration;
-- `5.2 m/s` target;
-- lead `8` finite preparation frames;
-- `320 Nm` posture authority;
-- `μ = 0.95`;
-- canonical `4` substeps.
-
-Exact run:
-
-`33681076041`
-
 Exact head:
 
 `520279e47232b37ab6fbf267ba7770487cec2e01`
 
+Workflow:
+
+`33681076041`
+
 Results:
 
-| Direction | Reference | Locked | `Jx / required` | ramp-end body speed | peak torso tilt | ramp support loss |
+| Direction | Reference | Locked | `Jx / required` | ramp-end speed | peak tilt | ramp support loss |
 | --- | --- | --- | --- | --- | --- | --- |
 | `-` | RECOVER | RECOVER | `0.671 → 0.673` | `4.341 → 4.443 m/s` | `14.08 → 19.62°` | `0 → 0` |
 | `+` | RECOVER | RECOVER | `0.646 → 0.673` | `4.233 → 4.334 m/s` | `14.98 → 19.00°` | `0 → 0` |
 
-The representation preserved translation surprisingly well, but failed the predeclared posture-match threshold.
+Translation remained close but posture exceeded the declared match envelope.
 
-This mattered because the target capability is not “horizontal speed at any internal mechanical cost”. E5 had already qualified a finite-posture organism; a bridge that materially changes posture dynamics is not a clean causal continuation of that evidence.
+A targeted correction reduced the carriage from `0.5 kg` to `0.05 kg` and restored the support foot to `9.95 kg`. Instead of rescuing the control, it collapsed:
 
-### E6.0b correction — reducing carriage mass did not rescue the representation
-
-A specific confound was then tested rather than relaxing the threshold: the first proxy had moved `0.5 kg` from the support foot COM to the ankle carriage.
-
-The carriage was reduced to `0.05 kg` and the support foot restored to `9.95 kg`, while torque still reacted through the carriage.
-
-Exact run:
-
-`33681400869`
+- both directions changed RECOVER → FALL;
+- `Jx / required` fell to about `0.12`;
+- ramp-end speed fell to about `1 m/s`;
+- peak tilt rose to about `47–48°`.
 
 Exact head:
 
 `a95a69abd4bcc012ae1efeb262ec870bee11a0a7`
 
-Results:
+Workflow:
 
-| Direction | Reference → proxy | `Jx / required` | ramp-end speed | peak torso tilt | ramp support loss |
-| --- | --- | --- | --- | --- | --- |
-| `-` | RECOVER → FALL | `0.671 → 0.122` | `4.341 → 0.930 m/s` | `14.08 → 48.31°` | `0 → 3` |
-| `+` | RECOVER → FALL | `0.646 → 0.125` | `4.233 → 1.051 m/s` | `14.98 → 46.79°` | `0 → 3` |
+`33681400869`
 
-This falsified the idea that the mismatch was primarily “too much mass moved into the carriage”. A nearly massless carriage receiving the finite balance reaction was mechanically pathological.
+This falsified “the mismatch is primarily the 0.5 kg carriage mass” as an explanation.
 
-## 5. E6.0c — restore the balance reaction to the support foot
+### E6.0c — restore balance reaction to the real support foot
 
 Probe:
 
 `scripts/e6-0c-support-reaction-path-representation-match.mjs`
 
-The next correction addressed a causal topology error rather than tuning a result:
+Correction:
 
 - support foot `9.95 kg`;
 - carriage `0.05 kg`;
 - torso `70 kg`;
-- prismatic still locked;
-- finite balance torque closed directly torso ↔ support foot;
-- carriage owned translation topology only.
-
-No representation-match threshold was relaxed.
+- balance torque closed directly torso ↔ support foot;
+- carriage owned only the translation topology.
 
 Exact head:
 
 `513cc4dcf0831a7ee2fd21b140d0c9cc506b7841`
 
-Workflow run:
+Workflow:
 
 `33681760213`
 
-Results:
+Result remained strongly non-equivalent:
 
-| Direction | Reference → proxy | `Jx / required` | ramp-end speed | peak torso tilt | support-relative foot drift | ramp support loss |
-| --- | --- | --- | --- | --- | --- | --- |
-| `-` | RECOVER → UNRESOLVED | `0.671 → 0.135` | `4.204 → 1.047 m/s` | `14.08 → 46.97°` | `0.128 → 1.183 m` | `0 → 0` |
-| `+` | RECOVER → UNRESOLVED | `0.646 → 0.135` | `4.216 → 1.048 m/s` | `14.98 → 46.92°` | `0.144 → 1.184 m` | `0 → 0` |
+- both directions `UNRESOLVED`;
+- `Jx / required ≈ 0.135`;
+- ramp-end speed ≈ `1.05 m/s`;
+- peak torso tilt ≈ `47°`;
+- no formal ramp support loss.
 
-The proxy no longer formally lost reactive support during the ramp, yet posture and physically transferred horizontal momentum still collapsed.
+So the failure was not explained solely by closing finite balance reaction through the wrong body.
 
-Verdict:
-
-> The failure was not explained solely by closing the balance reaction through the wrong body.
-
-## 6. E6.0d — final support-foot-preserving representation gate
+### E6.0d — support-foot-preserving final serial control
 
 Probe:
 
 `scripts/e6-0d-support-foot-preserving-representation-match.mjs`
 
-This was explicitly declared as the final representation correction before rejecting the serial prismatic chain for E5-relative claims.
+Final serial correction preserved the E5 support body exactly:
 
-The most important E5 support body was preserved exactly:
+- support foot `10 kg`;
+- carriage `0.5 kg`;
+- torso `69.5 kg`;
+- total `80 kg`;
+- balance reaction torso ↔ support foot;
+- prismatic locked.
 
-- support foot: exact original `10 kg`;
-- carriage: `0.5 kg`;
-- torso: `69.5 kg`;
-- total: `80 kg`;
-- balance reaction: torso ↔ support foot;
-- prismatic: locked;
-- same E5 current-31 / lead-8 / `320 Nm` / `μ=.95` / substep-4 control.
-
-Exact branch head for the final gate:
+Exact head:
 
 `8834a18f22848ec1e7d6c69f9615279b477e174d`
 
-Workflow run:
+Workflow:
 
 `33682130865`
 
 Results:
 
-| Direction | Reference | Locked proxy | `Jx / required` | ramp-end body speed | peak torso tilt | ramp support loss |
+| Direction | Reference | Locked proxy | `Jx / required` | ramp-end speed | peak tilt | ramp support loss |
 | --- | --- | --- | --- | --- | --- | --- |
 | `-` | RECOVER | RECOVER | `0.671 → 0.664` | `4.204 → 4.279 m/s` | `14.08 → 20.38°` | `0 → 0` |
 | `+` | RECOVER | RECOVER | `0.646 → 0.673` | `4.216 → 4.319 m/s` | `14.98 → 19.26°` | `0 → 0` |
 
-This is the strongest E6.0 result and the reason the final verdict must remain nuanced:
+This is the strongest E6.0 result:
 
-- recoverability returned in both directions;
-- ramp support was retained;
-- physically earned whole-body horizontal impulse was very close to the E5 reference;
-- ramp-end body speed was very close to the E5 reference;
-- **posture dynamics still failed the predeclared representation gate**:
-  - negative direction peak shift about `+6.30°`;
-  - positive direction peak shift about `+4.28°`;
-  - threshold was `4°`.
+- recoverability returned;
+- ramp support remained continuous;
+- physically earned horizontal impulse remained close;
+- ramp-end body speed remained close;
+- **posture still failed the predeclared `4°` representation threshold**.
 
-### Rejected telemetry interpretation
+Peak shifts were about `+6.30°` and `+4.28°`.
 
-E6.0d also printed a `sliderRel` value computed from carriage-COM minus foot-COM displacement.
+### Rejected E6.0 telemetry interpretation
 
-That is **not a valid direct measurement of prismatic joint translation** when the foot rotates. The value is retained in historical script output but is explicitly rejected as evidence for whether the locked joint itself translated materially.
+E6.0d printed a `sliderRel` value based on carriage-COM minus foot-COM displacement. Foot rotation contaminates that signal, so it is explicitly rejected as a direct joint-translation measurement.
 
-The final E6.0 representation verdict does not depend on that signal. It follows from the valid posture mismatch alone, while the earlier E6.0b/c probes provide stronger corroborating failures.
+The E6.0 representation FAIL does not depend on it.
 
-## 7. Central result
+## 5. E6.0 verdict
 
-E6.0 separates two claims that would otherwise be easy to conflate:
+E6.0 separated:
 
-1. **Binding capability:** PASS — a bounded sagittal prismatic DOF is available in `box3d.js@0.1.1`.
-2. **Faithful E5-relative serial representation:** FAIL — inserting a locked `foot → prismatic carriage → spherical ankle → torso` chain changes the organism's posture mechanics beyond the declared match envelope.
-
-The final proxy is especially informative because translational accounting remained close while posture dynamics moved materially.
+1. **prismatic binding capability:** PASS;
+2. **faithful E5-relative serial representation:** FAIL.
 
 Therefore:
 
 > **A translationally similar result is not sufficient representation equivalence for embodied-player research. Topology itself is part of the mechanics.**
 
+The serial carriage topology was not qualified for active support-relocation claims.
+
+This did **not** reject support relocation generally.
+
+E6.0 was canonicalized through PR #20 as squash:
+
+`17b040a5f83b39e8589bae48322f56de462d3725`
+
+Exact canonical main workflow:
+
+`33684312865` — full smoke, build and Pages deployment SUCCESS.
+
+## 6. Why E6.1 changed representation family
+
+Read-only recovery of E3.1 clarified an important point: its observed support travel was movement of the existing physical foot across the world while the torso remained directly connected to that foot. There was no hidden serial carriage.
+
+The E6.0 failure therefore suggested a more faithful candidate:
+
+> preserve the same `10 kg` foot and `70 kg` torso and connect them directly with one two-body constraint exposing both sagittal ankle pitch and a latent support-relative translation.
+
+A Box3D wheel joint was investigated **only as a solver primitive**, not as a semantic wheel:
+
+- local joint X → world Z translation;
+- local joint Z → world X sagittal rotation;
+- no intermediate body;
+- same total mass distribution as E5;
+- finite balance reaction remains direct torso ↔ foot.
+
+If its translational DOF could be locked without perturbing E5, later finite internal translation could have been tested without world-external propulsion.
+
+## 7. E6.1a — direct two-body two-DOF binding calibration
+
+Probe:
+
+`scripts/e6-1a-wheel-two-dof-binding-calibration.mjs`
+
+The joint frame was rotated so that:
+
+- suspension translation acts on world Z;
+- free spin acts on world X.
+
+Calibration results:
+
+- translation `+` → `[0, 0, +0.250000] m`;
+- translation `-` → `[0, 0, -0.250000] m`;
+- positive sagittal spin → `ω=[+2,0,0] rad/s` with no translation;
+- negative sagittal spin → `ω=[-2,0,0] rad/s` with no translation.
+
+Exact branch workflow:
+
+`33684613545` — full smoke + build SUCCESS.
+
+Verdict:
+
+> **`box3d.js@0.1.1` exposes a clean two-body joint substrate with bounded sagittal translation plus free sagittal rotation.**
+
+Again, this is a positive binding fact, not representation or locomotion qualification.
+
+## 8. E6.1b — locked two-body representation gate
+
+Probe:
+
+`scripts/e6-1b-two-body-wheel-representation-match.mjs`
+
+Candidate:
+
+- exact E5 `10 kg` support foot;
+- exact E5 `70 kg` torso;
+- no carriage;
+- direct two-body wheel-like constraint;
+- suspension spring disabled;
+- translation nominally locked to `±1e-5 m`;
+- spin motor disabled;
+- steering disabled;
+- same direct `320 Nm` torso ↔ foot posture reaction;
+- same current31 / lead8 / `μ=.95` / substep4 control.
+
+Unlike E6.0d, E6.1b measured actual world-space separation of the two joint anchors derived from body transforms rather than using COM displacement as a proxy.
+
+Exact head:
+
+`ba7c2166a9c331f71038589f158505864125754e`
+
+Workflow:
+
+`33684828207` — expected representation gate FAILURE.
+
+Results:
+
+| Direction | Reference → candidate | `Jx / required` | ramp-end speed | peak tilt | support-relative foot travel | max anchor separation | ramp loss |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `-` | R → R | `0.671 → 0.676` | `4.204 → 4.207 m/s` | `14.08 → 14.57°` | `0.128 → 0.138 m` | `2.142 mm` | `0 → 0` |
+| `+` | R → R | `0.646 → 0.616` | `4.216 → 4.018 m/s` | `14.98 → 12.06°` | `0.144 → 0.107 m` | `1.902 mm` | `0 → 0` |
+
+The candidate was **far closer to E5 than the serial carriage representation**:
+
+- RECOVER/RECOVER preserved;
+- no ramp support loss;
+- each direction individually remained inside the declared impulse, speed and peak-tilt differences.
+
+But it still failed the complete representation contract:
+
+1. negative-side max anchor separation `2.142 mm` exceeded the declared `2.0 mm` bound;
+2. more importantly, candidate direction symmetry was outside the predeclared envelope:
+   - candidate ramp-end speed gap ≈ `0.189 m/s` > `0.15 m/s`;
+   - candidate `Jx / required` gap ≈ `0.060` > `0.035`.
+
+The tiny anchor miss therefore was not the real reason to reject the representation. Relaxing `2.0 → 2.2 mm` would not make the candidate representation-equivalent.
+
+## 9. E6.1c — exact-zero lock causal replay
+
+Probe:
+
+`scripts/e6-1c-exact-lock-representation-replay.mjs`
+
+Before rejecting the two-body candidate, one potential control semantic error was isolated:
+
+> did `±1e-5 m` accidentally leave enough nominal stroke to create the asymmetry?
+
+E6.1c preserved the failed E6.1b script untouched as provenance and replayed the **same code, mechanics, thresholds and classifiers**, changing exactly one parameter:
+
+`LOCK_EPS = 1e-5` → `LOCK_EPS = 0`
+
+Exact replay head:
+
+`43d64565db23bf707e93e2c370ad6a250940de06`
+
+Workflow:
+
+`33685036270` — expected representation gate FAILURE.
+
+Results:
+
+| Direction | Reference → candidate | `Jx / required` | ramp-end speed | peak tilt | support-relative foot travel | max anchor separation | ramp loss |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `-` | R → R | `0.671 → 0.675` | `4.204 → 4.204 m/s` | `14.08 → 14.52°` | `0.128 → 0.137 m` | `2.120 mm` | `0 → 0` |
+| `+` | R → R | `0.646 → 0.616` | `4.216 → 4.019 m/s` | `14.98 → 12.08°` | `0.144 → 0.107 m` | `1.880 mm` | `0 → 0` |
+
+The exact-zero replay was effectively the same mechanically:
+
+- negative anchor miss remained ≈ `0.120 mm` above threshold;
+- candidate speed mirror gap remained ≈ `0.185 m/s`;
+- candidate impulse-fraction mirror gap remained ≈ `0.059`.
+
+Therefore:
+
+> **The E6.1 mismatch is not explained by the nominal ±10 μm lock stroke.**
+
+No threshold was relaxed and no frame/mass/torque/friction/lead/substep tuning followed.
+
+## 10. E6.1 verdict
+
+E6.1 separates another pair of claims:
+
+1. **direct two-body two-DOF binding capability:** PASS;
+2. **faithful locked E5 representation:** FAIL under the declared full mirror contract.
+
+This failure is subtler than E6.0:
+
+- the candidate is close;
+- recoverability and support continuity survive;
+- single-direction metrics look plausible;
+- but the candidate introduces a persistent directional asymmetry not present strongly enough in the reference to satisfy the declared representation gate.
+
+That makes it dangerous as a substrate for a later active relocation test: any apparent directional benefit/cost could already belong to the replacement joint representation rather than the opened translation capability.
+
+Therefore:
+
+> **Do not unlock or motorize the E6.1 wheel-like translation DOF and then attribute resulting agency to support relocation. The control did not earn that causal right.**
+
+## 11. Cumulative E6 result
+
+Two structurally different attempts to hide a future support-relative translation inside the current ankle path have now failed representation qualification **before actuation**:
+
+1. serial extra-body prismatic carriage — failed posture equivalence;
+2. direct two-body wheel-like replacement constraint — much closer, but failed the complete locked mirror/constraint equivalence contract even under exact-zero translation lock.
+
+This is stronger evidence than either failure alone.
+
+Current retained interpretation:
+
+> **Replacing or interposing the qualified E5 ankle constraint with a latent translational joint is itself mechanically consequential. The next physical-support experiment should not be another ankle-joint substitution/tuning exercise.**
+
 And:
 
-> **The serial prismatic chain is not qualified as a clean E5-relative substrate from which to claim that active support relocation earns more physical agency.**
+> **If we continue the physical branch, the next useful representation family should change the support set/contact topology while leaving the already-qualified primary foot↔torso ankle path intact in its inactive control.**
 
-## 8. What E6.0 does not prove
+This points toward a minimal parallel/alternate support-effector or support-exchange experiment, **not** automatically a leg, gait or stepping architecture.
 
-E6.0 does **not** show that:
+External bounded gameplay authority remains a live alternative. E6 does not decide between it and a physically richer support set.
+
+## 12. What E6 does not prove
+
+E6 does **not** prove that:
 
 - support relocation is useless;
-- stepping is unnecessary or impossible;
-- multiple support contacts cannot help;
-- another organism representation cannot preserve E5 posture while adding translation;
+- multiple supports cannot increase physically earned agency;
+- stepping is required or selected;
+- humanoid legs are a good representation;
+- another parallel support topology cannot preserve the primary E5 organism;
 - bounded gameplay assist should now be selected;
-- the A‴ `31/36 m/s²` response should be weakened;
-- a particular motor force, stroke, timing or support policy is correct.
+- accepted A‴ `31/36 m/s²` agency should be weakened;
+- a particular support-effector mass, reach, force or timing is correct.
 
-No motorized support-relocation experiment was interpreted.
+No active E6 support-relative translation result is promoted because neither latent-joint representation passed its locked causal gate.
 
-**E6.1 was intentionally not opened.**
+## 13. Smoke / evidence handling
 
-The failed representation gate prevented a confounded active test.
+Durable canonical-smoke candidates from E6 are the **positive binding qualifications**:
 
-## 9. Smoke / evidence handling
+- `scripts/e6-0a-prismatic-binding-calibration.mjs`;
+- `scripts/e6-1a-wheel-two-dof-binding-calibration.mjs`.
 
-Durable canonical smoke retains:
+Negative representation probes remain executable provenance and should not keep canonical CI red:
 
-- `scripts/e6-0a-prismatic-binding-calibration.mjs`
+- `scripts/e6-0b-support-translation-representation-match.mjs`;
+- `scripts/e6-0c-support-reaction-path-representation-match.mjs`;
+- `scripts/e6-0d-support-foot-preserving-representation-match.mjs`;
+- `scripts/e6-1b-two-body-wheel-representation-match.mjs`;
+- `scripts/e6-1c-exact-lock-representation-replay.mjs`.
 
-because the binding qualification is a stable positive substrate fact.
+A failed research gate must remain a failed gate in history; do not rewrite it into a synthetic PASS merely to preserve executable coverage.
 
-E6.0b/c/d remain in the repository as falsification/provenance evidence but are intentionally not mandatory canonical smoke gates. Their purpose is to record why this representation was rejected, not to keep CI permanently red or to convert a negative experiment into an artificial PASS.
+## 14. Natural boundary after E6
 
-## 10. Natural boundary
+The next high-information physical question is now:
 
-The next physical question is now narrower than after E5:
+> **Can a parallel/alternate support element be added in an inactive state without perturbing the qualified E5 primary foot↔torso organism, so that a later support-set change could be tested without replacing the ankle mechanics?**
 
-> **What organism/contact representation can add a real support-relocation degree of freedom without materially changing the already-qualified finite-posture/support behavior before that DOF is even actuated?**
+The next experiment, if opened, should begin with **inactive non-interference**, not active movement.
 
-Possible future families may include different parallel/alternate support topology, multiple real support contacts or another organism representation, but E6.0 selects none of them.
+It should answer only whether a second support-capable element can exist without materially changing the baseline when it is not participating.
 
-The immediate lesson is methodological rather than architectural:
+Only after that gate passes would it make sense to test contact acquisition, support transfer or relocation.
 
-> **Representation equivalence must be earned before active capability claims.**
+Do not:
 
-Stop here. Do not motor-tune the rejected serial chain, do not rename support relocation as stepping, and do not select external assist merely because this representation failed.
+- tune the rejected serial prismatic chain;
+- tune the wheel-like joint until its mirror threshold passes;
+- unlock either failed latent translation representation;
+- call the next support-set experiment stepping;
+- build a humanoid gait system by inertia;
+- weaken A‴ agency to make a prototype easier;
+- choose solver substeps for preferred behavior;
+- select external assist merely because two physical representations failed.
+
+E6 closes at this boundary.

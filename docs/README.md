@@ -31,15 +31,15 @@ The normal public/default player remains A‴ / Donor v1 unless `PROJECT_STATE.m
 - [`E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — bounded internal angular-momentum mechanism and robustness failure;
 - [`E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](E4_LOCOMOTION_POSTURE_COMPATIBILITY.md) — accepted translational demand vs finite posture in the carriage proxy;
 - [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — authority placement, physical contact contribution and residual-authority accounting;
-- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — prismatic binding qualification and rejection of the naive serial support-relative-translation representation.
+- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — positive prismatic/two-DOF binding facts plus rejection of two latent-translation representations before actuation.
 
 These are research ledgers. They do not automatically promote mechanics into the player runtime.
 
 ## Historical E1/E2 evidence
 
-[`RESEARCH.md`](RESEARCH.md) is the preserved early historical ledger through E2. Its own authority banner is binding: stage-local words such as “current” and “next” are historical, not the live plan.
+[`RESEARCH.md`](RESEARCH.md) is the preserved early historical ledger through E2. Its authority banner is binding: stage-local words such as “current” and “next” are historical, not live plan.
 
-More focused E2 ledgers remain useful when a current question touches their exact causal boundary:
+More focused E2 ledgers remain useful only when a current question touches their exact causal boundary:
 
 - [`E2_1_LOCALIZATION.md`](E2_1_LOCALIZATION.md) — terrain/support localization;
 - [`E2_2_RECIPROCITY.md`](E2_2_RECIPROCITY.md) — causal-component reciprocity;
@@ -56,54 +56,76 @@ Do not reopen these by default merely because they exist.
 
 ## Validation map
 
-The canonical top-level command remains:
+Canonical top-level command:
 
 `npm run smoke`
 
-It is intentionally split into:
+Split into:
 
 - `npm run smoke:research` — deterministic research/regression suite;
 - `npm run smoke:donor` — donor contract/equivalence + mobile input suite.
 
-Suite membership and ordering live in [`../scripts/smoke-suite.mjs`](../scripts/smoke-suite.mjs), grouped by stage rather than encoded as one long `package.json` command.
+Suite membership/order live in [`../scripts/smoke-suite.mjs`](../scripts/smoke-suite.mjs).
 
 Important distinction:
 
 > A research script can remain in the repository as historical evidence without belonging to canonical smoke forever.
 
-E6 is a concrete example:
+E6 is a concrete example.
 
-- `e6-0a-prismatic-binding-calibration.mjs` remains mandatory smoke because it establishes a durable positive binding fact;
-- E6.0b/c/d remain falsification evidence explaining why the serial prismatic representation was rejected, but they are not mandatory gates and are not converted into artificial PASS tests.
+Durable positive binding facts belong in smoke:
 
-Removing a probe from mandatory smoke must be an evidence decision, not cleanup by file age.
+- `e6-0a-prismatic-binding-calibration.mjs`;
+- `e6-1a-wheel-two-dof-binding-calibration.mjs`.
+
+Negative representation evidence remains executable but intentionally outside mandatory green smoke:
+
+- E6.0b/c/d serial-carriage representation falsifiers;
+- E6.1b direct two-body locked representation falsifier;
+- E6.1c exact-zero causal replay.
+
+E6.1c is especially important provenance: changing only the nominal `±10 μm` lock to exact `0/0` did not remove the directional mismatch, so the failed E6.1 representation must not be rescued by silently redefining “locked”.
+
+Removing a probe from mandatory smoke must be an evidence decision, not cleanup by file age. Likewise, a negative experiment must not be rewritten into an artificial PASS merely to make CI green.
 
 The GitHub Actions workflow remains deliberately simple: every push runs full smoke + production build; Pages configuration/upload/deploy occurs only on `main`.
+
+## Current physical-research boundary
+
+After E6, do not continue searching for another latent translational replacement of the primary ankle merely because the previous two were close.
+
+The next physical representation family, if opened, should preserve the qualified primary E5 foot↔torso path and ask first:
+
+> **Can a minimal parallel/alternate support-capable element exist inactive without materially perturbing the baseline?**
+
+That is a support-set **non-interference** question, not yet support transfer, stepping, gait or humanoid anatomy.
+
+External bounded gameplay authority remains a live alternative; E6 does not select it or reject the physical branch.
 
 ## Branch / provenance hygiene
 
 The repository intentionally contains historical foundation/research branches. Many correspond to merged PRs and preserve useful experiment provenance.
 
-Rules of interpretation:
+Rules:
 
 - `main` is canonical;
-- an active unmerged branch is provisional evidence only;
-- merged historical branches are not live plan/state;
-- branch names such as `experiment/*`, `research/*`, `foundation/*` or `stabilize/*` are provenance labels, not architecture commitments;
-- temporary or obviously stale branches are never authority simply because they still exist;
-- do not mass-delete historical branches merely to make the branch list visually short if they carry unique research provenance.
+- active unmerged branch is provisional evidence only;
+- merged historical branches are not live state;
+- `experiment/*`, `research/*`, `foundation/*`, `stabilize/*` names are provenance labels, not architecture commitments;
+- temporary/stale branches are never authority merely because they exist;
+- do not mass-delete historical branches solely for aesthetics if they carry unique provenance.
 
-If branch count becomes operationally expensive, prune only after checking the merged PR / exact commit provenance that would remain available.
+If branch count becomes operationally expensive, prune only after checking what merged PR/exact-commit provenance remains.
 
 ## Repository hygiene boundary
 
-Prefer cleanup that reduces ambiguity or future maintenance cost without rewriting history:
+Prefer cleanup that reduces ambiguity or maintenance cost without rewriting history:
 
-- keep one clear canonical orientation layer;
+- keep one canonical orientation layer;
 - keep detailed evidence in stage ledgers rather than inflating `PROJECT_STATE.md` indefinitely;
-- preserve corrected failures/confounds instead of silently deleting them;
+- preserve corrected failures/confounds;
 - keep runtime, donor, research harness and presentation claims distinct;
-- avoid refactors inside an experiment unless correctness requires them;
-- do not introduce new process files or CI ceremony unless they solve an observed problem.
+- avoid refactors inside experiments unless correctness requires them;
+- do not introduce process/CI ceremony without an observed problem.
 
-Current dependency note: direct package versions are explicitly pinned in `package.json`, but the repository presently has **no npm lockfile** and CI uses `npm install`. Treat changing dependency-resolution/install semantics as a separate substrate-maintenance change that must be validated rather than silently folded into unrelated work.
+Current dependency note: direct package versions are pinned in `package.json`, but there is **no npm lockfile** and CI uses `npm install`. Treat dependency-resolution/install changes as a separate validated substrate-maintenance task.
