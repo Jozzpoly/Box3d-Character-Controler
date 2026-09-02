@@ -1,0 +1,96 @@
+import Box3D from 'box3d.js/inline';
+import { SagittalBalanceOrganism } from '../src/e3-balance-organism.js';
+
+const b3 = await Box3D();
+const dt = 1 / 60;
+const substeps = 4;
+
+function makeWorld() {
+  const worldDef = b3.b3DefaultWorldDef();
+  worldDef.gravity = [0, -20, 0];
+  const world = b3.b3CreateWorld(worldDef);
+  const groundDef = b3.b3DefaultBodyDef();
+  groundDef.position = [0, -0.10, 0];
+  const ground = b3.b3CreateBody(world, groundDef);
+  const groundShape = b3.b3DefaultShapeDef();
+  groundShape.baseMaterial.friction = 0.95;
+  groundShape.baseMaterial.restitution = 0;
+  b3.b3CreateBoxShape(ground, groundShape, 4, 0.10, 4);
+  return world;
+}
+
+function tick(world, organism) {
+  organism.preStep(dt);
+  b3.b3World_Step(world, dt, substeps);
+  organism.postStep();
+}
+
+function runTrial({ mode, maxTorque, impulseNs, direction = 1, leverArm = 0.36 }) {
+  const world = makeWorld();
+  const organism = new SagittalBalanceOrganism(b3, world, { mode, maxTorque });
+  for (let i = 0; i < 45; i++) tick(world, organism);
+  const quiet = organism.telemetry();
+  if (Math.abs(quiet.torsoTilt) > 0.02 || Math.abs(quiet.footTilt) > 0.02) throw new Error(`E3.1a quiet-state instability before push: mode=${mode} torso=${quiet.torsoTilt} foot=${quiet.footTilt}`);
+
+  organism.applyPush({ impulseNs, direction, leverArm });
+  let stableFrames = 0;
+  let recoveredFrame = -1;
+  let peakTorqueUtilization = 0;
+  let maxFootTilt = 0;
+  for (let i = 0; i < 420; i++) {
+    tick(world, organism);
+    const t = organism.telemetry();
+    peakTorqueUtilization = Math.max(peakTorqueUtilization, t.torqueUtilization);
+    maxFootTilt = Math.max(maxFootTilt, Math.abs(t.footTilt));
+    if (t.recovered) stableFrames += 1;
+    else stableFrames = 0;
+    if (stableFrames >= 30 && recoveredFrame < 0) recoveredFrame = i - 28;
+  }
+
+  const final = organism.telemetry();
+  const outcome = final.fallObserved ? 'FALL' : recoveredFrame >= 0 ? 'RECOVER' : 'UNRESOLVED';
+  return {
+    mode,
+    maxTorque: organism.maxTorque,
+    supportMomentScale: organism.supportMomentScale,
+    impulseNs,
+    direction,
+    leverArm,
+    outcome,
+    recoveredFrame,
+    peakTiltDeg: final.peakAbsTilt * 180 / Math.PI,
+    maxFootTiltDeg: maxFootTilt * 180 / Math.PI,
+    peakTorqueUtilization,
+    finalTiltDeg: final.torsoTilt * 180 / Math.PI,
+    finalOmega: final.torsoAngularSpeed,
+  };
+}
+
+const impulseSweep = [2, 4, 6, 8, 10, 12, 16, 20, 24, 30, 36, 48];
+const passive = impulseSweep.map((impulseNs) => runTrial({ mode: 'passive', maxTorque: 0, impulseNs }));
+const finiteTorque = 320;
+const finite = impulseSweep.map((impulseNs) => runTrial({ mode: 'finite', maxTorque: finiteTorque, impulseNs }));
+const mirrorPositive = runTrial({ mode: 'finite', maxTorque: finiteTorque, impulseNs: 12, direction: 1 });
+const mirrorNegative = runTrial({ mode: 'finite', maxTorque: finiteTorque, impulseNs: 12, direction: -1 });
+if (mirrorPositive.outcome !== mirrorNegative.outcome) throw new Error(`Mirrored E3.1a outcomes diverged: +${mirrorPositive.outcome} / -${mirrorNegative.outcome}`);
+if (Math.abs(mirrorPositive.peakTiltDeg - mirrorNegative.peakTiltDeg) > 4.0) throw new Error(`Mirrored E3.1a peak tilt diverged: +${mirrorPositive.peakTiltDeg.toFixed(2)} / -${mirrorNegative.peakTiltDeg.toFixed(2)} deg`);
+
+const passiveFalls = passive.filter((r) => r.outcome === 'FALL');
+const finiteRecovers = finite.filter((r) => r.outcome === 'RECOVER');
+const finiteFalls = finite.filter((r) => r.outcome === 'FALL');
+if (passiveFalls.length === 0) throw new Error('Passive organism never lost balance across the perturbation sweep.');
+if (finiteRecovers.length === 0) throw new Error('Finite-authority organism never recovered across the perturbation sweep.');
+if (finiteFalls.length === 0) throw new Error('Finite-authority organism never reached a natural loss-of-balance boundary.');
+
+const maxFiniteRecover = Math.max(...finiteRecovers.map((r) => r.impulseNs));
+const minFiniteFall = Math.min(...finiteFalls.map((r) => r.impulseNs));
+const passiveMinFall = Math.min(...passiveFalls.map((r) => r.impulseNs));
+if (maxFiniteRecover <= passiveMinFall) throw new Error(`Finite balance authority did not expand demonstrated recoverability: passiveMinFall=${passiveMinFall}Ns maxFiniteRecover=${maxFiniteRecover}Ns`);
+
+function compact(rows) {
+  return rows.map((r) => `${r.impulseNs}:${r.outcome[0]}(${r.peakTiltDeg.toFixed(0)}°)`).join(' ');
+}
+
+console.log(`E3.1a sagittal balance PASS: supportMoment=${finite[0].supportMomentScale.toFixed(1)}Nm finiteTorque=${finiteTorque}Nm passiveMinFall=${passiveMinFall}Ns finiteMaxRecover=${maxFiniteRecover}Ns finiteMinFall=${minFiniteFall}Ns mirror=${mirrorPositive.outcome}/${mirrorNegative.outcome}`);
+console.log(`E3.1a passive frontier: ${compact(passive)}`);
+console.log(`E3.1a finite frontier:  ${compact(finite)}`);
