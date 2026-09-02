@@ -1,22 +1,36 @@
 import Box3D from 'box3d.js/inline';
+import { DONOR_QUALIFIED_ENVELOPE_V1 } from '../src/donor/profile.js';
 
 const b3 = await Box3D();
-const DT = 1 / 60;
-const SUBSTEPS = 4;
-const INITIAL_LENGTH = 1.0;
-const MIN_LENGTH = 0.75;
-const MAX_LENGTH = 1.25;
-const MOTOR_SPEED = 2.0;
-const MAX_MOTOR_FORCE = 200;
+const DT = DONOR_QUALIFIED_ENVELOPE_V1.fixedDt;
+const SUBSTEPS = DONOR_QUALIFIED_ENVELOPE_V1.substeps;
+
+const REST_LENGTH = 1.0;
+const COMPRESSION_LENGTH = 0.8;
+const TENSION_LENGTH = 1.2;
 const BODY_MASS = 20;
 const BODY_HALF = [0.1, 0.1, 0.1];
-const FRAMES = 120;
+const SPRING_HZ = 8;
+const DAMPING_RATIO = 1;
+const LOWER_SPRING_FORCE = 0;
+const UPPER_SPRING_FORCE = 200;
+const SAMPLE_FRAMES = 6;
+
+// For a static anchor + 20 kg body with COM anchors, the axial effective mass is
+// 20 kg. At 8 Hz and 0.2 m compression the corresponding undamped linear spring
+// demand is ~10 kN, >50x the declared 200 N compression cap. This makes force-cap
+// engagement a derived expectation rather than a parameter sweep.
+const OMEGA = 2 * Math.PI * SPRING_HZ;
+const INITIAL_UNCAPPED_COMPRESSION_FORCE =
+  BODY_MASS * OMEGA * OMEGA * (REST_LENGTH - COMPRESSION_LENGTH);
 
 function densityForMass(mass, half) {
   return mass / (8 * half[0] * half[1] * half[2]);
 }
 
-function makeRig(motorSign) {
+function makeRig(mode, side) {
+  const initialLength = mode === 'compression' ? COMPRESSION_LENGTH : TENSION_LENGTH;
+
   const wd = b3.b3DefaultWorldDef();
   wd.gravity = [0, 0, 0];
   const world = b3.b3CreateWorld(wd);
@@ -27,7 +41,7 @@ function makeRig(motorSign) {
 
   const sliderDef = b3.b3DefaultBodyDef();
   sliderDef.type = b3.b3BodyType.b3_dynamicBody;
-  sliderDef.position = [0, 0, INITIAL_LENGTH];
+  sliderDef.position = [0, 0, side * initialLength];
   sliderDef.enableSleep = false;
   sliderDef.linearDamping = 0;
   sliderDef.angularDamping = 0;
@@ -48,119 +62,208 @@ function makeRig(motorSign) {
   jd.base.bodyIdB = slider;
   jd.base.localFrameA = { position: [0, 0, 0], quaternion: [0, 0, 0, 1] };
   jd.base.localFrameB = { position: [0, 0, 0], quaternion: [0, 0, 0, 1] };
-  jd.length = INITIAL_LENGTH;
-  jd.enableSpring = false;
-  jd.enableLimit = true;
-  jd.minLength = MIN_LENGTH;
-  jd.maxLength = MAX_LENGTH;
-  jd.enableMotor = true;
-  jd.motorSpeed = motorSign * MOTOR_SPEED;
-  jd.maxMotorForce = MAX_MOTOR_FORCE;
+  jd.length = REST_LENGTH;
+  jd.enableSpring = true;
+  jd.lowerSpringForce = LOWER_SPRING_FORCE;
+  jd.upperSpringForce = UPPER_SPRING_FORCE;
+  jd.hertz = SPRING_HZ;
+  jd.dampingRatio = DAMPING_RATIO;
+  jd.enableLimit = false;
+  jd.enableMotor = false;
   const joint = b3.b3CreateDistanceJoint(world, jd);
 
-  return { world, slider, joint };
+  // Exercise the runtime binding as well as the definition fields. The causal
+  // behavior below is the real validation: if this range does not bind, tension
+  // will restore and/or compression will exceed the finite cap.
+  b3.b3DistanceJoint_SetSpringForceRange(
+    joint,
+    LOWER_SPRING_FORCE,
+    UPPER_SPRING_FORCE,
+  );
+
+  return { world, slider, joint, initialLength, mode, side };
 }
 
-function run(motorSign) {
-  const rig = makeRig(motorSign);
+function run(mode, side) {
+  const rig = makeRig(mode, side);
+  const force = [0, 0, 0];
   const com = [0, 0, 0];
-  let minLength = Infinity;
-  let maxLength = -Infinity;
-  let peakAbsMotorForce = 0;
+
+  let peakAbsAxialForce = 0;
+  let peakTransverseForce = 0;
   let maxAbsX = 0;
   let maxAbsY = 0;
+  let minLength = Infinity;
+  let maxLength = -Infinity;
 
-  for (let frame = 0; frame < FRAMES; frame++) {
+  for (let frame = 0; frame < SAMPLE_FRAMES; frame++) {
     b3.b3World_Step(rig.world, DT, SUBSTEPS);
-    const length = b3.b3DistanceJoint_GetCurrentLength(rig.joint);
-    const motorForce = b3.b3DistanceJoint_GetMotorForce(rig.joint);
+    b3.b3Joint_GetConstraintForce(force, rig.joint);
     b3.b3Body_GetWorldCenterOfMass(com, rig.slider);
+    const length = b3.b3DistanceJoint_GetCurrentLength(rig.joint);
 
-    minLength = Math.min(minLength, length);
-    maxLength = Math.max(maxLength, length);
-    peakAbsMotorForce = Math.max(peakAbsMotorForce, Math.abs(motorForce));
+    peakAbsAxialForce = Math.max(peakAbsAxialForce, Math.abs(force[2]));
+    peakTransverseForce = Math.max(
+      peakTransverseForce,
+      Math.hypot(force[0], force[1]),
+    );
     maxAbsX = Math.max(maxAbsX, Math.abs(com[0]));
     maxAbsY = Math.max(maxAbsY, Math.abs(com[1]));
+    minLength = Math.min(minLength, length);
+    maxLength = Math.max(maxLength, length);
   }
 
   const finalLength = b3.b3DistanceJoint_GetCurrentLength(rig.joint);
-  const configuredSpeed = b3.b3DistanceJoint_GetMotorSpeed(rig.joint);
-  const configuredForce = b3.b3DistanceJoint_GetMaxMotorForce(rig.joint);
+  const finalCom = [0, 0, 0];
+  b3.b3Body_GetWorldCenterOfMass(finalCom, rig.slider);
+  const signedFinalRadialPosition = side * finalCom[2];
+
+  const springEnabled = b3.b3DistanceJoint_IsSpringEnabled(rig.joint);
+  const limitEnabled = b3.b3DistanceJoint_IsLimitEnabled(rig.joint);
+  const motorEnabled = b3.b3DistanceJoint_IsMotorEnabled(rig.joint);
+  const configuredHertz = b3.b3DistanceJoint_GetSpringHertz(rig.joint);
+  const configuredDamping = b3.b3DistanceJoint_GetSpringDampingRatio(rig.joint);
+
   b3.b3DestroyWorld(rig.world);
 
   return {
-    motorSign,
+    mode,
+    side,
+    initialLength: rig.initialLength,
     finalLength,
+    signedFinalRadialPosition,
     minLength,
     maxLength,
-    peakAbsMotorForce,
+    peakAbsAxialForce,
+    peakTransverseForce,
     maxAbsX,
     maxAbsY,
-    configuredSpeed,
-    configuredForce,
+    springEnabled,
+    limitEnabled,
+    motorEnabled,
+    configuredHertz,
+    configuredDamping,
   };
 }
 
-const extend = run(1);
-const compress = run(-1);
+if (DT !== 1 / 60 || SUBSTEPS !== 4) {
+  throw new Error('E8.0a expected current Donor-v1 fixed-step substrate; requalify calibration');
+}
 
-console.log('E8.0a distance-joint axial binding calibration');
-for (const row of [extend, compress]) {
+for (const fn of [
+  'b3DefaultDistanceJointDef',
+  'b3CreateDistanceJoint',
+  'b3DistanceJoint_SetSpringForceRange',
+  'b3Joint_GetConstraintForce',
+]) {
+  if (typeof b3[fn] !== 'function') {
+    throw new Error(`E8.0a requires ${fn} in box3d.js@0.1.1`);
+  }
+}
+
+if (INITIAL_UNCAPPED_COMPRESSION_FORCE < 50 * UPPER_SPRING_FORCE) {
+  throw new Error('E8.0a derived compression demand no longer cleanly exceeds the finite force cap');
+}
+
+const rows = [
+  run('compression', 1),
+  run('compression', -1),
+  run('tension', 1),
+  run('tension', -1),
+];
+
+console.log('E8.0a unilateral axial-compliance binding calibration');
+console.log(
+  `  derived initial uncapped compression demand=${INITIAL_UNCAPPED_COMPRESSION_FORCE.toFixed(1)}N ` +
+  `vs finite cap=${UPPER_SPRING_FORCE.toFixed(1)}N`,
+);
+for (const row of rows) {
   console.log(
-    `  motor=${row.motorSign > 0 ? '+' : '-'}${MOTOR_SPEED.toFixed(1)}m/s ` +
-    `final=${row.finalLength.toFixed(6)}m range=${row.minLength.toFixed(6)}..${row.maxLength.toFixed(6)}m ` +
-    `peak|Fmotor|=${row.peakAbsMotorForce.toFixed(3)}N config=${row.configuredSpeed.toFixed(3)}m/s/${row.configuredForce.toFixed(1)}N ` +
+    `  ${row.mode.padEnd(11)} side=${row.side > 0 ? '+' : '-'}Z ` +
+    `length=${row.initialLength.toFixed(6)}→${row.finalLength.toFixed(6)}m ` +
+    `range=${row.minLength.toFixed(6)}..${row.maxLength.toFixed(6)}m ` +
+    `peak|Faxial|=${row.peakAbsAxialForce.toFixed(3)}N ` +
+    `peakFxy=${row.peakTransverseForce.toExponential(2)}N ` +
     `leakXY=${row.maxAbsX.toExponential(2)}/${row.maxAbsY.toExponential(2)}m`,
   );
 }
 
-const LENGTH_TOL = 0.003;
-const FORCE_TOL = 1.0;
+const FORCE_CAP_TOL = 1.0;
+const FORCE_SATURATION_MIN = 0.95 * UPPER_SPRING_FORCE;
+const TENSION_FORCE_MAX = 0.1;
+const COMPRESSION_OUTWARD_MIN = 0.02;
+const TENSION_MOTION_MAX = 1e-6;
 const LEAK_TOL = 1e-6;
+const TRANSVERSE_FORCE_TOL = 1e-3;
 
-if (Math.abs(extend.configuredSpeed - MOTOR_SPEED) > 1e-9) {
-  throw new Error('E8.0a positive distance-joint motor speed did not bind');
+for (const row of rows) {
+  if (!row.springEnabled || row.limitEnabled || row.motorEnabled) {
+    throw new Error(
+      `E8.0a ${row.mode}/${row.side} did not preserve spring-only distance-joint semantics`,
+    );
+  }
+  if (Math.abs(row.configuredHertz - SPRING_HZ) > 1e-9) {
+    throw new Error(`E8.0a ${row.mode}/${row.side} spring hertz did not bind`);
+  }
+  if (Math.abs(row.configuredDamping - DAMPING_RATIO) > 1e-9) {
+    throw new Error(`E8.0a ${row.mode}/${row.side} damping ratio did not bind`);
+  }
+  if (row.maxAbsX > LEAK_TOL || row.maxAbsY > LEAK_TOL) {
+    throw new Error(`E8.0a ${row.mode}/${row.side} leaked off the isolated axial DOF`);
+  }
+  if (row.peakTransverseForce > TRANSVERSE_FORCE_TOL) {
+    throw new Error(`E8.0a ${row.mode}/${row.side} produced material transverse constraint force`);
+  }
 }
-if (Math.abs(compress.configuredSpeed + MOTOR_SPEED) > 1e-9) {
-  throw new Error('E8.0a negative distance-joint motor speed did not bind');
+
+for (const row of rows.filter((candidate) => candidate.mode === 'compression')) {
+  if (row.peakAbsAxialForce > UPPER_SPRING_FORCE + FORCE_CAP_TOL) {
+    throw new Error(
+      `E8.0a compression/${row.side} exceeded finite compression cap: ${row.peakAbsAxialForce}`,
+    );
+  }
+  if (row.peakAbsAxialForce < FORCE_SATURATION_MIN) {
+    throw new Error(
+      `E8.0a compression/${row.side} did not materially engage the derived finite compression cap: ${row.peakAbsAxialForce}`,
+    );
+  }
+  if (row.finalLength - row.initialLength < COMPRESSION_OUTWARD_MIN) {
+    throw new Error(
+      `E8.0a compression/${row.side} did not push the body outward under compression-only load`,
+    );
+  }
+  if (row.signedFinalRadialPosition <= row.initialLength) {
+    throw new Error(
+      `E8.0a compression/${row.side} axial response was not outward from the anchor`,
+    );
+  }
 }
-if (
-  Math.abs(extend.configuredForce - MAX_MOTOR_FORCE) > 1e-9 ||
-  Math.abs(compress.configuredForce - MAX_MOTOR_FORCE) > 1e-9
-) {
-  throw new Error('E8.0a max motor force did not bind');
+
+for (const row of rows.filter((candidate) => candidate.mode === 'tension')) {
+  if (row.peakAbsAxialForce > TENSION_FORCE_MAX) {
+    throw new Error(
+      `E8.0a tension/${row.side} developed forbidden tensile restoring force: ${row.peakAbsAxialForce}`,
+    );
+  }
+  if (Math.abs(row.finalLength - row.initialLength) > TENSION_MOTION_MAX) {
+    throw new Error(
+      `E8.0a tension/${row.side} moved despite zero permitted tensile spring force`,
+    );
+  }
 }
-if (Math.abs(extend.finalLength - MAX_LENGTH) > LENGTH_TOL) {
-  throw new Error(`E8.0a extension did not reach bounded max length: ${extend.finalLength}`);
+
+const compressionRows = rows.filter((row) => row.mode === 'compression');
+const tensionRows = rows.filter((row) => row.mode === 'tension');
+if (Math.abs(compressionRows[0].finalLength - compressionRows[1].finalLength) > 1e-6) {
+  throw new Error('E8.0a mirrored compression response is not symmetric');
 }
-if (Math.abs(compress.finalLength - MIN_LENGTH) > LENGTH_TOL) {
-  throw new Error(`E8.0a compression did not reach bounded min length: ${compress.finalLength}`);
+if (Math.abs(compressionRows[0].peakAbsAxialForce - compressionRows[1].peakAbsAxialForce) > 1e-3) {
+  throw new Error('E8.0a mirrored compression force is not symmetric');
 }
-if (
-  extend.maxLength > MAX_LENGTH + LENGTH_TOL ||
-  compress.minLength < MIN_LENGTH - LENGTH_TOL
-) {
-  throw new Error('E8.0a distance limits were materially violated');
-}
-if (
-  extend.peakAbsMotorForce > MAX_MOTOR_FORCE + FORCE_TOL ||
-  compress.peakAbsMotorForce > MAX_MOTOR_FORCE + FORCE_TOL
-) {
-  throw new Error('E8.0a measured motor force exceeded configured finite cap');
-}
-if (
-  extend.peakAbsMotorForce < 0.5 * MAX_MOTOR_FORCE ||
-  compress.peakAbsMotorForce < 0.5 * MAX_MOTOR_FORCE
-) {
-  throw new Error('E8.0a force-bounded motor did not materially load against the specimen');
-}
-if (
-  extend.maxAbsX > LEAK_TOL || extend.maxAbsY > LEAK_TOL ||
-  compress.maxAbsX > LEAK_TOL || compress.maxAbsY > LEAK_TOL
-) {
-  throw new Error('E8.0a isolated axial specimen leaked into locked transverse axes');
+if (Math.abs(tensionRows[0].finalLength - tensionRows[1].finalLength) > 1e-6) {
+  throw new Error('E8.0a mirrored tension response is not symmetric');
 }
 
 console.log(
-  'E8.0a PASS: box3d.js@0.1.1 exposes a bidirectional, length-limited, finite-force distance-joint motor that cleanly acts along the isolated axial degree of freedom. This qualifies only the binding primitive; it does not yet qualify a parallel support representation, ground loading, or locomotion.',
+  'E8.0a PASS: box3d.js@0.1.1 exposes a mirrored spring-only distance-joint primitive with finite compression force and effectively zero tensile authority in the isolated axial specimen. This qualifies only unilateral axial compliance; it does not qualify an embodied support representation, ground load sharing, or locomotion.',
 );
