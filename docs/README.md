@@ -8,7 +8,7 @@ For a fresh takeover, long-gap return or uncertain state:
 
 1. [`PROJECT_STATE.md`](PROJECT_STATE.md) — **canonical current-state/orientation layer**;
 2. repository [`README.md`](../README.md) — public/current overview;
-3. the newest stage ledger relevant to the active question — currently [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md).
+3. the newest stage ledger relevant to the active question — currently [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md).
 
 Then inspect code, CI and historical ledgers only as required by the question.
 
@@ -30,7 +30,8 @@ The normal public/default player remains A‴ / Donor v1 unless `PROJECT_STATE.m
 - [`E3_1_SUPPORT_TRANSITIONS.md`](E3_1_SUPPORT_TRANSITIONS.md) — support-transition/contact-signal semantics;
 - [`E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — bounded internal angular-momentum mechanism and robustness failure;
 - [`E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](E4_LOCOMOTION_POSTURE_COMPATIBILITY.md) — accepted translational demand vs finite posture in the carriage proxy;
-- [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — authority placement, physical contact contribution and residual-authority accounting.
+- [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — authority placement, physical contact contribution and residual-authority accounting;
+- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — prismatic binding qualification and rejection of the naive serial support-relative-translation representation.
 
 These are research ledgers. They do not automatically promote mechanics into the player runtime.
 
@@ -64,13 +65,18 @@ It is intentionally split into:
 - `npm run smoke:research` — deterministic research/regression suite;
 - `npm run smoke:donor` — donor contract/equivalence + mobile input suite.
 
-The suite membership and ordering live in [`../scripts/smoke-suite.mjs`](../scripts/smoke-suite.mjs), grouped by stage rather than encoded as one long `package.json` command.
+Suite membership and ordering live in [`../scripts/smoke-suite.mjs`](../scripts/smoke-suite.mjs), grouped by stage rather than encoded as one long `package.json` command.
 
 Important distinction:
 
 > A research script can remain in the repository as historical evidence without belonging to canonical smoke forever.
 
-For example, superseded or confounded probes may be retained for provenance while a corrected/stronger successor owns the durable gate. Removing a probe from mandatory smoke should be an evidence decision, not cleanup by file age.
+E6 is a concrete example:
+
+- `e6-0a-prismatic-binding-calibration.mjs` remains mandatory smoke because it establishes a durable positive binding fact;
+- E6.0b/c/d remain falsification evidence explaining why the serial prismatic representation was rejected, but they are not mandatory gates and are not converted into artificial PASS tests.
+
+Removing a probe from mandatory smoke must be an evidence decision, not cleanup by file age.
 
 The GitHub Actions workflow remains deliberately simple: every push runs full smoke + production build; Pages configuration/upload/deploy occurs only on `main`.
 
