@@ -112,6 +112,15 @@ const SUITES = {
         'scripts/e6-1a-wheel-two-dof-binding-calibration.mjs',
       ],
     },
+    {
+      name: 'E7 parallel support-set representation',
+      scripts: [
+        'scripts/e7-0a-inactive-parallel-support-probe.mjs',
+        'scripts/e7-0b-contact-reachable-inactive-probe.mjs',
+        'scripts/e7-1a-finite-internal-support-acquisition.mjs',
+        'scripts/e7-1b-ground-contact-identity.mjs',
+      ],
+    },
   ],
   donor: [
     {

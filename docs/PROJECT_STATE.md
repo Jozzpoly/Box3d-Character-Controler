@@ -1,10 +1,8 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-02, after E6.1 latent support-translation representation qualification**
+Grounded: **2026-09-03, after E7 parallel-support-set closure**
 
-This is the canonical current-state/orientation layer. Detailed experiment history belongs in stage ledgers; keep this file compact enough for cheap fresh takeover.
-
-Before any future write, **re-fetch live `main` and its exact SHA**. Recorded SHAs are provenance, not authority to assume the repository has not moved.
+This is the compact canonical orientation layer. Detailed experiment history belongs in stage ledgers. Before any future write, **re-fetch live `main` and its exact SHA**; recorded SHAs are provenance, not authority to assume the repository has not moved.
 
 ## 1. Project identity
 
@@ -18,7 +16,7 @@ Working tension:
 
 > **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**
 
-Working mental model:
+Working model:
 
 > **Player intends. Controller interprets. Body attempts. Physics answers.**
 
@@ -26,38 +24,24 @@ Method:
 
 > **Controlled enough to explain, open enough to play.**
 
-Implementation/probes may be disposable. Accepted observations, reproduced failures, causal distinctions and qualified behavior are durable.
+Implementation/probes may be disposable. Accepted observations, reproduced failures, causal distinctions and Owner judgement are durable evidence.
 
-The lab is intentionally independent from Jozz Vehicle, JES, Anvil and other projects. Knowledge may transfer; architecture and code do not transfer by default.
+The lab is independent from Jozz Vehicle, JES, Anvil and other projects. Knowledge may transfer; architecture/code do not transfer by default.
 
 ## 2. Authority hierarchy
 
-### Owner judgement — experiential truth
+1. **Owner hands-on judgement** — experiential truth about feel, legibility, artificiality and whether a behavior is worth pursuing.
+2. **Live `main` + exact SHA + CI** — implementation truth.
+3. **Stage ledgers** — research/provenance truth about what was actually tested.
+4. Historical conversation/handoffs — context only when live evidence does not contradict them.
 
-Owner hands-on/free play is authoritative for feel: artificiality, stickiness, satisfaction, physical legibility and whether behavior is worth pursuing. Machine PASS cannot prove feel.
-
-### Live repository + exact SHA + CI — implementation truth
-
-Prefer:
-
-1. live `main` exact SHA;
-2. exact code/diff at that SHA;
-3. smoke/build on that exact SHA;
-4. deployed Pages evidence when browser/device behavior matters.
-
-A branch name is never current authority by itself.
-
-### Stage ledgers — research/provenance truth
-
-Stage documents say what was actually tested. Historical words such as “current”, “next” or “candidate” are stage-local unless promoted here.
-
-Rejected/confounded results remain evidence. Do not rewrite history to make it cleaner.
+Machine PASS cannot prove feel. A branch name is never authority by itself. Rejected/confounded results remain evidence and must not be rewritten into success.
 
 ## 3. Accepted current player — Donor v1 / A‴
 
 The normal public/default runtime remains **A‴ / Donor v1**.
 
-Current donor entry points:
+Current entry points:
 
 - `createCurrentDonorCharacter(...)`;
 - `createDonorCharacterV1(...)`;
@@ -89,7 +73,7 @@ Dynamic-body consequence remains on the separately qualified reciprocal/contact-
 - fall gravity multiplier `1.22`;
 - jump-release multiplier `1.75`;
 - jump speed `7.2 m/s`;
-- coyote time `0.11 s`;
+- coyote `0.11 s`;
 - jump buffer `0.12 s`;
 - support normal minimum Y `0.58`.
 
@@ -103,9 +87,9 @@ Qualified execution envelope:
 
 Lifecycle:
 
-1. `character.preStep(dt, intent)`;
+1. `preStep(dt, intent)`;
 2. `b3World_Step(world, dt, substeps)`;
-3. `character.postStep(dt)`.
+3. `postStep(dt)`.
 
 ### Representation fact
 
@@ -113,13 +97,13 @@ A‴ is a **controller-owned mover**, not rigid-body propulsion of an articulate
 
 - intent integrates controller-owned horizontal velocity;
 - mover/plane solving advances controller-owned position;
-- `virtualMass` participates in reciprocal dynamic-contact consequence but does not make locomotion a finite-mass rigid-body motor.
+- `virtualMass` participates in reciprocal contact consequence but does not turn locomotion into finite-mass rigid-body propulsion.
 
-E3–E6 study possible bridges toward richer physical embodiment. None modifies A‴.
+E3–E7 are bridge research. None has modified A‴.
 
 ## 4. E3 — finite physical posture
 
-E3 remains experimental evidence, not a donor revision.
+E3 remains experimental evidence.
 
 ### E3.1 retained result
 
@@ -127,20 +111,16 @@ At finite `320 Nm`:
 
 - direct `64 N·s` — RECOVER;
 - direct `80 N·s` — FALL;
-- real 35 kg ram `3.0 m/s` — RECOVER;
+- 35 kg ram `3.0 m/s` — RECOVER;
 - ram `4.0 m/s` — FALL.
 
-Owner feedback:
+Owner feedback was positive: the specimen felt like a primitive mannequin physically fighting for balance.
 
-> `działa, feel rzeczywiście jest jakby primitywny manekin walczył o równowagę :D`
-
-Post-Owner decomposition separated:
+Post-Owner work separated:
 
 1. support-mediated grounded balance;
 2. unsupported internal attitude control;
 3. support relocation.
-
-The Owner-positive grounded balance effect survives removal of the accidental unsupported reaction-wheel channel inside the tested envelope.
 
 Diagnostic support survivor:
 
@@ -150,13 +130,13 @@ This is research-only, not runtime policy.
 
 ### E3.2 retained result
 
-A bounded internal-angular-momentum mechanism showed a real local effect at canonical resolution, but recoverability changed materially and non-monotonically across substeps `[1,2,4,8]`.
+Bounded internal angular momentum showed a real local mechanism at canonical resolution but materially/non-monotonically changed across substeps `[1,2,4,8]`.
 
 Verdict:
 
 > **Real local mechanism, not substrate-robust recovery capability in the tested representation.**
 
-Do not rescue E3.2 via another torque/stroke/gain/substep sweep.
+Do not rescue it through another torque/stroke/gain/substep sweep.
 
 Ledgers:
 
@@ -171,197 +151,219 @@ E4 is a closed **carriage-proxy** compatibility stage, not A‴ + E3 integration
 
 Retained result:
 
-- naive world-upright finite posture is incompatible with full current-strength launch/braking in the proxy;
+- world-upright finite posture is incompatible with full current-strength launch/braking in the proxy;
 - acceleration duration/Δv and posture phase matter, not peak acceleration alone;
-- finite physical preparation based on near-term intent can preserve stronger demand without raising the `320 Nm` posture budget;
+- finite preparation based on near-term intent can preserve stronger demand without raising the `320 Nm` posture budget;
 - current `31 m/s²` launch and `36 m/s²` braking both change matched lead0 F/F → lead8 R/R at substeps `2/4/8`, but not `1`.
 
 Important qualification:
 
 > **E4 proves finite-posture survivability/compatibility under inertial demand, not physical reproduction of A‴ translational authority.**
 
-`lead8` is research evidence, not accepted gameplay timing. Solver substeps are an evidence axis, not a tuning knob.
+`lead8` is evidence, not gameplay timing. Solver substeps are an evidence axis, not a tuning knob.
 
-Ledger:
-
-- `docs/E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`
+Ledger: `docs/E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`.
 
 ## 6. E5 — translational authority placement/accounting
 
 E5 is a closed accounting stage.
 
-Retained placement facts:
+Retained facts:
 
-- world-external authority can act without support and injects net system momentum;
+- world-external authority can act without support and inject net system momentum;
 - support-mediated exchange requires support and can conserve equal-and-opposite horizontal momentum;
-- ordinary Coulomb-limited exchange with `μ=.95` under static weight saturates near `19 m/s²`, below accepted `31/36 m/s²` demand in the simple specimen.
+- ordinary Coulomb-limited exchange with `μ=.95` under static weight saturates near `19 m/s²`, below accepted `31/36 m/s²` demand in the simple specimen;
+- on the pinned E5 substrate, `0.5 × totalNormalImpulse` is a calibrated outer-step load estimate, not a universal support policy.
 
-On the pinned E5 substrate, the calibrated outer-step support-load estimate is:
+In recovered lead8 cases across substeps `2/4/8`:
 
-`0.5 * totalNormalImpulse`
-
-This is substrate-specific measurement evidence, not universal support policy.
-
-### Posture recruits real translation
-
-In recovered E5.1 lead8 cases across substeps `2/4/8`:
-
-- support-load recruitment increased materially versus lead0;
-- real contact supplied about `64.6–71.0%` of the full `80 kg × 5.2 m/s` ramp impulse requirement;
-- whole-body ramp-end speed was about `4.20–4.42 m/s` while support reached `5.2 m/s`.
+- preparation materially recruited support load;
+- real contact supplied about `64.6–71.0%` of the full `80 kg × 5.2 m/s` ramp impulse;
+- ramp-end whole-body speed was about `4.20–4.42 m/s` while support reached `5.2 m/s`.
 
 Therefore:
 
 > **Anticipatory posture can materially increase physically earned translational authority, but the current single-support organism does not fully reproduce accepted A‴ translation through contact alone.**
 
-A support-gated world-external residual can close some gap but changes momentum/contact contribution and can mask substrate insufficiency.
+A support-gated world-external residual can close some gap but changes reciprocity/contact contribution and can mask substrate insufficiency.
 
 E5 selects neither pure traction, hybrid assist, assist cap, A‴ retune nor stepping.
 
-Ledger:
+Ledger: `docs/E5_AUTHORITY_PLACEMENT.md`.
 
-- `docs/E5_AUTHORITY_PLACEMENT.md`
+## 7. E6 — latent translation in the primary ankle path
 
-## 7. E6 — support-relative translation representation
+E6 is a closed negative representation stage.
 
-E6 is a **closed negative representation stage / evidence only**.
-
-Question:
-
-> **Can a latent support-relative translational DOF be inserted while preserving the qualified E5 primary organism closely enough that later active relocation would be causally interpretable?**
-
-Hard rule:
+Hard rule established:
 
 > **Representation match before actuation.**
 
-No active support-relocation claim was allowed unless the new representation first passed while translation was locked.
+### E6.0 — serial prismatic chain
 
-### E6.0 — serial prismatic carriage
-
-Positive fact:
-
-- `box3d.js@0.1.1` exposes a mirrored, force-bounded sagittal prismatic joint; `±0.25 m` calibration reached approximately `±0.251407 m`.
-
-Rejected topology:
+The Box3D prismatic binding itself passed, but:
 
 `foot ↔ locked prismatic carriage ↔ spherical ankle ↔ torso`
 
-Several causal corrections were tested without relaxing match thresholds. The strongest final control preserved the exact `10 kg` E5 support foot, total `80 kg`, direct torso↔foot balance reaction, RECOVER/RECOVER and near-reference translational accounting:
+changed posture mechanics while translation was locked. Strongest final control kept RECOVER/RECOVER and near-reference horizontal accounting, but peak tilt shifted `14.08→20.38°` and `14.98→19.26°`, beyond the declared `4°` representation tolerance.
 
-- `Jx / required`: `0.671 → 0.664`, `0.646 → 0.673`;
-- ramp-end speed: `4.204 → 4.279`, `4.216 → 4.319 m/s`.
+### E6.1 — direct two-body two-DOF ankle replacement
 
-But peak tilt shifted:
+A wheel-like two-body binding exposed clean sagittal translation + pitch without an intermediate carriage and was much closer to E5. Nevertheless, with translation locked it retained a persistent directional mismatch. Changing only nominal `±10 μm` lock to exact `0/0` did not remove it.
 
-- `14.08 → 20.38°`;
-- `14.98 → 19.26°`;
+Cumulative conclusion:
 
-beyond the declared `4°` representation tolerance.
+> **Do not keep replacing/interposing the qualified primary ankle with latent translation variants merely to search for a passing one. Change mechanism family.**
 
-Verdict:
+Ledger: `docs/E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`.
 
-> **Serially interposing the latent prismatic DOF changes posture mechanics before actuation.**
+## 8. E7 — parallel support-set experiment
 
-E6.0 was canonicalized as:
+E7 changed mechanism family while preserving the primary E5 ankle path.
 
-`17b040a5f83b39e8589bae48322f56de462d3725`
+Representative topology:
 
-with exact main workflow `33684312865` SUCCESS including Pages deployment.
+- exact primary `10 kg foot ↔ spherical ankle ↔ torso`;
+- separate parallel `1 kg`, `0.9 m` support probe;
+- torso reduced to `69 kg`, keeping total mass `80 kg`;
+- probe attached through its own revolute joint;
+- no world-external translational authority.
 
-### E6.1 — direct two-body two-DOF replacement constraint
+### E7.0 — inactive representation PASS
 
-Read-only E3.1 recovery showed its support travel came from the existing foot moving while foot↔torso stayed direct. E6.1 therefore removed the carriage and tested a direct two-body wheel-like solver constraint, used only because it can expose:
+A real parallel support-capable body could exist locked, elevated and contact-inactive while preserving current31/lead8 E5 behavior inside the declared representation envelope.
 
-- world-Z translation;
-- world-X sagittal rotation.
+The final contact-reachable `0.9 m` geometry was separately re-qualified before actuation.
 
-Binding calibration PASS:
+Retained invariant:
 
-- translation `±0.25 m` remained clean/mirrored;
-- sagittal spin `±2 rad/s` remained free with locked translation.
+> **A parallel support branch can be representation-neutral even though primary-path latent-DOF replacements failed.**
 
-But the locked representation still failed the full E5-equivalence contract.
+### E7.1 — finite internal ground acquisition PASS
 
-E6.1b (`±1e-5 m` nominal lock):
+A single finite actuator specimen was derived from probe mechanics rather than swept:
 
-- RECOVER/RECOVER;
-- zero ramp support loss;
-- individually close impulse/speed/tilt metrics;
-- persistent candidate asymmetry:
-  - ramp-end speed gap ≈ `0.189 m/s` > allowed `0.15`;
-  - impulse-fraction gap ≈ `0.060` > allowed `0.035`;
-- negative max anchor separation `2.142 mm` > declared `2.0 mm`.
+- target `±140°`;
+- limit `±145°`;
+- torque cap `18 Nm` (`2×` maximum probe gravity moment);
+- critically damped target around `8 rad/s`;
+- equal-and-opposite angular impulses probe↔torso.
 
-E6.1c changed **only** nominal lock `±1e-5 m → exact 0/0` and preserved every threshold/other mechanic. The same asymmetry remained:
+Both directions acquired persistent solver-loaded contact at frame `25`, with:
 
-- speed gap ≈ `0.185 m/s`;
-- impulse-fraction gap ≈ `0.059`;
-- negative anchor separation ≈ `2.120 mm`.
+- primary support loss `0`;
+- fall false;
+- peak torso tilt about `.53°`;
+- no world-external horizontal authority.
 
-Therefore the mismatch is not explained by the tiny nominal stroke.
+Contact identity hardening proved the contact was specifically **probe↔platform**, with `otherRaw=0` and `otherLoaded=0` throughout.
 
-E6.1 verdict:
+Exact positive provenance includes:
 
-> **The direct two-body two-DOF binding exists and is much closer to E5 than the serial carriage, but replacing the ankle constraint still changes the locked organism enough to fail the complete representation contract. Do not unlock/motorize it and attribute later results to support relocation.**
+- E7.0b head `300bec432188129e8dfd18b2258170475bc5679b`, run `33686427721` SUCCESS;
+- E7.1a head `f8f0e3646967b49aff6257119a3bcd449d2460ee`, run `33688504012` SUCCESS;
+- E7.1b head `db0b658087503bacf19b6f4092c913eadb8d5c71`, run `33688878419` SUCCESS.
 
-### Cumulative E6 conclusion
+### E7.2a — upright load transfer FAIL
 
-Two different latent-translation insertions altered qualified mechanics before actuation:
+After acquiring and settling the second ground contact, E5-calibrated load accounting remained valid, but the probe carried only about `.12–.18 Ns/frame`, less than its own nominal `1 kg` weight impulse `.333 Ns` and far below the predeclared meaningful body-load threshold `1.133 Ns`.
 
-1. serial extra-body prismatic chain;
-2. direct two-body replacement constraint.
+The primary foot remained responsible for essentially the whole `80 kg` support load.
 
-Retained interpretation:
+Exact negative provenance:
 
-> **The next physical-support experiment should not be another attempt to replace or interpose the qualified primary ankle with a translational joint.**
+- head `d6303df42ab409b422e03386ace09d384effb470`;
+- run `33689351597` FAIL at the intended E7.2a gate.
 
-Instead, if the physical branch continues, test a **parallel/alternate support-set topology** whose inactive state leaves the existing primary foot↔torso path intact.
+### E7.2b — current31 demand-aligned weight shift FAIL
 
-This does not select humanoid legs, stepping or external assist.
+To test whether E7.2a failed merely because COM remained above the primary foot, the existing `320 Nm` primary ankle was asked to reach the demand-derived current31 effective-up target:
 
-Ledger:
+`atan2(31,20) = 57.17°`
 
-- `docs/E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`
+in the direction of the already-acquired probe.
 
-## 8. Repository/runtime consequence
+This target moves the dominant torso-weighted COM projection to about `.399 m`, beyond the primary foot half-width `.340 m` while still inside the acquired support reach.
+
+Both mirrored runs failed to establish a stable HOLD:
+
+- probe support remained present continuously;
+- no self/other contact appeared;
+- torso came close to the requested target (`0.27°` / `1.79°` best error);
+- primary foot unloaded/lost contact (`41` / `9` frames);
+- organism fell to about `99.6–99.7°` peak tilt.
+
+Exact negative provenance:
+
+- head `7e3dffc45738d29576fb07a7230317f066e38c5d`;
+- run `33689785902` FAIL at the intended E7.2b gate.
+
+Thresholds, `18 Nm` actuator, probe geometry, target and tolerances were not relaxed after failure.
+
+### Cumulative E7 conclusion
+
+E7 separates contact placement from support capacity:
+
+1. inactive parallel representation — PASS;
+2. finite internal placement — PASS;
+3. real mirrored ground acquisition — PASS;
+4. meaningful stable body-load path in the tested single-hinge torso-COM strut — FAIL.
+
+Central retained result:
+
+> **Contact acquisition is not support capacity. A useful support-set mechanism must prove a stable, regulatable compressive load path, not merely place another body on the ground.**
+
+More specifically:
+
+> **The tested single rigid probe hinged at the torso COM is a qualified contact-placement mechanism, not a qualified load-bearing support architecture.**
+
+Do not rescue it by sweeping torque, angle, length, mass or tolerances.
+
+Ledger: `docs/E7_PARALLEL_SUPPORT_SET.md`.
+
+## 9. Runtime / smoke consequence
 
 Runtime remains unchanged:
 
 - normal URL: A‴ / Donor v1;
 - Donor v0/A″ frozen;
 - E3.1 public balance surface remains isolated experimental presentation;
-- E3.2, E4, E5, E6 are machine research only;
-- no E6 mechanic belongs in `src/` or current Donor behavior.
+- E3.2–E7 are machine research only;
+- no E6/E7 mechanism belongs in current `src/` or Donor behavior.
 
-Canonical smoke distinguishes durable positive substrate facts from negative archaeology:
+Canonical research smoke retains durable positive E7 gates:
 
-- durable E6 smoke: prismatic binding calibration + direct two-body two-DOF binding calibration;
-- failed E6 representation probes remain executable provenance but not mandatory green regression gates.
+- E7.0a inactive parallel representation;
+- E7.0b contact-reachable inactive representation;
+- E7.1a finite internal support acquisition;
+- E7.1b probe↔ground contact identity.
 
-## 9. Durable evidence lineage
+E7.2a/b remain executable negative provenance, intentionally outside mandatory green smoke.
+
+## 10. Durable evidence lineage
 
 1. Controller-owned contact baseline established useful push/contact.
-2. Gravity/support/moving-support research recovered physical support behavior without fixed world-Y authority.
+2. Gravity/support/moving-support work recovered physical support behavior without fixed world-Y authority.
 3. A′/A″ separated reciprocal consequence from persistent locomotion state.
 4. A‴ removed a real blocked-velocity semantic defect and became current Donor v1 after Owner free play.
 5. E3.1 showed finite support-mediated posture struggle can be real and perceptually valuable.
-6. E3.2 showed a local internal-momentum mechanism but failed solver-resolution robustness.
+6. E3.2 showed local internal-momentum capacity but failed solver-resolution robustness.
 7. E4 showed accepted launch/braking demand can coexist with finite posture when the body physically prepares.
-8. E5 showed preparation recruits real contact momentum, but the simple single-support organism does not physically reproduce full A‴ translation.
-9. E6.0 showed a latent serial translation topology changes posture before actuation.
-10. E6.1 showed even a direct two-body latent translation replacement, while much closer, fails the complete locked E5 representation contract.
+8. E5 showed preparation recruits real contact momentum, but the simple single-support organism does not reproduce full A‴ translation.
+9. E6 showed adding latent translation to the primary ankle path changed qualified mechanics before actuation.
+10. E7 showed a parallel branch can preserve the primary organism and physically acquire a second ground contact, but **contact alone did not become a stable body-load path**.
 
-## 10. Durable invariants
+## 11. Durable invariants
 
 Preserve unless new evidence explicitly overturns them:
 
-- Donor v0/A″ is immutable historical compatibility behavior.
+- Donor v0/A″ is immutable compatibility behavior.
 - Donor v1/A‴ numeric feel is accepted; do not silently retune it.
 - Normal public runtime is A‴ unless explicit promotion earns replacement.
 - Dynamic-body consequence and static/kinematic constraint semantics remain causally distinct.
 - Moving-support inheritance is accepted behavior and must not be casually broken.
 - Machine PASS and Owner acceptance are different evidence classes.
-- A‴ is current-best, not declared final player architecture.
+- A‴ is current-best, not declared final architecture.
 - E3 FALL/RECOVER is an outcome, not a causal explanation.
 - Internal actuation must not receive hidden world reaction merely to stabilize behavior.
 - Unsupported attitude control is distinct from grounded balance.
@@ -369,64 +371,66 @@ Preserve unless new evidence explicitly overturns them:
 - Support relocation is not “stepping” until real stepping capability is designed/tested.
 - A local effect at one solver resolution is not robust capability evidence.
 - E4 carriage motion is a proxy, not locomotion integration.
-- `lead8` is not accepted gameplay timing.
+- `lead8` is not gameplay timing.
 - Solver substeps are an evidence dimension, not a tuning knob.
-- Do not weaken accepted agency merely to make a body prototype easier without evidence/Owner judgement.
+- Do not weaken accepted `31/36 m/s²` agency merely to make embodiment easier without evidence/Owner judgement.
 - E5's `0.5× totalNormalImpulse` interpretation is substrate-specific.
 - Support-gated world-external assistance is still world-external authority.
-- Matching desired speed does not prove the mechanism that produced it.
 - Contact-earned and externally granted momentum must be accounted separately.
-- **A new mechanical DOF must pass an inactive/locked representation gate before active behavior can support causal claims.**
-- **Translational equivalence alone is insufficient if posture/contact dynamics change materially.**
-- **After E6, do not keep replacing the qualified ankle with latent translation variants merely to search for a passing one. Change mechanism family.**
+- **A new mechanical DOF/branch must pass inactive representation matching before active causal claims.**
+- **Translational equivalence is insufficient if posture/contact dynamics change materially.**
+- **After E6, do not keep replacing the primary ankle with latent translation variants.**
+- **After E7, do not equate contact acquisition with load-bearing support capacity.**
+- **A candidate support architecture must prove stable/regulatable body-load transmission before translational-agency claims.**
 
-## 11. Current unresolved questions
+## 12. Current unresolved questions
 
 Highest-value unknowns now include:
 
-- can a parallel/alternate support-capable element exist **inactive** without perturbing the qualified E5 primary organism;
-- if yes, can changing the support set/load distribution earn additional physical agency without world-external horizontal authority;
-- if not, is explicit bounded gameplay authority preferable to further representation complexity;
+- can a **parallel finite support mechanism with a true compressive/load-bearing path** remain non-interfering when inactive;
+- if yes, can it stably transfer body load in both sagittal directions before any locomotion claim;
+- only after that, can changing support set/load distribution earn additional current31/current36 physical agency without world-external horizontal authority;
+- if representation complexity keeps growing without robust load-bearing payoff, is explicit bounded gameplay authority the better design trade;
 - how any later qualified mechanism survives reversal, continuous locomotion, terrain, moving supports and solver-resolution changes;
 - what Owner feel emerges once a mechanically qualified embodied locomotion candidate exists.
 
-These are questions, not architecture commitments.
+These are research questions, not architecture commitments.
 
-## 12. Current natural boundary
+## 13. Current natural boundary
 
-E5 left a fork between physically earning more agency and explicitly granting some bounded gameplay authority.
+E7 has exhausted the useful claim of the **single rigid torso-COM hinged probe** without tuning it into a different experiment.
 
-E6 tested two increasingly faithful ways to embed support-relative translation in the current ankle path and rejected both as causal substrates before actuation.
+The next physical-family question is:
 
-The next high-information physical question is:
+> **Can a parallel support mechanism provide a finite, stable and regulatable compressive load path while remaining mechanically non-interfering when inactive?**
 
-> **Can a minimal parallel/alternate support element be added in an inactive state without materially perturbing the qualified E5 primary foot↔torso organism?**
+Candidate families may include an axial/telescopic support or a minimal articulated limb, but E7 does not select either.
 
-This is a **support-set non-interference problem** before support transfer, relocation or gait.
+Do **not** by inertia:
 
-Do **not**:
+- increase E7 probe torque;
+- sweep E7 target angle/length/mass/timing until load transfer appears;
+- run current31 translational-agency A/B on the failed E7.2 strut;
+- call E7.1 stepping/gait;
+- build a full humanoid by default;
+- weaken A‴ `31/36` agency;
+- select external assist merely because E7.2 failed;
+- tune solver substeps for preferred outcomes.
 
-- tune either rejected E6 latent-translation representation until it passes;
-- unlock/motorize them;
-- build humanoid legs/gait by inertia;
-- call the next experiment stepping;
-- weaken accepted A‴ `31/36 m/s²` agency;
-- select external assist merely because E6 failed;
-- choose solver substeps for preferred outcomes.
+Any new physical family starts again with **inactive non-interference**. Only a representation-qualified candidate may advance to contact acquisition, load transfer, then translational agency.
 
-If the next stage is opened, its first gate should be inactive non-interference. Only a passing inactive control may authorize a later support-set/contact-acquisition experiment.
-
-## 13. Execution loop
+## 14. Execution loop
 
 Use the smallest loop matching the uncertainty:
 
 1. identify the highest-value unknown;
 2. inspect only evidence/code needed to define it;
 3. declare a falsifiable control before tuning;
-4. preserve representation/inactive controls where causal attribution matters;
+4. preserve inactive/representation controls where causal attribution matters;
 5. run exact-head smoke/build;
 6. distinguish machine evidence from Owner judgement;
-7. promote only what the evidence supports;
-8. stop at a natural boundary rather than opening an unrelated stage automatically.
+7. retain negative evidence without making it permanent red CI;
+8. promote only what evidence supports;
+9. stop at a natural boundary rather than opening an unrelated stage automatically.
 
 For navigation see `docs/README.md`.
