@@ -44,7 +44,7 @@ Current important ground profile values remain:
 - fixed outer step `1/60 s`;
 - canonical `4` Box3D substeps.
 
-A‴ is a **controller-owned mover representation**. Its accepted locomotion is not yet rigid-body propulsion of an articulated physical player. This distinction became central after E4.
+A‴ is a **controller-owned mover representation**. Its accepted locomotion is not yet rigid-body propulsion of an articulated physical player. This distinction remains central after E4/E5.
 
 See [`docs/E2_3E_STABILIZATION.md`](docs/E2_3E_STABILIZATION.md) and [`docs/DONOR_CONTRACT.md`](docs/DONOR_CONTRACT.md).
 
@@ -178,27 +178,70 @@ Detailed ledger:
 
 - [`docs/E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](docs/E4_LOCOMOTION_POSTURE_COMPATIBILITY.md)
 
+## E5 translational authority placement — closed accounting stage
+
+E5 asked what E4 deliberately left open:
+
+> **Where does accepted translational authority physically come from, what momentum bookkeeping does each placement imply, and how much of the current A‴ response can the single-support organism actually earn through contact?**
+
+### Placement distinction
+
+A corrected causal crucible separated:
+
+- **world-external authority** — preserves requested acceleration even without support, but injects net player+support momentum;
+- **support-mediated exchange** — requires support and can preserve equal-and-opposite momentum accounting;
+- **ordinary Coulomb-limited exchange** — with `μ=.95` and static weight saturates near `19 m/s²`, below current `31/36 m/s²` launch/braking demand.
+
+During this work Box3D contact telemetry was corrected: on the pinned substrate raw `totalNormalImpulse` includes relaxation accumulation; `0.5 * totalNormalImpulse` is the calibrated outer-step diagnostic load estimate for the E5 settled control.
+
+### Posture recruits physical translation
+
+E5.1 reproduced the E4 current-31 lead0/lead8 outcome pattern and measured whole-body horizontal momentum directly.
+
+In recovered lead8 cases across substeps `2/4/8`:
+
+- support-load recruitment increased by at least about `1.12×` relative to lead0;
+- physical contact supplied about **64.6–71.0%** of the full ramp impulse requirement;
+- body speed at ramp end was about **4.20–4.42 m/s** against support at `5.2 m/s`.
+
+Therefore E4's strongest result is now qualified more precisely:
+
+> **Anticipatory posture can preserve survivability and materially increase physically earned translational authority, but the current single-support organism does not fully reproduce the accepted A‴ response through contact alone.**
+
+### Residual authority is measurable, but not free
+
+E5.2 added a diagnostic support-gated world-external residual channel, separately accounting its momentum contribution from contact.
+
+The coarse sweep showed that residual authority can close the response gap in some cases, but it also changes the contact contribution and can change recoverability. At `substeps=1`, only `4 m/s²` residual was enough to change the physical-only F/F case to R/R.
+
+Strong warning:
+
+> **External assist can mask a physical substrate that cannot independently supply the required capacity.**
+
+E5 therefore does **not** select hybrid authority, pure traction, a residual cap, stepping, Donor v2, or an A‴ retune.
+
+Detailed ledger:
+
+- [`docs/E5_AUTHORITY_PLACEMENT.md`](docs/E5_AUTHORITY_PLACEMENT.md)
+
 ## Current research boundary
 
-E4 is closed. More moving-platform sequences would mostly elaborate the proxy rather than answer the newly exposed problem.
+E5 is closed as an authority-placement/accounting stage. It reduced the problem but did not select the next architecture.
 
-Re-reading the actual A‴ implementation matters here: accepted locomotion is controller-owned mover authority, while E3's body is a different physical representation.
+We now know:
 
-The next high-information question is therefore:
+- posture preparation can increase physically earned authority;
+- the present single-support organism still leaves a material gap to the accepted A‴ response;
+- ordinary Coulomb throughput under static weight is insufficient for the current `31/36 m/s²` envelope in the simple specimen;
+- world-external residual authority can preserve agency, but it changes reciprocity, can displace contact contribution and can hide physical failure.
 
-> **How should accepted player translational authority be coupled into a physically embodied organism while preserving both strong agency and meaningful physical consequence?**
+The next high-information problem is therefore:
 
-This is a **problem statement, not a selected mechanism**.
+> **Should the next portion of missing agency be earned physically by changing support/contact representation — for example deliberate support relocation — or should some bounded gameplay authority be granted explicitly and honestly as non-reciprocal assistance?**
 
-Competing future mechanism families may include:
+This remains a **decision/problem boundary, not a selected mechanism**.
 
-- finite world-external translational assist;
-- support-mediated / traction-limited propulsion;
-- hybrid authority sharing;
-- deliberate support relocation / stepping;
-- another representation preserving the useful A‴ response envelope while exposing physical consequence.
-
-Do not build legs, humanoid gait, a new Donor revision or another platform sequence by inertia. The next stage should first separate the smallest useful authority-placement alternatives.
+Do not build legs/humanoid gait, tune residual acceleration, weaken accepted A‴ agency or open another sweep by inertia. The next stage should first choose the smallest experiment that separates the remaining mechanism families.
 
 ## Public build
 
@@ -214,7 +257,7 @@ Alias:
 
 `?mode=e3`
 
-The deployed E3 playground still represents the earlier E3.1 always-active experimental actuator. E3.1 support-gated/reactive decompositions, all E3.2 mechanics and all E4 work are machine research only.
+The deployed E3 playground still represents the earlier E3.1 always-active experimental actuator. E3.1 support-gated/reactive decompositions, all E3.2 mechanics and all E4/E5 work are machine research only.
 
 ## Normal controls
 
@@ -258,47 +301,3 @@ Vendored native Box3D snapshot:
 `8441b4a06d6d09dcfb0b0f704df4d847d1437b92`
 
 Binding version and native engine snapshot are separate provenance facts.
-
-## Validation
-
-```bash
-npm install
-npm run smoke
-npm run build
-```
-
-Canonical smoke preserves the Foundation/E2 lineage, frozen A″ reference, A‴ production qualification, donor v0/v1 gates, mobile-input gate, E3 falsification chain and E4 compatibility/robustness probes.
-
-## Reading order
-
-For current work:
-
-1. [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) — canonical identity/current player/current research boundary;
-2. [`docs/E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](docs/E4_LOCOMOTION_POSTURE_COMPATIBILITY.md) — newest closed compatibility stage and next authority-placement boundary;
-3. [`docs/E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](docs/E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — internal-momentum robustness falsification;
-4. [`docs/E3_1_SUPPORT_TRANSITIONS.md`](docs/E3_1_SUPPORT_TRANSITIONS.md) — support-transition/contact-signal evidence;
-5. [`docs/E3_ROTATIONAL_EMBODIMENT.md`](docs/E3_ROTATIONAL_EMBODIMENT.md) — E3 research origin;
-6. [`docs/E3_1_VALIDATION_LOOP.md`](docs/E3_1_VALIDATION_LOOP.md) — post-Owner causal decomposition;
-7. [`docs/E2_3E_STABILIZATION.md`](docs/E2_3E_STABILIZATION.md) — accepted A‴ promotion;
-8. [`docs/DONOR_CONTRACT.md`](docs/DONOR_CONTRACT.md) — donor compatibility/versioning;
-9. earlier stage docs only when a specific question requires them.
-
-`docs/RESEARCH.md` is an early historical ledger, not live planning authority.
-
-## Do not automatically
-
-- retune A‴ / Donor v1 because E3/E4 exists;
-- change frozen v0 semantics;
-- patch `box3d.js` to full native clipping;
-- equate finite torque with finite total angular capability;
-- equate manifold presence, touching and load as one support truth;
-- promote the E3.1 reactive-support signal without a concrete integration need;
-- call support sliding “stepping”;
-- rescue E3.2 by tuning torque/stroke/gain/substeps;
-- turn E4 lead8 into a gameplay constant;
-- select solver substeps because they produce a preferred E4 outcome;
-- mistake the E4 moving-support carriage for actual locomotion integration;
-- weaken accepted A‴ agency merely to make a physical-body prototype easier;
-- add active ragdoll/humanoid gait by inertia;
-- create a new donor revision from research evidence alone;
-- declare controller-owned, solver-owned or hybrid representation the final architecture winner.
