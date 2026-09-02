@@ -1,6 +1,6 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-02, after E3.2 bounded-internal-momentum falsification and robustness qualification**
+Grounded: **2026-09-02, after E4 locomotion↔finite-posture compatibility qualification**
 
 This document is the canonical current-state/orientation layer for the repository. It does not replace stage evidence.
 
@@ -82,18 +82,7 @@ Current donor entry points:
 
 A‴ became current-best after machine qualification of the real production path and Owner free play identified and removed a real stale-blocked-velocity feel problem.
 
-Current horizontal static/kinematic constraint rule:
-
-```text
-v_rel_in = (velocity - surfaceVelocity) · horizontalNormal
-d_rel_in = (desiredVelocity - surfaceVelocity) · horizontalNormal
-allowed_rel_in = min(0, d_rel_in)
-
-if v_rel_in < allowed_rel_in:
-    retire only the excess normal component
-```
-
-Interpretation:
+Current horizontal static/kinematic constraint interpretation:
 
 > **Constraint velocity is relative, and the player may retain only constrained normal authority still justified by current intent.**
 
@@ -130,8 +119,8 @@ v1 intentionally retains the accepted v0 numeric feel profile:
 
 Qualified execution envelope:
 
-- fixed physics step `1/60 s`;
-- `4` Box3D substeps;
+- fixed outer physics step `1/60 s`;
+- canonical `4` Box3D substeps;
 - `box3d.js@0.1.1`;
 - Three.js `0.183.0` in browser presentation;
 - Vite `7.0.0`.
@@ -144,23 +133,27 @@ Lifecycle:
 
 Keyboard and touch feed the same device-independent move/jump/sprint intent.
 
-## 5. Active research line — E3 rotational embodiment / balance
+### Representation fact relevant after E4
 
-E3 is justified by a new embodied capability question, not by reopening locomotion tuning.
+A‴ is a **controller-owned mover**, not rigid-body propulsion of an articulated player:
 
-Research question:
+- intent is integrated into controller-owned horizontal velocity;
+- mover/plane solving advances controller-owned position;
+- `virtualMass` participates in reciprocal contact consequence but does not make locomotion itself a finite-mass rigid-body motor.
+
+This representation fact is central to the next research boundary. E4 tested the inertial demands of the accepted A‴ profile, not a completed physical integration of A‴ with E3.
+
+## 5. E3 rotational embodiment — experimental evidence
+
+E3 asked:
 
 > Can maintaining posture become a physically negotiated capability rather than a guaranteed controller property?
 
 E3 remains **experimental**. It is not a donor revision and does not replace A‴.
 
-The first E3 organism uses a dynamic support/foot, dynamic torso, spherical ankle, world-up pitch/roll control and equal-and-opposite internal angular impulses. Common research values such as `Kp = 1600`, `Kd = 210`, `320 Nm`, current geometry and mass distribution are **research parameters**, not player tuning or biomechanical claims.
+### E3.1 — Owner-positive support-mediated balance
 
-## 6. E3.1 — grounded balance and causal decomposition
-
-### Owner-positive grounded phenomenon
-
-At the standard E3.1 specimen, machine evidence showed a finite recoverability frontier, including approximately:
+At the standard finite `320 Nm` specimen, representative machine evidence included:
 
 - direct forward `64 N·s` — RECOVER;
 - direct forward `80 N·s` — FALL;
@@ -173,28 +166,19 @@ Owner hands-on feedback on the E3.1c playground:
 
 This is positive experiential evidence that physical struggle for posture is perceptually legible and worth research. It does **not** promote E3 to current player behavior.
 
-### Three separated capability channels
-
-Post-Owner falsification separated at least three distinct channels:
+Post-Owner falsification separated at least three channels:
 
 1. **support-mediated grounded balance**;
 2. **internal airborne attitude control** through a reaction mass;
 3. **support relocation** under some geometry/authority conditions.
 
-The original always-active E3 actuator has finite instantaneous torque but the spherical ankle does not bound angular range or total angular-momentum storage. In zero-g it can right the torso while the foot accumulates very large angular travel. This is momentum-conserving internal attitude control, not a hidden world torque, but it is a distinct and unrealistically unbounded capability.
-
-Strong E3.1 causal result:
+Strong E3.1 result:
 
 > **The Owner-positive grounded mannequin-like balance struggle does not require the accidental unsupported attitude-control channel inside the tested E3.1 envelope.**
 
-### Support-transition/contact semantics
+### E3.1 support/contact semantics
 
-E3.1i–k established that support availability is not one simple contact boolean:
-
-- manifold presence can persist speculatively after useful reaction has ended;
-- geometric `separation <= 0` is too narrow as complete support truth;
-- Box3D can generate loaded predictive landing contact while separation is still about `+5 mm`;
-- instantaneous `normalImpulse > ε` cannot define persistent settled support.
+E3.1i–k established that manifold presence, geometric touching and solver load are distinct evidence signals.
 
 A diagnostic survivor for the current specimen is:
 
@@ -202,7 +186,7 @@ A diagnostic survivor for the current specimen is:
 reactiveSupport = touchingPointExists || loadedPointExists
 ```
 
-It preserved the tested grounded balance/ram envelope and removed the reproduced speculative-only takeoff actuation. It remains **diagnostic research only**, not a promoted runtime support policy.
+It preserved the tested grounded balance/ram envelope and removed the reproduced speculative-only takeoff actuation. It remains **diagnostic research only**, not promoted runtime policy.
 
 Detailed E3.1 ledgers:
 
@@ -210,50 +194,30 @@ Detailed E3.1 ledgers:
 - `docs/E3_1_VALIDATION_LOOP.md`
 - `docs/E3_1_SUPPORT_TRANSITIONS.md`
 
-## 7. E3.2 — bounded internal angular momentum
+## 6. E3.2 — bounded internal angular momentum
 
 E3.2 asked whether articulation could earn complexity through a separated physical capability rather than anatomy-by-default.
 
-Question:
+At canonical `1/60 × 4 substeps`, a matched three-body specimen showed a real local causal difference:
 
-> Can one explicitly finite internal angular-momentum resource recover states that the same organism without active internal redistribution cannot recover?
-
-### Matched representation
-
-The principal E3.2 specimen kept the same outer support and external collision shape while splitting the nominal 70 kg torso mass into a 60 kg outer torso plus a 10 kg internal reaction mass at the same approximate CoM. Passive and active comparisons used the same three-body representation. The internal body did not contact the world.
-
-The internal revolute DOF had finite angular stroke; the manual actuator used equal-and-opposite angular impulses with bounded instantaneous torque. No E3.2 mechanism was added to runtime or browser code.
-
-### Canonical 4-substep local result
-
-At the canonical `1/60 s × 4 substeps` research substrate, the manual specimen produced a genuine local causal difference:
-
-- matched passive `±80 N·s` — FALL/FALL at the qualified 60° specimen;
+- matched passive `±80 N·s` — FALL/FALL;
 - matched active `±80 N·s` — RECOVER/RECOVER;
-- zero-g total angular momentum remained conserved to a small measured drift;
-- increasing available internal stroke changed the canonical outcome while simply increasing torque at a smaller stroke did not.
+- zero-g total angular momentum remained conserved to small measured drift;
+- available angular stroke materially affected the canonical result.
 
-This established a **local mechanism**: finite internal actuation can redistribute angular momentum and alter recoverability at the canonical substrate.
+But stronger interpretations failed falsification:
 
-### Important failed interpretations
+- smaller direct-survivor ranges were one-sided;
+- ecological ram benefit was one-sided at canonical resolution;
+- native revolute motor did not improve robustness;
+- simple ankle-first/hip-later sequencing did not produce a robust interval;
+- absolute actuator impulse was corrected as effort, not energy/capacity consumption.
 
-E3.2 deliberately challenged stronger stories:
+### E3.2n decisive robustness result
 
-- a 50°/55° direct survivor was one-sided; 60° was the first symmetric canonical survivor;
-- ecological 35 kg ram benefit was one-sided at canonical resolution (`+4.0 m/s` recovered while the mirrored side fell);
-- the first ram collision itself was nearly mirrored; material divergence emerged later through foot↔ground support/contact trajectory;
-- high absolute actuator impulse was not actuator thrashing and must not be conflated with energy or consumed capacity;
-- `b3Joint_GetConstraintTorque` did not provide a clean universal hard-limit signal;
-- a solver-native revolute motor did not improve robustness and made the direct mirrored result worse;
-- a predeclared ankle-first/hip-later dwell sweep did not produce a robust strategy interval.
+Changing only substeps `[1,2,4,8]` produced non-monotonic recover/fall outcomes.
 
-### E3.2n — decisive solver-resolution falsifier
-
-E3.2n changed **only** Box3D substeps `[1,2,4,8]` while holding outer `dt = 1/60`, controller cadence, masses, geometry, friction, gravity, perturbations, torque budgets, stroke, drive cutoff and classifiers fixed.
-
-Canonical `4` reproduced all prior reference outcomes, validating the harness.
-
-Direct `±80 N·s` outcomes:
+Direct `±80 N·s`:
 
 | Substeps | Passive `-/+` | Active `-/+` |
 | ---: | --- | --- |
@@ -262,63 +226,127 @@ Direct `±80 N·s` outcomes:
 | `4` | F/F | R/R |
 | `8` | F/F | F/F |
 
-The 35 kg ram neighborhood was also strongly resolution-sensitive. At 1 substep the whole tested `3.75..4.25 m/s` neighborhood recovered; at 2, 4 and 8 substeps both passive frontier and apparent active benefit changed materially. The pattern was **non-monotonic**, not a clean convergence trend.
+Final verdict:
 
-Final E3.2 verdict:
+> **The bounded-internal-momentum specimen demonstrates a real local mechanism at canonical resolution, but its recoverability benefit is not substrate-robust in the tested representation.**
 
-> **The E3.2 manual bounded-internal-momentum specimen demonstrates a real local causal mechanism at the canonical `1/60 × 4-substep` substrate, but its recoverability benefit is not robust to solver resolution in the tested representation.**
-
-Therefore the stronger claim that bounded articulation has proven a robust physical recovery capability is **rejected**.
-
-No 16-substep tuning/convergence chase was justified because `[1,2,4,8]` did not show a monotonic trend.
-
-### E3.2 durable evidence
-
-Retain:
-
-- finite internal DOF can redistribute angular momentum without material hidden world torque in the zero-g control;
-- matched active redistribution can change recoverability locally at canonical 4-substep resolution;
-- available stroke/capacity materially affects that local result;
-- both direct and ecological recovery boundaries are highly solver-resolution-sensitive in this representation;
-- contact/support trajectory near the fall/recover frontier is a major co-owner of outcomes;
-- native revolute motor and simple sequencing delay did not resolve robustness.
-
-Reject/correct:
-
-- do not call `60°` a player parameter or optimum;
-- do not call `160 Nm` tuned hip authority;
-- do not infer robust ecological benefit from the one-sided canonical ram recovery;
-- do not infer robust articulated capability from canonical direct R/R;
-- do not treat absolute actuator impulse as energy/capacity consumption;
-- do not tune substeps to obtain a preferred outcome.
+E3.2 earned **knowledge, not promotion**.
 
 Detailed ledger:
 
 - `docs/E3_2_BOUNDED_INTERNAL_MOMENTUM.md`
 
+Do not rescue this representation with another torque/stroke/gain/substep sweep.
+
+## 7. E4 — locomotion ↔ finite-posture compatibility
+
+E4 is a **closed research stage / evidence only**.
+
+It asked an earlier question than full integration:
+
+> **Can the translational agency envelope already accepted in A‴ coexist with finite physical posture, or does naive combination make the two capabilities mechanically incompatible?**
+
+E4 used a kinematic support carriage under the E3 sagittal organism. The carriage reproduces inertial demand associated with the accepted acceleration/deceleration profile while keeping the support path simple enough to interpret.
+
+This is an **inertial compatibility proxy**, not embodied locomotion implementation.
+
+### E4.0–E4.3 — incompatibility and posture mechanism
+
+Key results:
+
+- full `0→5.2 m/s` world-upright acceleration recovers at `4 m/s²` but falls from `8 m/s²` upward in the declared sweep, including current `31 m/s²`;
+- current `31 m/s²` is not intrinsically fatal: short episodes producing `0.5–1.0 m/s` Δv recover;
+- acceleration-aligned effective-up posture changes `8 m/s²` from F/F to R/R without increasing `320 Nm` authority or reducing translational demand;
+- equivalent effective-up lean cannot be statically held on stationary support, even for the ~`21.8°` a8 target.
+
+Correction:
+
+> **The useful posture state is dynamic cooperation with imminent/ongoing inertial demand, not a static pose to pre-set.**
+
+### E4.4 — anticipatory physical preparation
+
+Without pose teleportation or stronger torque, a short physical preparation interval before acceleration changed recoverability.
+
+At canonical resolution:
+
+- `16 m/s²` had one symmetric survivor at lead4;
+- current `31 m/s²` had one symmetric survivor at lead8;
+- current-31 lead8 started acceleration around `±9°` torso lean with angular velocity, then completed the full `0→5.2 m/s` profile with ~`14–15°` peak tilt and no support loss.
+
+The timing was treated as a research survivor, not gameplay tuning.
+
+### E4.5 — launch substrate robustness
+
+With only substeps varied `[1,2,4,8]`:
+
+- current `31 m/s²` lead0 remained F/F at all tested resolutions;
+- lead8 was F/F at sub1 and **R/R at sub2/4/8**.
+
+Thus matched current-acceleration F→R benefit survived substeps:
+
+`[2,4,8]`.
+
+Corrected support-relative foot drift for recovered current-31 lead8 trials was roughly `0.13–0.18 m`, with zero support-loss frames.
+
+### E4.6–E4.7 — current braking and robustness
+
+Braking was isolated by safely reaching `±5.2 m/s` at `4 m/s²`, cruising until neutral/recovered, then applying current Donor-v1 ground deceleration `36 m/s²`.
+
+Canonical world-upright / lead0 braking: F/F.
+
+At canonical resolution, fixed lead8 preparation: **R/R** with ~`13–14°` peak tilt and no support loss.
+
+E4.7 then varied only substeps `[1,2,4,8]`:
+
+| Substeps | lead0 `-/+` | lead8 `-/+` |
+| ---: | --- | --- |
+| `1` | F/F | F/F |
+| `2` | F/F | **R/R** |
+| `4` | F/F | **R/R** |
+| `8` | F/F | **R/R** |
+
+Recovered lead8 support-relative foot drift remained about `0.14–0.22 m`, with zero support-loss frames.
+
+Strong E4 result:
+
+> **In the declared carriage proxy, the same fixed anticipatory physical-preparation pattern gives a matched symmetric F→R benefit for both current `31 m/s²` launch and current `36 m/s²` braking at substeps 2, 4 and 8, while failing at 1.**
+
+This is materially more robust than the E3.2 local canonical survivor, but it is **not solver-independent** and does not select `8` frames as a gameplay constant.
+
+### E4 central conceptual result
+
+E4 supports a potentially important embodied-control principle:
+
+> **Player intent can reveal an imminent physical demand before that demand is fully realized. A controller may spend finite posture authority to physically prepare the body, rather than granting free upright or simply weakening the intended translation.**
+
+This remains a research principle, not runtime policy.
+
+Detailed ledger:
+
+- `docs/E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`
+
 ## 8. Repository/runtime consequence
 
-E3.2 is **knowledge only**.
+E3.2 and E4 are **knowledge only**.
 
-No E3.2 behavior is promoted into:
+No E4 behavior is promoted into:
 
+- `src/character.js`;
+- `src/constraint-velocity-character.js`;
 - `src/e3-balance-organism.js`;
-- browser E3 playground behavior;
-- A‴;
-- Donor v1;
+- browser E3 behavior;
+- A‴ / Donor v1;
 - any new donor revision.
 
-The public E3 browser still uses the earlier E3.1 experimental always-active actuator. E3.1 support-gated/reactive policies remain machine-research variants only.
+The public default remains A‴. The public E3 browser still represents the earlier E3.1 experimental always-active actuator.
 
-The historical `scripts/e3-2d-mirror-and-dynamic-ram.mjs` intentionally retains its canonical 4 m/s mirrored failure. E3.2n demonstrated that this exact outcome is not a robust cross-resolution gate, so E3.2d remains archaeology/falsification evidence rather than required canonical smoke.
-
-`e3-2n-solver-resolution-sensitivity.mjs` is the final active E3.2 robustness gate in the research smoke chain.
+E4 scripts are deterministic research probes. They do not implement actual player locomotion.
 
 ## 9. Architecture map
 
 ### Accepted locomotion mechanics
 
-- `src/character.js` — historical/shared controller-owned mover foundation;
+- `src/character.js` — historical/shared controller-owned mover foundation and intent integration;
 - `src/constraint-velocity-character.js` — current A‴ production behavior;
 - `src/constraint-velocity.js` — recovered plane-push state + relative intent-cap policy;
 - `src/solver-owned-character.js` — frozen B experiment;
@@ -329,9 +357,20 @@ The historical `scripts/e3-2d-mirror-and-dynamic-ram.mjs` intentionally retains 
 
 - `src/e3-balance-organism.js` — sagittal first organism;
 - `src/e3-balance-organism-3d.js` — 3D pitch/roll organism;
-- `scripts/e3-1*` — E3.1 balance/support causal qualification;
+- `scripts/e3-1*` — E3.1 balance/support qualification;
 - `scripts/e3-2*` — E3.2 bounded-internal-momentum falsification chain;
 - `src/e3-balance-browser.js` — isolated Owner instrument for the earlier E3.1 specimen.
+
+### E4 compatibility probes
+
+- `scripts/e4-0*` — naive acceleration compatibility;
+- `scripts/e4-1*` — acceleration duration / Δv decomposition;
+- `scripts/e4-2*` — effective-up posture A/B;
+- `scripts/e4-3*` — static-prelean feasibility falsifier;
+- `scripts/e4-4*` — anticipatory lead bracket;
+- `scripts/e4-5*` — launch substrate robustness;
+- `scripts/e4-6*` — current braking compatibility;
+- `scripts/e4-7*` — braking substrate robustness.
 
 ### Browser/runtime
 
@@ -347,7 +386,7 @@ The historical `scripts/e3-2d-mirror-and-dynamic-ram.mjs` intentionally retains 
 
 `npm run smoke` remains split into:
 
-- `smoke:research` — historical research chain + A‴ qualification + active E3 gates;
+- `smoke:research` — historical research chain + A‴ qualification + active E3/E4 research gates;
 - `smoke:donor` — contract, frozen v0 equivalence, v1 equivalence/policy and mobile input.
 
 Every push runs full smoke + production build. Pages publishes only from `main`.
@@ -356,7 +395,7 @@ Do not add CI ceremony without a concrete information/risk benefit.
 
 ## 11. Durable evidence lineage
 
-This compact lineage is retained because old specimens remain useful falsifiers even when they are no longer current behavior.
+This compact lineage is retained because old specimens remain useful falsifiers even when no longer current behavior.
 
 ### Foundation / A
 
@@ -364,7 +403,7 @@ Established useful controller-owned agency, gravity/support, dynamic push, movin
 
 ### B
 
-A real solver-owned finite-mass translational root demonstrated solver participation but performed poorly at ordinary traversal in that minimal specimen. This rejected the specimen, not every possible solver-owned/hybrid future.
+A real solver-owned finite-mass translational root demonstrated solver participation but performed poorly at ordinary traversal in that minimal specimen. This rejected the specimen, not every solver-owned/hybrid future.
 
 ### A′
 
@@ -388,7 +427,11 @@ Physically negotiated grounded posture became Owner-positive experimental eviden
 
 ### E3.2
 
-A bounded internal angular-momentum specimen demonstrated a local canonical mechanism but failed solver-resolution robustness. The stage is retained as knowledge and falsification evidence, not promoted player behavior.
+Bounded internal angular momentum demonstrated a real local mechanism but failed solver-resolution robustness. Retained as knowledge, not capability promotion.
+
+### E4
+
+The accepted A‴ acceleration/deceleration envelope was shown to conflict with naive finite world-upright posture in an inertial carriage proxy. Dynamic anticipatory posture preparation rescued both current launch and braking at substeps 2/4/8 without stronger torque or weaker translation. E4 is retained as compatibility/strategy evidence, not locomotion integration.
 
 ## 12. Durable invariants
 
@@ -408,8 +451,11 @@ Do not change these without a new reason and matching evidence:
 - unsupported attitude control must be treated separately from support-mediated balance;
 - support availability must not be reduced to `manifold exists`, `separation <= 0` or instantaneous `normalImpulse > ε` without matching evidence;
 - support relocation must not be renamed “stepping” before a real stepping capability is designed;
-- articulation and locomotion integration must earn complexity through a separated question;
-- a local causal effect at one solver resolution must not be promoted as robust capability without substrate-sensitivity evidence.
+- a local effect at one solver resolution must not be promoted as robust capability without substrate-sensitivity evidence;
+- E4's moving-platform carriage must not be mistaken for actual A‴/rigid-body integration;
+- `8` anticipation frames is a research survivor, not accepted gameplay timing;
+- solver substeps are an evidence axis, not a tuning knob for obtaining preferred outcomes;
+- strong accepted player agency should not be weakened merely to make a physical-body prototype easier unless evidence and Owner judgement justify that trade.
 
 ## 13. Known debts / open boundaries
 
@@ -421,27 +467,34 @@ These are stored uncertainties, not automatic tasks.
 - arbitrary rotating kinematic side constraints remain unpromoted;
 - dense/curved multi-plane networks are not exhaustive;
 - recovered plane-push logic duplicates native solver behavior and is coupled to current binding semantics;
-- grounded no-input recovery remains a strong momentum sink but is not an Owner-reported current defect.
+- grounded no-input recovery remains a strong momentum sink but is not an Owner-reported current defect;
+- accepted translational motion is controller-owned mover authority, not yet a physically embodied propulsion model.
 
 ### E3
 
 - E3.1 support-gating and `reactiveSupport` remain test-harness policies, not runtime behavior;
 - out-of-band support invalidation can still make cached support stale for one controller tick;
-- the `1e-5` load epsilon is not accepted gameplay tuning;
-- support need not ultimately be binary;
+- `1e-5` load epsilon is not accepted gameplay tuning;
 - current E3.1 spherical ankle has no realistic range limit;
 - whether any airborne reorientation is desirable gameplay remains OPEN;
 - side/diagonal differences are observed but not reduced to a simple predictor;
 - yaw/facing balance remains unstudied;
 - support relocation/stepping is not designed;
-- no balance + A‴ locomotion integration has been attempted;
 - no active ragdoll/humanoid architecture has been justified;
-- E3.2's current bounded-internal-momentum representation is not substrate-robust and should not be “fixed” by another parameter sweep;
-- a future articulated representation must earn renewed work through a genuinely different causal question and should include solver/substrate robustness early rather than as a late cleanup.
+- E3.2 current internal-momentum representation is not substrate-robust and should not be rescued by another parameter sweep.
+
+### E4 / physical locomotion bridge
+
+- the carriage proxy does not tell us where translational authority should physically enter the body;
+- a direct world-external force, support-mediated propulsion, hybrid authority and deliberate support relocation are competing hypotheses, not selected mechanisms;
+- sustained physical locomotion may require support relocation/stepping, but sliding must not be mislabeled as stepping;
+- continuous intent, reversals, terrain, moving supports and dynamic interactions remain untested in a true embodied locomotion representation;
+- anticipation needs a state/intent-derived policy before it can become gameplay behavior; fixed lead8 is not that policy;
+- no Owner feel evidence exists for an integrated locomotion+posture representation.
 
 ### Mobile
 
-Initial Android touch free play proved feasibility/usability of the accepted locomotion surface. Sustained performance, thermals, ergonomics and broader device coverage remain unqualified.
+Initial Android touch free play proved feasibility/usability of accepted locomotion. Sustained performance, thermals, ergonomics and broader device coverage remain unqualified.
 
 ### Networking/downstream
 
@@ -449,20 +502,25 @@ The pure intent boundary is useful, but this repository does not own a generic r
 
 ## 14. Current natural boundary / next-work rule
 
-E3.2 is **closed as a research stage**. It earned knowledge, not promotion.
+E4 is **closed as a carriage-proxy research stage**. It earned a compatibility result and a promising physical-preparation principle, not runtime promotion.
 
-Do **not** automatically continue with E3.3, another hip controller, another torque/stroke/gain/substep sweep, humanoid articulation or balance+locomotion integration.
+Do **not** continue with another moving-platform sequence merely for completeness. A forward→cruise→brake→reverse carriage script would exercise the same proxy more continuously but would not answer the newly exposed representation question.
 
-The next large research question is deliberately open again. Select it from the broader Embodied Player Laboratory mission by current information gain, Owner/project need and expected gameplay relevance.
+The next high-information question is:
 
-Serious families of future questions may include, without commitment:
+> **How should accepted player translational authority be coupled into a physically embodied organism while preserving both strong agency and meaningful physical consequence?**
 
-- a genuinely different articulated representation with robustness designed into the experiment;
-- designed support relocation / stepping as its own capability;
-- a small balance+locomotion integration crucible if a concrete gameplay question earns it;
-- another embodied interaction problem with higher current value.
+This is the next **problem**, not a preselected implementation.
 
-The previous E3.2 proposal is no longer an inherited obligation merely because it once looked promising.
+Candidate mechanism families include, without commitment:
+
+- finite world-external translational force/impulse as a deliberate assist model;
+- support-mediated / traction-limited propulsion;
+- hybrid authority sharing;
+- deliberate support relocation / stepping;
+- another representation that preserves the accepted A‴ response envelope while exposing physical consequences more honestly.
+
+The next stage should first separate these authority models with the smallest causal crucible possible. Do not build legs, humanoid gait or a new Donor revision before the authority-placement question earns them.
 
 ## 15. Execution loop
 
@@ -487,7 +545,7 @@ This is not a rigid ceremony.
 - avoid coupled tuning before causal localization;
 - distinguish harness failure from implementation failure;
 - retain confounds/failures honestly;
-- test substrate/solver sensitivity early when the phenomenon is near a recover/fall bifurcation;
+- test substrate/solver sensitivity early near recover/fall bifurcations;
 - keep probes disposable until production relevance is earned.
 
 ### Implementation
