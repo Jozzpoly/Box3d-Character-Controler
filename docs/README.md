@@ -8,9 +8,9 @@ For a fresh takeover, long-gap return or uncertain state:
 
 1. [`PROJECT_STATE.md`](PROJECT_STATE.md) — **canonical current-state/orientation layer**;
 2. repository [`README.md`](../README.md) — public/current overview;
-3. the newest stage ledger relevant to the active question — currently [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md).
+3. newest relevant stage ledger — currently [`E7_PARALLEL_SUPPORT_SET.md`](E7_PARALLEL_SUPPORT_SET.md).
 
-Then inspect code, CI and historical ledgers only as required by the question.
+Then inspect code, CI and older ledgers only as required by the live question.
 
 `main` + exact SHA + CI are implementation truth. A branch name is never current authority by itself.
 
@@ -21,25 +21,34 @@ Then inspect code, CI and historical ledgers only as required by the question.
 - [`DONOR_STABILIZATION.md`](DONOR_STABILIZATION.md) — earlier donor stabilization provenance;
 - [`MOBILE_PAGES.md`](MOBILE_PAGES.md) — mobile/Pages evidence and current mobile boundary.
 
-The normal public/default player remains A‴ / Donor v1 unless `PROJECT_STATE.md` says otherwise.
+The normal public/default player remains **A‴ / Donor v1** unless `PROJECT_STATE.md` says otherwise.
 
-## Current research frontier
+## Current research lineage
 
 - [`E3_ROTATIONAL_EMBODIMENT.md`](E3_ROTATIONAL_EMBODIMENT.md) — E3.1 rotational embodiment / first Owner-positive balance surface;
 - [`E3_1_VALIDATION_LOOP.md`](E3_1_VALIDATION_LOOP.md) — E3.1 post-Owner causal decomposition;
 - [`E3_1_SUPPORT_TRANSITIONS.md`](E3_1_SUPPORT_TRANSITIONS.md) — support-transition/contact-signal semantics;
-- [`E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — bounded internal angular-momentum mechanism and robustness failure;
-- [`E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](E4_LOCOMOTION_POSTURE_COMPATIBILITY.md) — accepted translational demand vs finite posture in the carriage proxy;
+- [`E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — bounded internal angular momentum and solver-resolution robustness failure;
+- [`E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](E4_LOCOMOTION_POSTURE_COMPATIBILITY.md) — accepted translational demand vs finite posture;
 - [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — authority placement, physical contact contribution and residual-authority accounting;
-- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — positive prismatic/two-DOF binding facts plus rejection of two latent-translation representations before actuation.
+- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — rejection of two latent-translation representations in the primary ankle path before actuation;
+- [`E7_PARALLEL_SUPPORT_SET.md`](E7_PARALLEL_SUPPORT_SET.md) — parallel support representation, real finite ground acquisition, and failure of the tested single-hinge strut to become a stable body-load path.
 
 These are research ledgers. They do not automatically promote mechanics into the player runtime.
 
+## Current E7 result in one paragraph
+
+E7 preserved the qualified primary E5 foot↔torso path and added a separate physical support branch. A `1 kg`, `0.9 m` parallel probe passed inactive representation matching, then finite equal-and-opposite internal actuation acquired a real mirrored probe↔platform contact while primary support remained active. However, acquiring a second contact did **not** make it a meaningful body-load path: upright settling left almost all load on the primary foot, and a current31 demand-derived `57.17°` weight shift lost the primary support and fell while the probe remained grounded. Therefore:
+
+> **Contact acquisition is not support capacity. The next support family must prove a stable, regulatable compressive load path before translational-agency claims.**
+
+Do not rescue the E7 strut through torque/angle/length/mass sweeps.
+
 ## Historical E1/E2 evidence
 
-[`RESEARCH.md`](RESEARCH.md) is the preserved early historical ledger through E2. Its authority banner is binding: stage-local words such as “current” and “next” are historical, not live plan.
+[`RESEARCH.md`](RESEARCH.md) is the preserved early ledger through E2. Its authority banner is binding: stage-local words such as “current” and “next” are historical, not live plan.
 
-More focused E2 ledgers remain useful only when a current question touches their exact causal boundary:
+Focused E2 ledgers remain useful only when a live question touches their exact causal boundary:
 
 - [`E2_1_LOCALIZATION.md`](E2_1_LOCALIZATION.md) — terrain/support localization;
 - [`E2_2_RECIPROCITY.md`](E2_2_RECIPROCITY.md) — causal-component reciprocity;
@@ -69,42 +78,48 @@ Suite membership/order live in [`../scripts/smoke-suite.mjs`](../scripts/smoke-s
 
 Important distinction:
 
-> A research script can remain in the repository as historical evidence without belonging to canonical smoke forever.
+> **A research script can remain in the repository as historical evidence without belonging to canonical smoke forever.**
 
-E6 is a concrete example.
-
-Durable positive binding facts belong in smoke:
+Durable positive E6 smoke:
 
 - `e6-0a-prismatic-binding-calibration.mjs`;
 - `e6-1a-wheel-two-dof-binding-calibration.mjs`.
 
-Negative representation evidence remains executable but intentionally outside mandatory green smoke:
+Negative E6 representation probes remain executable provenance outside mandatory green smoke.
 
-- E6.0b/c/d serial-carriage representation falsifiers;
-- E6.1b direct two-body locked representation falsifier;
-- E6.1c exact-zero causal replay.
+Durable positive E7 smoke:
 
-E6.1c is especially important provenance: changing only the nominal `±10 μm` lock to exact `0/0` did not remove the directional mismatch, so the failed E6.1 representation must not be rescued by silently redefining “locked”.
+- `e7-0a-inactive-parallel-support-probe.mjs`;
+- `e7-0b-contact-reachable-inactive-probe.mjs`;
+- `e7-1a-finite-internal-support-acquisition.mjs`;
+- `e7-1b-ground-contact-identity.mjs`.
 
-Removing a probe from mandatory smoke must be an evidence decision, not cleanup by file age. Likewise, a negative experiment must not be rewritten into an artificial PASS merely to make CI green.
+Negative E7 load-bearing falsifiers remain executable provenance outside mandatory green smoke:
 
-The GitHub Actions workflow remains deliberately simple: every push runs full smoke + production build; Pages configuration/upload/deploy occurs only on `main`.
+- `e7-2a-settled-support-load-transfer.mjs`;
+- `e7-2b-demand-aligned-load-transfer.mjs`.
+
+Removing a probe from mandatory smoke must be an evidence decision, not cleanup by age. A negative experiment must not be rewritten into an artificial PASS merely to make CI green.
+
+The GitHub Actions workflow remains deliberately simple: every push runs full smoke + production build; Pages configure/upload/deploy occurs only on `main`.
 
 ## Current physical-research boundary
 
-After E6, do not continue searching for another latent translational replacement of the primary ankle merely because the previous two were close.
+Do not run current31 translational-agency A/B on the failed E7 single-hinge strut. It did not pass the more fundamental body-load-path prerequisite.
 
-The next physical representation family, if opened, should preserve the qualified primary E5 foot↔torso path and ask first:
+The next physical question, if pursued, is:
 
-> **Can a minimal parallel/alternate support-capable element exist inactive without materially perturbing the baseline?**
+> **Can a parallel support mechanism provide a finite, stable and regulatable compressive load path while remaining mechanically non-interfering when inactive?**
 
-That is a support-set **non-interference** question, not yet support transfer, stepping, gait or humanoid anatomy.
+Candidate families may include an axial/telescopic support or a minimal articulated limb. Neither is selected yet.
 
-External bounded gameplay authority remains a live alternative; E6 does not select it or reject the physical branch.
+Any new family starts with inactive representation matching before contact acquisition or load-transfer claims.
+
+External bounded gameplay authority remains a live alternative branch of the E5 fork; E7 neither selects nor rejects it.
 
 ## Branch / provenance hygiene
 
-The repository intentionally contains historical foundation/research branches. Many correspond to merged PRs and preserve useful experiment provenance.
+The repository intentionally contains historical foundation/research branches. Many correspond to merged PRs and preserve useful provenance.
 
 Rules:
 
