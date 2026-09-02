@@ -125,6 +125,7 @@ const SUITES = {
       name: 'E8 unilateral axial compliance',
       scripts: [
         'scripts/e8-0a-distance-joint-axial-binding-calibration.mjs',
+        'scripts/e8-0b-telescopic-guide-compliance-binding.mjs',
       ],
     },
   ],
