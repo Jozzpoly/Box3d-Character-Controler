@@ -73,6 +73,22 @@ function runTrial({ mode, maxTorque, impulseNs, direction = 1, leverArm = 0.36, 
   };
 }
 
+function compact(rows) {
+  return rows
+    .map((r) => `${r.impulseNs}:${r.outcome[0]}(${r.peakTiltDeg.toFixed(0)}°,foot=${r.maxFootTravel.toFixed(2)}m,u=${r.peakTorqueUtilization.toFixed(2)})`)
+    .join(' ');
+}
+
+function summarizeFrontier(rows) {
+  const recovers = rows.filter((r) => r.outcome === 'RECOVER');
+  const falls = rows.filter((r) => r.outcome === 'FALL');
+  return {
+    maxRecover: recovers.length ? Math.max(...recovers.map((r) => r.impulseNs)) : 0,
+    minFall: falls.length ? Math.min(...falls.map((r) => r.impulseNs)) : null,
+    maxRecoveredFootTravel: recovers.length ? Math.max(...recovers.map((r) => r.maxFootTravel)) : 0,
+  };
+}
+
 const impulseSweep = [2, 4, 6, 8, 10, 12, 16, 20, 24, 30, 36, 48, 64, 80, 96, 128];
 const passive = impulseSweep.map((impulseNs) => runTrial({ mode: 'passive', maxTorque: 0, impulseNs }));
 const finiteTorque = 320;
@@ -93,29 +109,43 @@ if (Math.abs(mirrorPositive.peakTiltDeg - mirrorNegative.peakTiltDeg) > 4.0) {
   throw new Error(`Mirrored E3.1a peak tilt diverged: +${mirrorPositive.peakTiltDeg.toFixed(2)} / -${mirrorNegative.peakTiltDeg.toFixed(2)} deg`);
 }
 
-const passiveFalls = passive.filter((r) => r.outcome === 'FALL');
-const finiteRecovers = finite.filter((r) => r.outcome === 'RECOVER');
-const finiteFalls = finite.filter((r) => r.outcome === 'FALL');
-
-function compact(rows) {
-  return rows.map((r) => `${r.impulseNs}:${r.outcome[0]}(${r.peakTiltDeg.toFixed(0)}°,foot=${r.maxFootTravel.toFixed(2)}m)`).join(' ');
-}
-
 console.log(`E3.1a passive frontier: ${compact(passive)}`);
 console.log(`E3.1a finite frontier:  ${compact(finite)}`);
 console.log(`E3.1a low-friction localization: ${compact(lowFriction)}`);
 
-if (passiveFalls.length === 0) throw new Error('Passive organism never lost balance across the perturbation sweep.');
-if (finiteRecovers.length === 0) throw new Error('Finite-authority organism never recovered across the perturbation sweep.');
-
-const maxFiniteRecover = Math.max(...finiteRecovers.map((r) => r.impulseNs));
-const passiveMinFall = Math.min(...passiveFalls.map((r) => r.impulseNs));
-if (maxFiniteRecover <= passiveMinFall) {
-  throw new Error(`Finite balance authority did not expand demonstrated recoverability: passiveMinFall=${passiveMinFall}Ns maxFiniteRecover=${maxFiniteRecover}Ns`);
+const passiveSummary = summarizeFrontier(passive);
+const finiteSummary = summarizeFrontier(finite);
+if (passiveSummary.minFall === null) throw new Error('Passive organism never lost balance across the perturbation sweep.');
+if (finiteSummary.maxRecover <= 0) throw new Error('Finite-authority organism never recovered across the perturbation sweep.');
+if (finiteSummary.maxRecover <= passiveSummary.minFall) {
+  throw new Error(`Finite balance authority did not expand demonstrated recoverability: passiveMinFall=${passiveSummary.minFall}Ns finiteMaxRecover=${finiteSummary.maxRecover}Ns`);
 }
 
-const minFiniteFall = finiteFalls.length > 0 ? Math.min(...finiteFalls.map((r) => r.impulseNs)) : null;
-const maxRecoveredFootTravel = Math.max(...finiteRecovers.map((r) => r.maxFootTravel));
+const authorityImpulses = [12, 24, 36, 48, 64, 80, 96, 128];
+const authorityBudgets = [80, 160, 240, 320, 480, 800];
+const authorityMatrix = authorityBudgets.map((maxTorque) => {
+  const rows = authorityImpulses.map((impulseNs) => runTrial({
+    mode: 'finite',
+    maxTorque,
+    impulseNs,
+  }));
+  const summary = summarizeFrontier(rows);
+  console.log(
+    `E3.1a authority ${maxTorque}Nm (${(maxTorque / rows[0].supportMomentScale).toFixed(2)}x support moment): ${compact(rows)} => maxRecover=${summary.maxRecover}Ns minFall=${summary.minFall ?? 'OPEN'}Ns`,
+  );
+  return { maxTorque, rows, ...summary };
+});
+
+const weak = authorityMatrix.find((entry) => entry.maxTorque === 160);
+const reference = authorityMatrix.find((entry) => entry.maxTorque === 320);
+if (!(weak && reference && reference.maxRecover > weak.maxRecover)) {
+  throw new Error(`E3.1a authority-dependence falsifier failed: 160Nm maxRecover=${weak?.maxRecover ?? 'missing'}Ns 320Nm maxRecover=${reference?.maxRecover ?? 'missing'}Ns`);
+}
+const reference64 = reference.rows.find((row) => row.impulseNs === 64);
+if (!reference64 || reference64.peakTorqueUtilization < 0.95) {
+  throw new Error(`E3.1a 64Ns boundary-near recovery did not use the finite torque budget: utilization=${reference64?.peakTorqueUtilization ?? 'missing'}`);
+}
+
 console.log(
-  `E3.1a recovery localization PASS: supportMoment=${finite[0].supportMomentScale.toFixed(1)}Nm finiteTorque=${finiteTorque}Nm passiveMinFall=${passiveMinFall}Ns finiteMaxRecover=${maxFiniteRecover}Ns finiteMinFall=${minFiniteFall ?? 'OPEN'}Ns maxRecoveredFootTravel=${maxRecoveredFootTravel.toFixed(3)}m mirror=${mirrorPositive.outcome}/${mirrorNegative.outcome}`,
+  `E3.1a recovery localization PASS: supportMoment=${finite[0].supportMomentScale.toFixed(1)}Nm finiteTorque=${finiteTorque}Nm passiveMinFall=${passiveSummary.minFall}Ns finiteMaxRecover=${finiteSummary.maxRecover}Ns finiteMinFall=${finiteSummary.minFall ?? 'OPEN'}Ns maxRecoveredFootTravel=${finiteSummary.maxRecoveredFootTravel.toFixed(3)}m mirror=${mirrorPositive.outcome}/${mirrorNegative.outcome} authority160=${weak.maxRecover}Ns authority320=${reference.maxRecover}Ns`,
 );
