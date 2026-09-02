@@ -10,9 +10,37 @@ The implementation is disposable; accepted observations are not. Detailed stage 
 
 For a fresh takeover or long-gap regrounding, start with [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md). It defines the live authority hierarchy, broader-project boundaries, current architecture map, known debts and the execution loop for future work. Stage documents remain historical evidence and should not be mistaken for live planning authority merely because they contain words such as “current” or “next”.
 
-## Current state — E2.3e stabilization
+## Active research — E3 rotational embodiment & balance
 
-The current public/default player is now **Donor v1 / A‴**.
+The accepted locomotion baseline remains **Donor v1 / A‴**. E3 does not replace or retune it.
+
+The active experimental question is now:
+
+> **Can maintaining posture become a finite, physically negotiated capability of the player's body rather than a guaranteed property of the controller?**
+
+The first E3 organism uses a dynamic support plate, a dynamic main body, a spherical ankle connection and a bounded internal pitch/roll actuator that applies equal-and-opposite angular impulse to body and support. It cannot borrow reaction torque from a hidden world anchor.
+
+Machine qualification has already established a real **recoverability frontier**:
+
+- increasing finite angular authority moves the recover/fall boundary;
+- too much authority can recruit support relocation as a different physical recovery mechanism;
+- the behavior survives 3D pitch/roll rather than existing only in a sagittal harness;
+- a real 35 kg dynamic-body ram produces recovery at lower impact speeds and natural fall at stronger impacts;
+- all existing Donor v0/v1 and E2 regression gates remain green.
+
+The current E3 machine-qualified reference uses `320 Nm` only as a clean research specimen, **not** as a final gameplay tuning value or biomechanical claim.
+
+The next required evidence is Owner hands-on judgement. An explicitly experimental playground is available at:
+
+`?mode=balance` (alias `?mode=e3`)
+
+It provides Passive / Weak / Finite / High authority, selectable real rigid-body ram speeds and directions, reset, and direct solver telemetry. It intentionally has **no locomotion** so balance can be judged before locomotion contaminates the question.
+
+See [`docs/E3_ROTATIONAL_EMBODIMENT.md`](docs/E3_ROTATIONAL_EMBODIMENT.md) for the exact evidence, rejected interpretations and conditional continuation.
+
+## Current behavior — E2.3e / Donor v1
+
+The current public/default player is **Donor v1 / A‴**.
 
 A‴ earned promotion through two independent kinds of evidence:
 
@@ -138,6 +166,10 @@ Normal controls:
 
 The old public 1–6 experiment selector and numeric hotkeys are removed from the normal interface.
 
+Experimental current research mode:
+
+- `?mode=balance` or `?mode=e3` — E3.1c physical balance playground; experimental, **not** Donor/current behavior.
+
 Historical direct modes remain available for research/regression:
 
 - `?mode=controller` — Foundation A;
@@ -151,6 +183,7 @@ Historical direct modes remain available for research/regression:
 ## Detailed evidence
 
 - [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) — canonical current-state/orientation layer and operating model;
+- [`docs/E3_ROTATIONAL_EMBODIMENT.md`](docs/E3_ROTATIONAL_EMBODIMENT.md) — active rotational embodiment/balance line, recoverability frontiers and Owner gate;
 - [`docs/E2_1_LOCALIZATION.md`](docs/E2_1_LOCALIZATION.md) — terrain/support and A-vs-B localization;
 - [`docs/E2_2_RECIPROCITY.md`](docs/E2_2_RECIPROCITY.md) — causal-component reciprocity and A′ qualification;
 - [`docs/E2_2B_MOMENTUM_PERSISTENCE.md`](docs/E2_2B_MOMENTUM_PERSISTENCE.md) — post-contact persistence diagnostic;
@@ -168,7 +201,9 @@ Historical direct modes remain available for research/regression:
 
 ## Playground
 
-The yard remains intentionally open rather than a prescribed obstacle course. It includes dynamic rigid bodies with different mass/shape affordances, a loose stack, slab, beam, static elevation changes, four `0.22 m` stair rises, a nearby `0.52 m` jump boundary, and one translating/rotating support.
+The normal A‴ yard remains intentionally open rather than a prescribed obstacle course. It includes dynamic rigid bodies with different mass/shape affordances, a loose stack, slab, beam, static elevation changes, four `0.22 m` stair rises, a nearby `0.52 m` jump boundary, and one translating/rotating support.
+
+E3 uses a separate minimal flat balance instrument so locomotion/traversal affordances do not contaminate the first posture judgement.
 
 ## Runtime provenance
 
@@ -196,28 +231,35 @@ npm run smoke
 npm run build
 ```
 
-Canonical smoke preserves the historical Foundation/E2 research gates, frozen pre-E2.3d A″ fingerprint, E2.3d production/corner/oblique qualification, Donor v0 equivalence, Donor v1 equivalence/policy exercise, donor contract and mobile/input gates.
+Canonical smoke preserves the historical Foundation/E2 research gates, frozen pre-E2.3d A″ fingerprint, E2.3d production/corner/oblique qualification, Donor v0 equivalence, Donor v1 equivalence/policy exercise, donor contract and mobile/input gates. The active E3 branch additionally qualifies angular substrate, sagittal finite-authority recovery, 3D pitch/roll recovery and the dynamic-ram contact path.
 
 ## Current stage boundary
 
-Confirmed current-best interpretation:
+Confirmed current-best locomotion interpretation:
 
 1. A′ contact reaction was incorrectly retained as a later absolute external-velocity target; A″ fixed that real perceptual pathology.
 2. A″ still allowed locomotion velocity to remain stored through geometric blocking and re-enter movement later.
 3. Full native-intended clipping is not the answer because it materially changes valid traversal/contact behavior.
 4. Intent-capped surface-relative constraint velocity removes only stale constrained authority while preserving currently justified intent and moving-surface motion.
 5. A‴ passed the machine matrix and then the missing Owner free-play gate; the previously unnamed blocked-velocity feel problem became identifiable and the resulting feel was accepted.
-6. A‴ / Donor v1 is therefore current-best. Donor v0/A″ remains frozen previous compatibility behavior.
-7. Controller feel is now stable enough that the project should **stop active defect hunting** until new play evidence or a real new capability/integration need appears.
+6. A‴ / Donor v1 remains current-best. Donor v0/A″ remains frozen previous compatibility behavior.
+7. Active locomotion defect hunting remains closed unless new play evidence justifies reopening it.
+
+Current E3 boundary:
+
+8. A real new embodied capability question has now opened E3: finite physical self-stabilization / loss of balance.
+9. E3.0–E3.1b are machine-qualified on the experimental path and do not alter Donor v1.
+10. The next required evidence is Owner judgement in the isolated E3.1c balance playground.
+11. Internal angular-momentum articulation, stepping and locomotion integration remain conditional future questions; none is promoted merely because E3.1b succeeded.
 
 Do not automatically:
 
-- retune current feel constants merely because v1 now exists;
+- retune current A‴ feel constants because E3 exists;
 - rewrite or delete Donor v0/A″ compatibility semantics;
 - patch `box3d.js` and substitute full native clipping for the qualified v1 policy;
 - refactor A‴ into `ControllerOwnedCharacter` merely to eliminate deliberate experimental duplication;
 - remove historical research specimens from tests/evidence just because they disappeared from the normal HUD;
 - add slide/recoil memory, cap impulses or reopen causal reciprocity without a reproduced problem;
-- declare A‴ or controller-owned representation the final architecture winner.
-
-The next distinct stage should start from a **new real friction, capability or integration question**, not from the assumption that locomotion must keep changing.
+- declare A‴ or controller-owned representation the final architecture winner;
+- treat the E3 `320 Nm` specimen as final tuning or the E3 organism as a final character architecture;
+- skip the Owner balance gate and jump directly into active ragdoll, stepping or locomotion integration.
