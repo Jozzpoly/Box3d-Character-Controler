@@ -114,8 +114,8 @@ function runCase({ acceleration, leadFrames, direction, substeps }) {
   let recovered = false;
   let supportLossFrames = 0;
   let maxTorque = 0;
-  let maxFootTravel = 0;
-  const initialFootZ = organism.footCom[2];
+  let maxFootRelativeDrift = 0;
+  let initialFootRelativeZ = 0;
   const desiredTilt = direction * Math.atan2(acceleration, G);
   let tiltAtLaunch = 0;
   let omegaAtLaunch = 0;
@@ -152,7 +152,8 @@ function runCase({ acceleration, leadFrames, direction, substeps }) {
     organism.postStep();
     signal = support.read();
     if (!signal.reactive) supportLossFrames += 1;
-    maxFootTravel = Math.max(maxFootTravel, Math.abs(organism.footCom[2] - initialFootZ));
+    const relativeFootZ = organism.footCom[2] - platformZ - initialFootRelativeZ;
+    maxFootRelativeDrift = Math.max(maxFootRelativeDrift, Math.abs(relativeFootZ));
 
     if (targetReached && organism.isRecovered() && signal.reactive) stableFrames += 1;
     else stableFrames = 0;
@@ -166,9 +167,10 @@ function runCase({ acceleration, leadFrames, direction, substeps }) {
     throw new Error(`E4.5 failed to establish support at substeps=${substeps}`);
   }
 
+  initialFootRelativeZ = organism.footCom[2] - platformZ;
   supportLossFrames = 0;
   maxTorque = 0;
-  maxFootTravel = 0;
+  maxFootRelativeDrift = 0;
   stableFrames = 0;
   recovered = false;
 
@@ -205,7 +207,7 @@ function runCase({ acceleration, leadFrames, direction, substeps }) {
     outcome: telemetry.fallObserved ? 'FALL' : recovered ? 'RECOVER' : 'UNRESOLVED',
     peakTiltDeg: telemetry.peakAbsTilt * 180 / Math.PI,
     supportLossFrames,
-    maxFootTravel,
+    maxFootRelativeDrift,
     maxTorque,
   };
 
@@ -234,7 +236,7 @@ for (const substeps of SUBSTEPS_SWEEP) {
         `E4.5 sub=${substeps} ${scenario.label.padEnd(9)} dir=${direction > 0 ? '+' : '-'} ` +
         `${result.outcome.padEnd(10)} launch=${result.tiltAtLaunchDeg.toFixed(2)}deg/` +
         `${result.omegaAtLaunch.toFixed(2)}radps peak=${result.peakTiltDeg.toFixed(2)}deg ` +
-        `foot=${result.maxFootTravel.toFixed(3)}m loss=${result.supportLossFrames} tau=${result.maxTorque.toFixed(1)}Nm`,
+        `footRel=${result.maxFootRelativeDrift.toFixed(3)}m loss=${result.supportLossFrames} tau=${result.maxTorque.toFixed(1)}Nm`,
       );
     }
   }
@@ -295,4 +297,4 @@ const robustBenefit31 = SUBSTEPS_SWEEP.filter((substeps) => {
 });
 
 console.log(`E4.5 symmetric F->R benefit substeps: a16/lead4=[${robustBenefit16.join(',')}] a31/lead8=[${robustBenefit31.join(',')}]`);
-console.log('E4.5 PASS: anticipation survivors were tested across solver resolutions with outer dt, controller cadence, support, acceleration, target speed and 320Nm authority held fixed. Cross-resolution benefit is evidence, not a selected solver setting or timing constant.');
+console.log('E4.5 PASS: anticipation survivors were tested across solver resolutions with outer dt, controller cadence, support, acceleration, target speed and 320Nm authority held fixed. Foot telemetry is support-relative. Cross-resolution benefit is evidence, not a selected solver setting or timing constant.');
