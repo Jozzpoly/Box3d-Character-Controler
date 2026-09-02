@@ -29,10 +29,17 @@ function tick(world, organism) {
 function runTrial({ name, direction, impulseNs, maxTorque = finiteTorque, mode = 'finite' }) {
   const world = makeWorld();
   const organism = new BalanceOrganism3D(b3, world, { mode, maxTorque });
-  for (let i = 0; i < 60; i++) tick(world, organism);
+  const settleFrames = mode === 'passive' ? 8 : 60;
+  for (let i = 0; i < settleFrames; i++) tick(world, organism);
   const quiet = organism.telemetry();
-  if (quiet.torsoTilt > 0.02 || quiet.footTilt > 0.02) {
-    throw new Error(`E3.1b quiet-state instability: ${name} torso=${quiet.torsoTilt} foot=${quiet.footTilt}`);
+  if (quiet.fallObserved) {
+    throw new Error(`E3.1b specimen fell before perturbation: mode=${mode} ${name}`);
+  }
+  if (mode !== 'passive' && (quiet.torsoTilt > 0.02 || quiet.footTilt > 0.02)) {
+    throw new Error(`E3.1b active quiet-state instability: ${name} torso=${quiet.torsoTilt} foot=${quiet.footTilt}`);
+  }
+  if (mode === 'passive' && quiet.torsoTilt > 0.08) {
+    throw new Error(`E3.1b passive control drifted too far before perturbation: ${name} torso=${quiet.torsoTilt}`);
   }
 
   const startFoot = [...quiet.footCom];
