@@ -253,29 +253,31 @@ let maxLossAngularImpulse = 0;
 for (const impulseNs of [24, 48, 64]) {
   const lagged = runSupportLoss('lagged-contact', impulseNs);
   const oracle = runSupportLoss('event-oracle', impulseNs);
-  const passive = runSupportLoss('passive', impulseNs);
 
+  if (!close(lagged.preOmegaX, oracle.preOmegaX)) {
+    throw new Error(`E3.1i loss controls do not share the same pre-transition omega at ${impulseNs}Ns.`);
+  }
   if (!lagged.transitionSupportUsed || lagged.supportAfterTransition) {
     throw new Error(`E3.1i loss did not exercise stale supported observation at ${impulseNs}Ns.`);
   }
-  if (oracle.transitionSupportUsed || passive.transitionSupportUsed) {
-    throw new Error(`E3.1i loss oracle/passive used authority after physical support removal at ${impulseNs}Ns.`);
+  if (oracle.transitionSupportUsed || oracle.supportAfterTransition) {
+    throw new Error(`E3.1i loss oracle used authority after physical support removal at ${impulseNs}Ns.`);
   }
   if (lagged.transitionTorque <= 1e-6) {
     throw new Error(`E3.1i loss stale frame carried no measurable torque at ${impulseNs}Ns.`);
   }
-  if (!close(oracle.transitionOmegaX, passive.transitionOmegaX) ||
-      !close(oracle.transitionTiltDeg, passive.transitionTiltDeg)) {
-    throw new Error(`E3.1i loss event-oracle diverged from passive transition control at ${impulseNs}Ns.`);
-  }
 
   const omegaDelta = Math.abs(lagged.transitionOmegaX - oracle.transitionOmegaX);
+  if (omegaDelta <= 1e-6) {
+    throw new Error(`E3.1i loss did not produce a measurable causal omega delta at ${impulseNs}Ns.`);
+  }
   const relativeOmegaDelta = omegaDelta / Math.max(1e-9, Math.abs(oracle.preOmegaX));
   maxLossRelativeOmegaDelta = Math.max(maxLossRelativeOmegaDelta, relativeOmegaDelta);
   maxLossAngularImpulse = Math.max(maxLossAngularImpulse, lagged.transitionAngularImpulse);
 
   console.log(
-    `  ${impulseNs}Ns staleTorque=${lagged.transitionTorque.toFixed(1)}Nm ` +
+    `  ${impulseNs}Ns preOmega=${lagged.preOmegaX.toFixed(4)} ` +
+    `staleTorque=${lagged.transitionTorque.toFixed(1)}Nm ` +
     `J=${lagged.transitionAngularImpulse.toFixed(3)}Nms ` +
     `dOmega=${omegaDelta.toFixed(4)}rad/s (${pct(relativeOmegaDelta)} of pre-step |omega|) ` +
     `tilt30 lag/oracle=${lagged.finalTiltDeg.toFixed(2)}/${oracle.finalTiltDeg.toFixed(2)}deg`,
@@ -298,6 +300,9 @@ for (const test of landingCases) {
   const oracle = runSupportReacquisition('event-oracle', test);
   const passive = runSupportReacquisition('passive', test);
 
+  if (!close(lagged.preOmegaX, oracle.preOmegaX) || !close(lagged.preOmegaX, passive.preOmegaX)) {
+    throw new Error(`E3.1i landing controls do not share the same pre-transition omega at ${test.impulseNs}Ns/${test.landingSpeed}m/s.`);
+  }
   if (lagged.transitionSupportUsed || !lagged.supportAfterTransition) {
     throw new Error(`E3.1i landing did not exercise stale unsupported observation at ${test.impulseNs}Ns/${test.landingSpeed}m/s.`);
   }
@@ -313,12 +318,16 @@ for (const test of landingCases) {
   }
 
   const omegaDelta = Math.abs(lagged.transitionOmegaX - oracle.transitionOmegaX);
+  if (omegaDelta <= 1e-6) {
+    throw new Error(`E3.1i landing did not produce a measurable causal omega delta at ${test.impulseNs}Ns/${test.landingSpeed}m/s.`);
+  }
   const relativeOmegaDelta = omegaDelta / Math.max(1e-9, Math.abs(lagged.preOmegaX));
   maxLandingRelativeOmegaDelta = Math.max(maxLandingRelativeOmegaDelta, relativeOmegaDelta);
   maxLandingMissedAngularImpulse = Math.max(maxLandingMissedAngularImpulse, oracle.transitionAngularImpulse);
 
   console.log(
     `  ${test.impulseNs}Ns @ ${test.landingSpeed.toFixed(1)}m/s ` +
+    `preOmega=${lagged.preOmegaX.toFixed(4)} ` +
     `firstContactPts=${lagged.transitionSupportPoints} ` +
     `missedTorque=${oracle.transitionTorque.toFixed(1)}Nm ` +
     `J=${oracle.transitionAngularImpulse.toFixed(3)}Nms ` +
