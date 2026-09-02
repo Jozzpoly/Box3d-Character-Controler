@@ -205,7 +205,7 @@ function runRam(policy, speed) {
   return out;
 }
 
-function runTakeoff(policy, { impulseNs = 64, launchSpeed = 3 }) {
+function runTakeoff(policy, { impulseNs = 64, launchSpeed = 3 } = {}) {
   const world = makeWorld();
   const organism = new BalanceOrganism3D(b3, world, { mode: 'finite', maxTorque: finiteTorque });
   const stepper = createStepper(world, organism, policy);
