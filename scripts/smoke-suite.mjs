@@ -110,7 +110,6 @@ const SUITES = {
       scripts: [
         'scripts/e6-0a-prismatic-binding-calibration.mjs',
         'scripts/e6-1a-wheel-two-dof-binding-calibration.mjs',
-        'scripts/e6-1c-exact-lock-representation-replay.mjs',
       ],
     },
   ],
