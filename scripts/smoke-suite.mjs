@@ -112,6 +112,12 @@ const SUITES = {
         'scripts/e6-1a-wheel-two-dof-binding-calibration.mjs',
       ],
     },
+    {
+      name: 'E7 parallel support-set representation',
+      scripts: [
+        'scripts/e7-0a-inactive-parallel-support-probe.mjs',
+      ],
+    },
   ],
   donor: [
     {
