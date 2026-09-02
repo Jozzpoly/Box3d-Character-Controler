@@ -1,0 +1,89 @@
+#e3-panel {
+  position: fixed;
+  z-index: 4;
+  right: max(14px, env(safe-area-inset-right, 0px));
+  top: max(14px, env(safe-area-inset-top, 0px));
+  width: min(330px, calc(100vw - 28px));
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(20,27,31,0.76);
+  box-shadow: 0 8px 28px rgba(31,40,44,0.18);
+  backdrop-filter: blur(10px);
+  color: #eef4f5;
+  pointer-events: auto;
+  user-select: none;
+}
+.e3-title {
+  margin-bottom: 8px;
+  color: #b7c9ce;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+.e3-row { margin-top: 9px; }
+.e3-label {
+  margin-bottom: 5px;
+  color: #aab8bb;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.e3-buttons { display: flex; flex-wrap: wrap; gap: 5px; }
+.e3-button {
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: rgba(75,88,94,0.38);
+  color: #e8eeee;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+.e3-button:hover { background: rgba(99,117,124,0.52); }
+.e3-button.is-active {
+  background: rgba(126,181,164,0.55);
+  border-color: rgba(188,232,217,0.52);
+}
+.e3-button.e3-danger { background: rgba(156,89,78,0.44); }
+.e3-direction-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+.e3-direction-grid .e3-button { min-height: 32px; }
+.e3-telemetry {
+  margin-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.09);
+  padding-top: 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+}
+.e3-telemetry > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 0;
+}
+.e3-telemetry span { color: #a6b3b6; }
+.e3-telemetry strong { color: #f3f7f7; font-weight: 600; }
+.e3-state-balanced { color: #9dd8bc !important; }
+.e3-state-recovering { color: #f0c35a !important; }
+.e3-state-fallen { color: #ef9385 !important; }
+.e3-note {
+  margin-top: 8px;
+  color: #9aa8ab;
+  font-size: 9px;
+  line-height: 1.35;
+}
+@media (max-width: 700px) {
+  #e3-panel {
+    top: auto;
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    width: min(360px, calc(100vw - 16px));
+    max-height: 52vh;
+    overflow-y: auto;
+  }
+}
