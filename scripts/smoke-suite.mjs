@@ -109,6 +109,7 @@ const SUITES = {
       name: 'E6 support-relative translation substrate',
       scripts: [
         'scripts/e6-0a-prismatic-binding-calibration.mjs',
+        'scripts/e6-1a-wheel-two-dof-binding-calibration.mjs',
       ],
     },
   ],
