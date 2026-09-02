@@ -35,6 +35,19 @@ Before gameplay research, the exact qualified substrate (`box3d.js@0.1.1`) must 
 
 Native API availability is not treated as proof of JS behavior.
 
+### First executed result
+
+On branch `experiment/e3-rotational-embodiment`, initial E3.0 qualification passed on exact branch commit `d74df480c5141829a2b1e24c8d43f810ca6e3a11`:
+
+- central impulse: `0.00e+0 rad/s` angular X response;
+- +0.25 m lever arm: `+1.0417 rad/s`;
+- mirrored -0.25 m lever arm: `-1.0417 rad/s`;
+- +0.50 m lever arm: `+2.0833 rad/s`;
+- spherical-anchor drift after angular excitation: effectively `0 m` at reported precision;
+- pinned body retained `3.9418 rad/s` angular speed.
+
+This is sufficient evidence to continue using the current JS binding for the first balance crucible. It does **not** qualify every rotational/joint API for future articulated work.
+
 ## E3.1a — Sagittal standing-balance crucible
 
 The first organism contains only:
@@ -69,6 +82,12 @@ Telemetry includes torso/foot tilt, angular speed, centers of mass, applied bala
 `RECOVER`, `FALL` and `UNRESOLVED` are observational labels only. A fall is recorded after the torso exceeds a large tilt angle; recording it does not alter the dynamics.
 
 The important durable artifact is the empirical **recoverability frontier**: which perturbations can be recovered from by a given physical capability set.
+
+### First implementation falsifier
+
+The first E3.1a CI attempt failed before the perturbation sweep because the supposedly quiet passive rig drifted to `0.022684 rad` torso pitch during setup. Inspection found a construction error rather than a balance-law result: the initial torso and foot spherical-joint anchors were separated by `0.055 m` in world Y, pre-loading the ankle constraint at creation.
+
+The rig was corrected so the two local ankle anchors coincide exactly in the initial world transform before the next qualification run. This failure is retained as evidence: initial joint pre-stress can masquerade as spontaneous balance instability and must remain excluded from future specimens.
 
 ## Conditional continuation
 
