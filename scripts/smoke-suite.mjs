@@ -105,6 +105,12 @@ const SUITES = {
         'scripts/e5-2-residual-authority-accounting.mjs',
       ],
     },
+    {
+      name: 'E6 bounded support-relative translation',
+      scripts: [
+        'scripts/e6-0a-prismatic-binding-calibration.mjs',
+      ],
+    },
   ],
   donor: [
     {
