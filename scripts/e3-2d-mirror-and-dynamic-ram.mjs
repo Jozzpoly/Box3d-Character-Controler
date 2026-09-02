@@ -6,7 +6,7 @@ const dt = 1 / 60;
 const substeps = 4;
 const DEG = Math.PI / 180;
 const Z_TO_X_QUAT = [0, Math.SQRT1_2, 0, Math.SQRT1_2];
-const RANGE_DEG = 50;
+const RANGE_DEG = 60;
 const HIP_TORQUE = 160;
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
