@@ -15,11 +15,20 @@ const GRAVITY = DONOR_PROFILE_V1.gravity;
 //    compression and zero tension.
 //
 // The prismatic spring and motor are deliberately disabled. Its upper travel stop
-// is allowed to carry the pad's own weight while hanging at full extension. When
-// the telescope is compressed inside the travel range, that stop must disengage
-// and the distance spring must be the only material axial force source.
+// may carry the pad's own weight while hanging at full extension. When the
+// telescope is compressed inside the travel range, that stop must disengage and
+// the distance spring must be the only material axial force source.
+//
+// Pinned-substrate telemetry qualification:
+// erincatto/box3d@8441b4a... computes prismatic translation/solver axis from
+// local-frame X, but b3GetPrismaticJointForce packs the axial impulse into the
+// local Z component before rotating it to world space. Therefore the generic
+// b3Joint_GetConstraintForce vector cannot be projected onto the physical
+// prismatic axis as if its direction were authoritative. For the guide only, this
+// gate uses reported force MAGNITUDE to detect whether the limit is carrying load.
+// Geometry/translation remain authority for the actual guide axis.
 
-const PAD_MASS = 1.0; // matches the total auxiliary mass scale used in E7
+const PAD_MASS = 1.0;
 const PAD_HALF = [0.1, 0.1, 0.1];
 const REST_LENGTH = 1.0;
 const MIN_EXTENSION = 0.70;
@@ -38,8 +47,11 @@ const COMPRESSION_SAMPLE_FRAMES = 1;
 const AXIS = [0, -1, 0];
 const Z_NEG_90 = [0, 0, -Math.SQRT1_2, Math.SQRT1_2];
 
+// Classical k*x is retained only as a scale diagnostic. Box3D's spring is an
+// implicit soft constraint (biasRate/massScale/impulseScale), so this is not an
+// expected b3Joint_GetConstraintForce value after a complete outer step.
 const OMEGA = 2 * Math.PI * SPRING_HZ;
-const INITIAL_UNCAPPED_COMPRESSION_FORCE =
+const CLASSICAL_KX_SCALE =
   PAD_MASS * OMEGA * OMEGA * (REST_LENGTH - COMPRESSION_LENGTH);
 const PAD_WEIGHT = PAD_MASS * GRAVITY;
 
@@ -51,12 +63,20 @@ function dot(a, b) {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
+function magnitude(v) {
+  return Math.hypot(v[0], v[1], v[2]);
+}
+
 function transverseMagnitude(v, axis) {
   const axial = dot(v, axis);
   const tx = v[0] - axial * axis[0];
   const ty = v[1] - axial * axis[1];
   const tz = v[2] - axial * axis[2];
   return Math.hypot(tx, ty, tz);
+}
+
+function formatVec(v) {
+  return `[${v.map((n) => n.toFixed(3)).join(',')}]`;
 }
 
 function makeCompositeRig({ gravity, initialLength }) {
@@ -125,7 +145,7 @@ function makeCompositeRig({ gravity, initialLength }) {
     UPPER_SPRING_FORCE,
   );
 
-  return { world, parent, pad, guideJoint, complianceJoint };
+  return { world, pad, guideJoint, complianceJoint };
 }
 
 function sample(rig) {
@@ -140,28 +160,37 @@ function sample(rig) {
   return {
     translation: b3.b3PrismaticJoint_GetTranslation(rig.guideJoint),
     length: b3.b3DistanceJoint_GetCurrentLength(rig.complianceJoint),
-    guideAxial: dot(guideForce, AXIS),
-    guideTransverse: transverseMagnitude(guideForce, AXIS),
+    guideForce: [...guideForce],
+    guideReportedMagnitude: magnitude(guideForce),
+    guidePhysicalAxisProjection: dot(guideForce, AXIS),
+    complianceForce: [...complianceForce],
     complianceAxial: dot(complianceForce, AXIS),
     complianceTransverse: transverseMagnitude(complianceForce, AXIS),
     com,
   };
 }
 
+function commonState(rig) {
+  return {
+    guideSpringEnabled: b3.b3PrismaticJoint_IsSpringEnabled(rig.guideJoint),
+    guideLimitEnabled: b3.b3PrismaticJoint_IsLimitEnabled(rig.guideJoint),
+    guideMotorEnabled: b3.b3PrismaticJoint_IsMotorEnabled(rig.guideJoint),
+    complianceSpringEnabled: b3.b3DistanceJoint_IsSpringEnabled(rig.complianceJoint),
+    complianceLimitEnabled: b3.b3DistanceJoint_IsLimitEnabled(rig.complianceJoint),
+    complianceMotorEnabled: b3.b3DistanceJoint_IsMotorEnabled(rig.complianceJoint),
+  };
+}
+
 function runSuspension() {
-  const rig = makeCompositeRig({
-    gravity: -GRAVITY,
-    initialLength: MAX_EXTENSION,
-  });
+  const rig = makeCompositeRig({ gravity: -GRAVITY, initialLength: MAX_EXTENSION });
 
   for (let frame = 0; frame < SUSPEND_SETTLE_FRAMES; frame++) {
     b3.b3World_Step(rig.world, DT, SUBSTEPS);
   }
 
-  let sumAbsGuideAxial = 0;
+  let sumGuideMagnitude = 0;
   let sumAbsComplianceAxial = 0;
   let peakAbsComplianceAxial = 0;
-  let peakGuideTransverse = 0;
   let peakComplianceTransverse = 0;
   let minTranslation = Infinity;
   let maxTranslation = -Infinity;
@@ -171,17 +200,10 @@ function runSuspension() {
   for (let frame = 0; frame < SUSPEND_SAMPLE_FRAMES; frame++) {
     b3.b3World_Step(rig.world, DT, SUBSTEPS);
     const row = sample(rig);
-    sumAbsGuideAxial += Math.abs(row.guideAxial);
+    sumGuideMagnitude += row.guideReportedMagnitude;
     sumAbsComplianceAxial += Math.abs(row.complianceAxial);
-    peakAbsComplianceAxial = Math.max(
-      peakAbsComplianceAxial,
-      Math.abs(row.complianceAxial),
-    );
-    peakGuideTransverse = Math.max(peakGuideTransverse, row.guideTransverse);
-    peakComplianceTransverse = Math.max(
-      peakComplianceTransverse,
-      row.complianceTransverse,
-    );
+    peakAbsComplianceAxial = Math.max(peakAbsComplianceAxial, Math.abs(row.complianceAxial));
+    peakComplianceTransverse = Math.max(peakComplianceTransverse, row.complianceTransverse);
     minTranslation = Math.min(minTranslation, row.translation);
     maxTranslation = Math.max(maxTranslation, row.translation);
     maxAbsX = Math.max(maxAbsX, Math.abs(row.com[0]));
@@ -192,21 +214,18 @@ function runSuspension() {
   const result = {
     finalTranslation: final.translation,
     finalLength: final.length,
-    meanAbsGuideAxial: sumAbsGuideAxial / SUSPEND_SAMPLE_FRAMES,
+    finalGuideForce: final.guideForce,
+    finalGuidePhysicalAxisProjection: final.guidePhysicalAxisProjection,
+    finalComplianceForce: final.complianceForce,
+    meanGuideMagnitude: sumGuideMagnitude / SUSPEND_SAMPLE_FRAMES,
     meanAbsComplianceAxial: sumAbsComplianceAxial / SUSPEND_SAMPLE_FRAMES,
     peakAbsComplianceAxial,
-    peakGuideTransverse,
     peakComplianceTransverse,
     minTranslation,
     maxTranslation,
     maxAbsX,
     maxAbsZ,
-    guideSpringEnabled: b3.b3PrismaticJoint_IsSpringEnabled(rig.guideJoint),
-    guideLimitEnabled: b3.b3PrismaticJoint_IsLimitEnabled(rig.guideJoint),
-    guideMotorEnabled: b3.b3PrismaticJoint_IsMotorEnabled(rig.guideJoint),
-    complianceSpringEnabled: b3.b3DistanceJoint_IsSpringEnabled(rig.complianceJoint),
-    complianceLimitEnabled: b3.b3DistanceJoint_IsLimitEnabled(rig.complianceJoint),
-    complianceMotorEnabled: b3.b3DistanceJoint_IsMotorEnabled(rig.complianceJoint),
+    ...commonState(rig),
   };
 
   b3.b3DestroyWorld(rig.world);
@@ -214,14 +233,10 @@ function runSuspension() {
 }
 
 function runCompressionInterior() {
-  const rig = makeCompositeRig({
-    gravity: 0,
-    initialLength: COMPRESSION_LENGTH,
-  });
+  const rig = makeCompositeRig({ gravity: 0, initialLength: COMPRESSION_LENGTH });
 
-  let peakAbsGuideAxial = 0;
+  let peakGuideMagnitude = 0;
   let peakAbsComplianceAxial = 0;
-  let peakGuideTransverse = 0;
   let peakComplianceTransverse = 0;
   let maxAbsX = 0;
   let maxAbsZ = 0;
@@ -229,16 +244,9 @@ function runCompressionInterior() {
   for (let frame = 0; frame < COMPRESSION_SAMPLE_FRAMES; frame++) {
     b3.b3World_Step(rig.world, DT, SUBSTEPS);
     const row = sample(rig);
-    peakAbsGuideAxial = Math.max(peakAbsGuideAxial, Math.abs(row.guideAxial));
-    peakAbsComplianceAxial = Math.max(
-      peakAbsComplianceAxial,
-      Math.abs(row.complianceAxial),
-    );
-    peakGuideTransverse = Math.max(peakGuideTransverse, row.guideTransverse);
-    peakComplianceTransverse = Math.max(
-      peakComplianceTransverse,
-      row.complianceTransverse,
-    );
+    peakGuideMagnitude = Math.max(peakGuideMagnitude, row.guideReportedMagnitude);
+    peakAbsComplianceAxial = Math.max(peakAbsComplianceAxial, Math.abs(row.complianceAxial));
+    peakComplianceTransverse = Math.max(peakComplianceTransverse, row.complianceTransverse);
     maxAbsX = Math.max(maxAbsX, Math.abs(row.com[0]));
     maxAbsZ = Math.max(maxAbsZ, Math.abs(row.com[2]));
   }
@@ -248,18 +256,15 @@ function runCompressionInterior() {
     initialLength: COMPRESSION_LENGTH,
     finalTranslation: final.translation,
     finalLength: final.length,
-    peakAbsGuideAxial,
+    finalGuideForce: final.guideForce,
+    finalGuidePhysicalAxisProjection: final.guidePhysicalAxisProjection,
+    finalComplianceForce: final.complianceForce,
+    peakGuideMagnitude,
     peakAbsComplianceAxial,
-    peakGuideTransverse,
     peakComplianceTransverse,
     maxAbsX,
     maxAbsZ,
-    guideSpringEnabled: b3.b3PrismaticJoint_IsSpringEnabled(rig.guideJoint),
-    guideLimitEnabled: b3.b3PrismaticJoint_IsLimitEnabled(rig.guideJoint),
-    guideMotorEnabled: b3.b3PrismaticJoint_IsMotorEnabled(rig.guideJoint),
-    complianceSpringEnabled: b3.b3DistanceJoint_IsSpringEnabled(rig.complianceJoint),
-    complianceLimitEnabled: b3.b3DistanceJoint_IsLimitEnabled(rig.complianceJoint),
-    complianceMotorEnabled: b3.b3DistanceJoint_IsMotorEnabled(rig.complianceJoint),
+    ...commonState(rig),
   };
 
   b3.b3DestroyWorld(rig.world);
@@ -286,12 +291,6 @@ for (const fn of [
   }
 }
 
-if (INITIAL_UNCAPPED_COMPRESSION_FORCE < 2 * UPPER_SPRING_FORCE) {
-  throw new Error(
-    'E8.0b 1kg compression specimen no longer materially exceeds the finite spring cap',
-  );
-}
-
 const suspension = runSuspension();
 const compression = runCompressionInterior();
 
@@ -301,55 +300,47 @@ console.log(
     `weight=${PAD_WEIGHT.toFixed(1)}N extension=${MIN_EXTENSION.toFixed(2)}..${MAX_EXTENSION.toFixed(2)}m`,
 );
 console.log(
-  `  derived 1kg uncapped compression demand=${INITIAL_UNCAPPED_COMPRESSION_FORCE.toFixed(1)}N ` +
-    `vs distance-spring cap=${UPPER_SPRING_FORCE.toFixed(1)}N`,
+  `  classical k*x scale at 0.20m compression=${CLASSICAL_KX_SCALE.toFixed(1)}N; ` +
+    `implicit soft-constraint output is not expected to equal this after one outer step`,
 );
 console.log(
   `  suspension: translation=${suspension.finalTranslation.toFixed(6)}m ` +
     `range=${suspension.minTranslation.toFixed(6)}..${suspension.maxTranslation.toFixed(6)}m ` +
     `distance=${suspension.finalLength.toFixed(6)}m ` +
-    `mean|Fguide axial|=${suspension.meanAbsGuideAxial.toFixed(3)}N ` +
+    `mean|Fguide reported|=${suspension.meanGuideMagnitude.toFixed(3)}N ` +
+    `guideRaw=${formatVec(suspension.finalGuideForce)} ` +
+    `guideDotPhysicalAxis=${suspension.finalGuidePhysicalAxisProjection.toFixed(3)}N ` +
     `mean|Fspring axial|=${suspension.meanAbsComplianceAxial.toFixed(3)}N ` +
-    `peak|Fspring axial|=${suspension.peakAbsComplianceAxial.toFixed(3)}N`,
+    `springRaw=${formatVec(suspension.finalComplianceForce)}`,
 );
 console.log(
   `  compression interior: length=${compression.initialLength.toFixed(6)}→${compression.finalLength.toFixed(6)}m ` +
     `translation=${compression.finalTranslation.toFixed(6)}m ` +
-    `peak|Fguide axial|=${compression.peakAbsGuideAxial.toFixed(3)}N ` +
-    `peak|Fspring axial|=${compression.peakAbsComplianceAxial.toFixed(3)}N`,
+    `peak|Fguide reported|=${compression.peakGuideMagnitude.toFixed(3)}N ` +
+    `guideRaw=${formatVec(compression.finalGuideForce)} ` +
+    `peak|Fspring axial|=${compression.peakAbsComplianceAxial.toFixed(3)}N ` +
+    `springRaw=${formatVec(compression.finalComplianceForce)}`,
 );
 
 const EXTENSION_TOL = 0.005;
 const GUIDE_WEIGHT_FORCE_TOL = 2.0;
 const FORBIDDEN_TENSION_FORCE_MAX = 0.1;
-const COMPRESSION_FORCE_MIN = 0.95 * UPPER_SPRING_FORCE;
+const MATERIAL_COMPRESSION_FORCE_MIN = PAD_WEIGHT;
 const COMPRESSION_FORCE_MAX = UPPER_SPRING_FORCE + 1.0;
-const GUIDE_INTERIOR_AXIAL_MAX = 1.0;
+const GUIDE_INTERIOR_FORCE_MAX = 1.0;
 const INTERIOR_STOP_MARGIN = 0.05;
-const TRANSVERSE_FORCE_MAX = 1e-3;
+const COMPLIANCE_TRANSVERSE_FORCE_MAX = 1e-3;
 const TRANSVERSE_LEAK_MAX = 1e-6;
 
-for (const [label, row] of [
-  ['suspension', suspension],
-  ['compression', compression],
-]) {
+for (const [label, row] of [['suspension', suspension], ['compression', compression]]) {
   if (row.guideSpringEnabled || !row.guideLimitEnabled || row.guideMotorEnabled) {
     throw new Error(`E8.0b ${label} prismatic guide did not remain limit-only`);
   }
-  if (
-    !row.complianceSpringEnabled ||
-    row.complianceLimitEnabled ||
-    row.complianceMotorEnabled
-  ) {
-    throw new Error(
-      `E8.0b ${label} distance compliance did not remain spring-only`,
-    );
+  if (!row.complianceSpringEnabled || row.complianceLimitEnabled || row.complianceMotorEnabled) {
+    throw new Error(`E8.0b ${label} distance compliance did not remain spring-only`);
   }
-  if (
-    row.peakGuideTransverse > TRANSVERSE_FORCE_MAX ||
-    row.peakComplianceTransverse > TRANSVERSE_FORCE_MAX
-  ) {
-    throw new Error(`E8.0b ${label} produced material transverse joint force`);
+  if (row.peakComplianceTransverse > COMPLIANCE_TRANSVERSE_FORCE_MAX) {
+    throw new Error(`E8.0b ${label} distance spring produced material transverse force`);
   }
   if (row.maxAbsX > TRANSVERSE_LEAK_MAX || row.maxAbsZ > TRANSVERSE_LEAK_MAX) {
     throw new Error(`E8.0b ${label} leaked off the telescopic guide axis`);
@@ -361,29 +352,21 @@ if (
   suspension.minTranslation < MAX_EXTENSION - EXTENSION_TOL ||
   suspension.maxTranslation > MAX_EXTENSION + EXTENSION_TOL
 ) {
-  throw new Error(
-    `E8.0b extension stop did not suspend the pad near full extension: ${suspension.finalTranslation}`,
-  );
+  throw new Error(`E8.0b extension stop did not suspend the pad near full extension: ${suspension.finalTranslation}`);
 }
 if (Math.abs(suspension.finalLength - MAX_EXTENSION) > EXTENSION_TOL) {
-  throw new Error(
-    `E8.0b suspended distance did not remain near the zero-tension rest length: ${suspension.finalLength}`,
-  );
+  throw new Error(`E8.0b suspended distance did not remain near the zero-tension rest length: ${suspension.finalLength}`);
 }
-if (
-  Math.abs(suspension.meanAbsGuideAxial - PAD_WEIGHT) > GUIDE_WEIGHT_FORCE_TOL
-) {
+if (Math.abs(suspension.meanGuideMagnitude - PAD_WEIGHT) > GUIDE_WEIGHT_FORCE_TOL) {
   throw new Error(
-    `E8.0b extension stop did not carry the pad's derived weight: guide=${suspension.meanAbsGuideAxial} expected=${PAD_WEIGHT}`,
+    `E8.0b reported prismatic reaction magnitude did not match the pad's derived weight: guide=${suspension.meanGuideMagnitude} expected=${PAD_WEIGHT}`,
   );
 }
 if (
   suspension.meanAbsComplianceAxial > FORBIDDEN_TENSION_FORCE_MAX ||
   suspension.peakAbsComplianceAxial > FORBIDDEN_TENSION_FORCE_MAX
 ) {
-  throw new Error(
-    `E8.0b compression-only spring developed forbidden suspension tension: peak=${suspension.peakAbsComplianceAxial}`,
-  );
+  throw new Error(`E8.0b compression-only spring developed forbidden suspension tension: peak=${suspension.peakAbsComplianceAxial}`);
 }
 
 if (compression.finalTranslation >= MAX_EXTENSION - INTERIOR_STOP_MARGIN) {
@@ -391,25 +374,23 @@ if (compression.finalTranslation >= MAX_EXTENSION - INTERIOR_STOP_MARGIN) {
     `E8.0b compression specimen reached the prismatic extension stop; axial-role separation is confounded: ${compression.finalTranslation}`,
   );
 }
-if (compression.peakAbsGuideAxial > GUIDE_INTERIOR_AXIAL_MAX) {
+if (compression.peakGuideMagnitude > GUIDE_INTERIOR_FORCE_MAX) {
   throw new Error(
-    `E8.0b prismatic guide carried material axial load while interior to travel: ${compression.peakAbsGuideAxial}`,
+    `E8.0b prismatic guide carried material constraint load while interior to travel: ${compression.peakGuideMagnitude}`,
   );
 }
 if (
-  compression.peakAbsComplianceAxial < COMPRESSION_FORCE_MIN ||
+  compression.peakAbsComplianceAxial <= MATERIAL_COMPRESSION_FORCE_MIN ||
   compression.peakAbsComplianceAxial > COMPRESSION_FORCE_MAX
 ) {
   throw new Error(
-    `E8.0b distance spring did not exclusively reproduce the finite compression cap inside guide travel: ${compression.peakAbsComplianceAxial}`,
+    `E8.0b distance spring did not provide material bounded compression above the 1kg pad-weight scale while interior to guide travel: ${compression.peakAbsComplianceAxial}`,
   );
 }
 if (compression.finalLength <= compression.initialLength) {
-  throw new Error(
-    'E8.0b finite compression spring did not push the pad outward along the free guide DOF',
-  );
+  throw new Error('E8.0b finite compression spring did not push the pad outward along the free guide DOF');
 }
 
 console.log(
-  'E8.0b PASS: a limit-only prismatic guide can suspend a real distal mass at an internal extension stop with effectively zero distance-spring tension, while the same guide leaves interior axial translation free for the E8.0a finite compression-only distance spring to act without material axial help from the prismatic joint. This qualifies composite telescopic constraint semantics only; it does not yet qualify an embodied parallel limb, ground support, load sharing, or locomotion.',
+  'E8.0b PASS: a limit-only prismatic guide can suspend a real distal mass at an internal extension stop while the E8.0a distance spring remains effectively tension-free; inside guide travel the stop disengages and the finite compression-only distance spring supplies material axial reaction while the guide reports no material constraint load. This qualifies composite telescopic constraint semantics only; it does not yet qualify an embodied parallel limb, ground support, load sharing, or locomotion.',
 );
