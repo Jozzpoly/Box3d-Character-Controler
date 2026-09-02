@@ -1,6 +1,6 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-02, after E3.1 Owner validation + causal decomposition**
+Grounded: **2026-09-02, after E3.1 support-transition qualification**
 
 This document is the canonical current-state/orientation layer for the repository. It does not replace stage evidence.
 
@@ -196,7 +196,7 @@ These numbers are research parameters, not accepted player feel constants or bio
 
 The post-Owner E3.1 validation loop materially corrected the earlier simplified model.
 
-There are now at least **three distinct physical channels**:
+There are now at least **three distinct physical capability channels**, plus a separately qualified support-signal boundary.
 
 ### A. Support-mediated grounded balance
 
@@ -209,7 +209,22 @@ With a standard support and 320 Nm:
 - real 35 kg ram `3.0 m/s` — RECOVER;
 - ram `4.0 m/s` — FALL.
 
-The same grounded boundaries remain when torque is available **only while a real near-vertical foot support contact exists**.
+The same grounded boundaries remain when torque is available only through the qualified support-gated diagnostic path.
+
+Support availability is **not equivalent to one simple contact boolean**. The transition work established that:
+
+- manifold presence can persist speculatively after useful reaction has ended;
+- geometric `separation <= 0` is too narrow to describe every physically reactive contact;
+- Box3D can create a solver-loaded predictive landing contact while separation is still about `+5 mm`;
+- per-step `normalImpulse > ε` cannot by itself define persistent settled support.
+
+The current diagnostic survivor is:
+
+```text
+reactiveSupport = touchingPointExists || loadedPointExists
+```
+
+This is evidence about the current specimen, **not a promoted runtime/player support policy**.
 
 ### B. Internal airborne attitude control
 
@@ -310,7 +325,7 @@ The exact `box3d.js@0.1.1` body-contact facade was qualified for the current res
 
 Durable semantic correction:
 
-- persistent near-vertical manifold points can identify support presence;
+- persistent near-vertical manifold points can identify broad support/contact presence;
 - per-step `normalImpulse > ε` is **not** a valid persistent-contact boolean in a settled contact;
 - impulse remains transient load evidence.
 
@@ -337,13 +352,67 @@ Real ram:
 
 - both always and gated: `3 m/s R / 4 m/s F` with matching measured response at the tested boundary.
 
-Strongest current causal result:
+Strongest causal result from this phase:
 
 > **The Owner-positive grounded mannequin-like balance struggle does not require the accidental unsupported attitude-control channel inside the tested E3.1 envelope.**
 
-Detailed ledger:
+### E3.1i — explicit support-transition observation latency
 
-`docs/E3_1_VALIDATION_LOOP.md`
+A synthetic out-of-band support invalidation/reacquisition crucible isolated the cost of one-step cached observation.
+
+Support loss invalidated between solves:
+
+- stale authority reached `5.333 N·m·s`;
+- measured torso `Δω` reached up to `55%` of pre-step `|ω|` in the tested matrix.
+
+Synthetic support reacquisition:
+
+- one-preStep missed authority also reached `5.333 N·m·s`;
+- measured `Δω/pre` in the tested matrix was about `0.6..5.3%`.
+
+The event-oracle path is a causal control/upper bound, **not a proposed runtime implementation**.
+
+### E3.1j — physics-driven takeoff and landing relevance
+
+Normal physical transitions differ from the synthetic out-of-band case.
+
+Takeoff:
+
+- no full extra post-manifold-loss authority tick was reproduced;
+- once the manifold disappeared during the solve, the next full controller tick applied `0 Nm`;
+- one `64 N·s + 3 m/s` case retained a speculative manifold that was neither touching nor loaded for two actuated frames, totaling `1.161 N·m·s`.
+
+Landing:
+
+- Box3D created the first loaded predictive manifold at about `+5 mm` separation;
+- geometric touching was therefore not required for a solver-reactive landing contact.
+
+Durable correction:
+
+> **manifold presence, geometric touching/separation and solver load are distinct evidence signals.**
+
+### E3.1k — support-signal policy falsifier
+
+Evidence-derived diagnostic candidate:
+
+```text
+reactiveSupport = touchingPointExists || loadedPointExists
+```
+
+It survived the tested matrix:
+
+- quiet support remained continuous;
+- direct `64 RECOVER / 80 FALL` was preserved with matching peak tilts;
+- 35 kg ram `3 m/s RECOVER / 4 m/s FALL` was preserved with matching peaks;
+- the reproduced speculative-only takeoff actuation changed from `2 frames / 1.161 N·m·s` to `0`;
+- removing that authority changed takeoff peak tilt from `3.58°` to `4.40°`, demonstrating a real dynamic consequence rather than a telemetry-only distinction.
+
+This remains a **diagnostic survivor only**. No runtime support policy, load epsilon, jump behavior or airborne-control policy is promoted by E3.1k.
+
+Detailed ledgers:
+
+- `docs/E3_1_VALIDATION_LOOP.md`
+- `docs/E3_1_SUPPORT_TRANSITIONS.md`
 
 ## 9. Current architecture map
 
@@ -369,6 +438,9 @@ Detailed ledger:
 - `scripts/e3-1f-airborne-attitude.mjs` — controlled internal attitude decomposition;
 - `scripts/e3-1g-support-contact-binding.mjs` — exact support-sensing qualification;
 - `scripts/e3-1h-support-gated-ab.mjs` — support-gated causal A/B;
+- `scripts/e3-1i-support-transition-semantics.mjs` — synthetic support-loss/reacquisition latency isolation;
+- `scripts/e3-1j-physics-transition-relevance.mjs` — physical takeoff/landing manifold-touch-load timeline;
+- `scripts/e3-1k-support-signal-policy.mjs` — manifold vs reactive-support falsifier;
 - `src/e3-balance-browser.js` — isolated Owner instrument.
 
 ### Browser/runtime
@@ -382,6 +454,8 @@ Detailed ledger:
 - `src/world-renderer.js` — direct Box3D→Three body rendering.
 
 E3 browser orientation comes directly from Box3D transforms, not procedural character lean.
+
+The public E3 browser still uses the original always-active experimental actuator. E3.1h/k support policies remain machine-research variants only.
 
 ## 10. Verification model
 
@@ -422,7 +496,7 @@ Intent-capped surface-relative constraint velocity survived the matrix, entered 
 
 ### E3
 
-E3 now has both machine and Owner evidence that physically negotiated grounded posture is worth continued research, plus a causal separation of grounded balance from accidental unsupported attitude control.
+E3 now has machine and Owner evidence that physically negotiated grounded posture is worth continued research, a causal separation of grounded balance from accidental unsupported attitude control, and a qualified first model of support-transition/contact-signal semantics for the current specimen.
 
 It is still experimental.
 
@@ -442,6 +516,7 @@ Do not change these without a new reason and matching evidence:
 - equal-and-opposite internal actuation must not borrow hidden world reaction;
 - **finite torque must not be conflated with finite angular-momentum capacity**;
 - unsupported attitude control must be treated separately from support-mediated balance;
+- support availability must not be reduced to `manifold exists`, `separation <= 0` or instantaneous `normalImpulse > ε` without matching evidence;
 - support relocation must not be renamed “stepping” before a real stepping capability is designed;
 - articulation and locomotion integration must earn complexity through a separated question.
 
@@ -459,9 +534,12 @@ These are stored uncertainties, not automatic tasks.
 
 ### E3
 
-- support-gating is currently a **test-harness causal policy**, not promoted runtime behavior;
-- support loss/takeoff and support reacquisition/landing transition semantics are not yet qualified;
-- one-step contact observation latency has not been falsified at a support transition;
+- support-gating and `reactiveSupport` are currently **test-harness causal/diagnostic policies**, not promoted runtime behavior;
+- normal physics-driven takeoff/landing lifecycle is qualified only for the current sparse specimen/matrix, not as a universal support model;
+- out-of-band support invalidation can still make cached support genuinely stale for one controller tick; an explicit event/ownership semantic remains OPEN if real gameplay requires disappearing/teleported support;
+- the `1e-5` load epsilon used by the diagnostic harness is not accepted gameplay tuning or a universal physical threshold;
+- support need not ultimately be binary; the current reactive boolean is a falsification tool, not an ontology declaration;
+- whether the measured one-preStep landing response difference is perceptually/gameplay relevant remains OPEN;
 - current spherical ankle has no realistic range limit;
 - unsupported angular-momentum capacity is not physically bounded;
 - whether any airborne reorientation is desirable gameplay remains OPEN;
@@ -553,13 +631,25 @@ A new stage is justified by at least one of:
 
 E3 is justified by #2.
 
-The next high-value E3 question is **not automatically E3.2 articulation**.
+The immediate E3.1 support-transition question is now sufficiently answered for the current specimen to stop treating it as the automatic next task.
 
-The validation loop first earned a cleaner E3.1 model. The smallest remaining boundary before locomotion/articulation is:
+What is now known:
 
-> **How should support-mediated balance transition across support loss and reacquisition, and should any airborne attitude authority exist as a separately bounded capability?**
+- normal physics-driven takeoff does not exhibit a whole extra post-manifold-loss support-authority tick;
+- landing can become solver-reactive before geometric touching through predictive contact;
+- manifold-only gating can leak authority through a no-touch/no-load speculative manifold;
+- `touching OR solver-loaded` removed the reproduced leak while preserving the tested grounded balance/ram boundaries;
+- out-of-band support invalidation is a distinct event-semantics problem and can create a genuinely stale cached tick.
 
-That question should be answered before the old always-active actuator is allowed anywhere near jumping or general locomotion.
+Therefore the next high-value E3 stage is **open for fresh selection by information gain/project need**, not predetermined by the old plan.
+
+Current strong candidates include:
+
+- bounded internal angular-momentum / hip-strategy research — does one explicit finite internal DOF enlarge recoverability under the same support and ankle authority?;
+- explicit support relocation / stepping — only if we want to study recovery by moving the base of support;
+- a small balance+locomotion integration crucible — only if a concrete integration question now has higher value than another isolated capability experiment.
+
+Do not start one merely because it appears next in numbering. Re-evaluate the evidence and Owner priorities first.
 
 ## 16. Public/current surfaces
 
@@ -574,7 +664,7 @@ Experimental E3 surface:
 - `?mode=balance`
 - `?mode=e3`
 
-The public E3.1c browser currently still represents the original always-active experimental actuator. The support-gated decomposition is machine research only at this boundary.
+The public E3.1c browser currently still represents the original always-active experimental actuator. The support-gated/reactive decomposition remains machine research only at this boundary.
 
 Historical surfaces:
 
@@ -594,9 +684,10 @@ Fresh takeover / long-gap regrounding:
 2. `README.md` — compact public/current map;
 3. `docs/E3_ROTATIONAL_EMBODIMENT.md` — active E3 line;
 4. `docs/E3_1_VALIDATION_LOOP.md` — post-Owner causal decomposition;
-5. `docs/E2_3E_STABILIZATION.md` — why A‴ became current;
-6. `docs/DONOR_CONTRACT.md` — exact current/previous donor semantics;
-7. only then earlier stage docs required by a specific question.
+5. `docs/E3_1_SUPPORT_TRANSITIONS.md` — latest E3 support-transition qualification and falsifiers;
+6. `docs/E2_3E_STABILIZATION.md` — why A‴ became current;
+7. `docs/DONOR_CONTRACT.md` — exact current/previous donor semantics;
+8. only then earlier stage docs required by a specific question.
 
 `docs/RESEARCH.md` remains an early historical ledger, not live planning authority.
 
@@ -609,18 +700,22 @@ Accepted locomotion remains stable:
 - normal public default remains current-best;
 - normal locomotion regression gates remain green.
 
-E3 has now moved past its first Owner gate:
+E3 has now moved through its first Owner gate and the first support-transition falsification sequence:
 
 - angular substrate: qualified;
 - sagittal recoverability + authority dependence: demonstrated;
 - 3D + real dynamic ram: demonstrated;
 - Owner hands-on: positive for the perceptible “primitive mannequin fighting for balance” quality;
 - unsupported reaction-mass artifact/channel: reproduced and causally isolated;
-- exact support-contact sensing path: qualified;
-- support-gated A/B: removes unsupported righting while preserving the tested grounded `64 R / 80 F` and ram `3 R / 4 F` boundaries.
+- exact body-contact sensing path: qualified;
+- support-gated A/B: removes unsupported righting while preserving tested grounded `64 R / 80 F` and ram `3 R / 4 F` boundaries;
+- support-loss/reacquisition observation latency: causally isolated in a synthetic boundary case;
+- normal takeoff/landing manifold-touch-load timelines: qualified for the current specimen;
+- speculative-only takeoff leak: reproduced;
+- `touching OR solver-loaded` diagnostic policy: removes that reproduced leak while preserving the tested grounded envelope.
 
 Therefore the current natural boundary is:
 
-> **Support-mediated grounded balance survives the falsification loop and remains a serious research direction. Before adding articulation or combining it with locomotion, qualify support-loss/reacquisition semantics and decide whether airborne attitude control should exist as a separately bounded physical capability.**
+> **E3.1 has established a serious Owner-positive support-mediated balance phenomenon, separated it from accidental unlimited airborne attitude control, and qualified the immediate support-transition semantics far enough to stop. The next stage should be freshly selected by information gain rather than automatically integrating locomotion or adding articulation.**
 
-Do not automatically start ragdoll, stepping, locomotion integration or a donor revision from this result alone.
+Do not automatically promote `reactiveSupport`, start ragdoll, stepping, locomotion integration or a donor revision from these results alone.
