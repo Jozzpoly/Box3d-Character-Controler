@@ -26,7 +26,7 @@ const IDENTITY = [0, 0, 0, 1];
 const Y_NEG_90 = [0, -Math.SQRT1_2, 0, Math.SQRT1_2];
 const REQUIRED_RAMP_IMPULSE = TOTAL_MASS * TARGET_SPEED;
 const SELF_GROUP = -61;
-const CARRIAGE_MASS = 0.5;
+const CARRIAGE_MASS = 0.05;
 const FOOT_MASS = E3_SAGITTAL_DEFAULTS.footMass - CARRIAGE_MASS;
 const TORSO_MASS = E3_SAGITTAL_DEFAULTS.torsoMass;
 const CARRIAGE_HALF = [0.025, 0.025, 0.025];
@@ -429,7 +429,7 @@ if (
 }
 
 console.log('E6.0b bounded support-translation representation match');
-console.log('  control: original E5 two-body spherical ankle vs 9.5kg foot + 0.5kg locked slider carriage + 70kg torso');
+console.log('  control: original E5 two-body spherical ankle vs 9.95kg foot + 0.05kg minimally perturbing locked slider carriage + 70kg torso');
 console.log('  both use current31, lead8, 320Nm posture authority, μ=.95, canonical substeps=4');
 
 const results = [];
