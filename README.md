@@ -8,6 +8,8 @@ The working tension is **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**.
 
 The implementation is disposable; accepted observations are not. Detailed stage documents are the research record. This README is a compact map of the current state rather than a second copy of every experiment.
 
+For a fresh takeover or long-gap regrounding, start with [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md). It defines the live authority hierarchy, broader-project boundaries, current architecture map, known debts and the execution loop for future work. Stage documents remain historical evidence and should not be mistaken for live planning authority merely because they contain words such as “current” or “next”.
+
 ## Current state — E2.3e stabilization
 
 The current public/default player is now **Donor v1 / A‴**.
@@ -148,6 +150,7 @@ Historical direct modes remain available for research/regression:
 
 ## Detailed evidence
 
+- [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) — canonical current-state/orientation layer and operating model;
 - [`docs/E2_1_LOCALIZATION.md`](docs/E2_1_LOCALIZATION.md) — terrain/support and A-vs-B localization;
 - [`docs/E2_2_RECIPROCITY.md`](docs/E2_2_RECIPROCITY.md) — causal-component reciprocity and A′ qualification;
 - [`docs/E2_2B_MOMENTUM_PERSISTENCE.md`](docs/E2_2B_MOMENTUM_PERSISTENCE.md) — post-contact persistence diagnostic;
@@ -159,7 +162,9 @@ Historical direct modes remain available for research/regression:
 - [`docs/E2_3C_CONSTRAINT_VELOCITY_POLICY.md`](docs/E2_3C_CONSTRAINT_VELOCITY_POLICY.md) — rejected policy classes and relative intent-cap survivor;
 - [`docs/E2_3D_PRODUCTION_SPECIMEN.md`](docs/E2_3D_PRODUCTION_SPECIMEN.md) — isolated A‴ implementation and machine qualification;
 - [`docs/E2_3E_STABILIZATION.md`](docs/E2_3E_STABILIZATION.md) — Owner acceptance, current-best promotion, public cleanup and stage boundary;
-- [`docs/DONOR_CONTRACT.md`](docs/DONOR_CONTRACT.md) — v0 compatibility + v1 current donor contract.
+- [`docs/DONOR_CONTRACT.md`](docs/DONOR_CONTRACT.md) — v0 compatibility + v1 current donor contract;
+- [`docs/MOBILE_PAGES.md`](docs/MOBILE_PAGES.md) — current mobile/touch boundary plus historical real-device evidence;
+- [`docs/RESEARCH.md`](docs/RESEARCH.md) — early historical research ledger; useful provenance, **not** the live current-state authority.
 
 ## Playground
 
