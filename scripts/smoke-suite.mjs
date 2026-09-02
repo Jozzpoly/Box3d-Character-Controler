@@ -127,7 +127,7 @@ const SUITES = {
         'scripts/e8-0a-distance-joint-axial-binding-calibration.mjs',
         'scripts/e8-0b-telescopic-guide-compliance-binding.mjs',
         'scripts/e8-0c-latch-release-cache-boundary.mjs',
-        'scripts/e8-1a-inactive-telescopic-support-representation.mjs',
+        'scripts/e8-1b-constraint-topology-decomposition.mjs',
       ],
     },
   ],
@@ -151,29 +151,17 @@ function fail(message) {
 
 const suiteName = process.argv[2];
 const groups = SUITES[suiteName];
-if (!groups) {
-  fail(`expected one of: ${Object.keys(SUITES).join(', ')}`);
-}
+if (!groups) fail(`expected one of: ${Object.keys(SUITES).join(', ')}`);
 
 let scriptCount = 0;
 const suiteStarted = Date.now();
-
 for (const group of groups) {
   console.log(`\n=== ${group.name} ===`);
   for (const relativeScript of group.scripts) {
     scriptCount += 1;
     const started = Date.now();
     console.log(`\n→ ${relativeScript}`);
-
-    const result = spawnSync(
-      process.execPath,
-      [path.join(ROOT, relativeScript)],
-      {
-        cwd: ROOT,
-        stdio: 'inherit',
-      },
-    );
-
+    const result = spawnSync(process.execPath, [path.join(ROOT, relativeScript)], { cwd: ROOT, stdio: 'inherit' });
     if (result.error) {
       console.error(`Failed to launch ${relativeScript}:`, result.error);
       process.exit(1);
@@ -182,12 +170,7 @@ for (const group of groups) {
       console.error(`\n✗ ${relativeScript} failed with exit code ${result.status}`);
       process.exit(result.status ?? 1);
     }
-
     console.log(`✓ ${relativeScript} (${((Date.now() - started) / 1000).toFixed(2)}s)`);
   }
 }
-
-console.log(
-  `\nsmoke-suite ${suiteName} PASS: ${scriptCount} scripts in ` +
-  `${((Date.now() - suiteStarted) / 1000).toFixed(2)}s`,
-);
+console.log(`\nsmoke-suite ${suiteName} PASS: ${scriptCount} scripts in ${((Date.now() - suiteStarted) / 1000).toFixed(2)}s`);
