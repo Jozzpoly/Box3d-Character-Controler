@@ -71,9 +71,9 @@ export class SagittalBalanceOrganism {
 
     const footHalf = this.options.footHalf;
     const torsoHalf = this.options.torsoHalf;
-    const ankleY = footHalf[1];
     this.startFootPosition = [0, footHalf[1] + 0.002, 0];
-    this.startTorsoPosition = [0, ankleY + torsoHalf[1] + 0.002, 0];
+    const ankleWorldY = this.startFootPosition[1] + footHalf[1];
+    this.startTorsoPosition = [0, ankleWorldY + torsoHalf[1], 0];
 
     const sagittalLocks = {
       linearX: true,
