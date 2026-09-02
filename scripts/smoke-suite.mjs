@@ -118,6 +118,7 @@ const SUITES = {
         'scripts/e7-0a-inactive-parallel-support-probe.mjs',
         'scripts/e7-0b-contact-reachable-inactive-probe.mjs',
         'scripts/e7-1a-finite-internal-support-acquisition.mjs',
+        'scripts/e7-1b-ground-contact-identity.mjs',
       ],
     },
   ],
