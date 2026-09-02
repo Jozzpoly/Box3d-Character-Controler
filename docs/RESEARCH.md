@@ -1,5 +1,7 @@
 # Research ledger
 
+> **Authority note — 2026-09-02:** this file is the preserved **early historical ledger through E2**. Its stage-local words such as “current”, “next” and “before Owner free play” describe the state at that historical point; they are not the live project plan. For current state, authority hierarchy, Donor v1/A‴ promotion and future execution rules, start with [`PROJECT_STATE.md`](PROJECT_STATE.md), then `README.md`, `E2_3E_STABILIZATION.md` and `DONOR_CONTRACT.md`. The historical body below is intentionally not rewritten.
+
 ## Mission frame
 
 The project studies **physical player embodiment**, not merely capsule traversal. A useful build must be controlled enough to explain and open enough to play.
