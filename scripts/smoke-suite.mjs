@@ -116,6 +116,7 @@ const SUITES = {
       name: 'E7 parallel support-set representation',
       scripts: [
         'scripts/e7-0a-inactive-parallel-support-probe.mjs',
+        'scripts/e7-0b-contact-reachable-inactive-probe.mjs',
       ],
     },
   ],
