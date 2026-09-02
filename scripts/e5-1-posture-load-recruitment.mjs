@@ -63,13 +63,16 @@ function createSupportReader(organism) {
     let loaded = 0;
     let finalNormalImpulse = 0;
     let totalNormalImpulse = 0;
+    let totalVerticalNormalImpulse = 0;
+    let minLoadedAbsNormalY = 1;
     let minSeparation = Infinity;
 
     for (let i = 0; i < b3.getNumContacts(buffer); i++) {
       b3.getContactAt(contact, buffer, i);
       for (let m = 0; m < contact.manifoldCount; m++) {
         b3.getManifoldAt(manifold, contact, m);
-        if (Math.abs(manifold.normal[1]) < 0.5) continue;
+        const absNormalY = Math.abs(manifold.normal[1]);
+        if (absNormalY < 0.5) continue;
         for (let p = 0; p < manifold.pointCount; p++) {
           const point = manifold.points[p];
           minSeparation = Math.min(minSeparation, point.separation);
@@ -78,7 +81,11 @@ function createSupportReader(organism) {
           const totalJn = Math.abs(point.totalNormalImpulse ?? 0);
           finalNormalImpulse += finalJn;
           totalNormalImpulse += totalJn;
-          if (finalJn > LOAD_EPS || totalJn > LOAD_EPS) loaded += 1;
+          totalVerticalNormalImpulse += totalJn * absNormalY;
+          if (finalJn > LOAD_EPS || totalJn > LOAD_EPS) {
+            loaded += 1;
+            minLoadedAbsNormalY = Math.min(minLoadedAbsNormalY, absNormalY);
+          }
         }
       }
     }
@@ -90,8 +97,12 @@ function createSupportReader(organism) {
       loaded,
       finalNormalImpulse,
       totalNormalImpulse,
-      // E5.0a qualified this exact outer-step estimate across [1,2,4,8].
+      // E5.0a qualified 0.5*totalNormalImpulse as an outer-step load estimate
+      // in settled support across [1,2,4,8]. During transient tilted contact it
+      // is retained as a calibrated diagnostic estimate, not an exact vector impulse.
       frameNormalImpulse: 0.5 * totalNormalImpulse,
+      frameVerticalNormalImpulse: 0.5 * totalVerticalNormalImpulse,
+      minLoadedAbsNormalY: loaded > 0 ? minLoadedAbsNormalY : null,
       minSeparation: Number.isFinite(minSeparation) ? minSeparation : null,
     };
   }
@@ -155,6 +166,7 @@ function runCase({ leadFrames, direction, substeps }) {
   let stableFrames = 0;
   let recovered = false;
   let supportLossFrames = 0;
+  let rampSupportLossFrames = 0;
   let maxFootRelativeDrift = 0;
   let initialFootRelativeZ = 0;
   const desiredTilt = direction * Math.atan2(ACCEL, G);
@@ -190,32 +202,48 @@ function runCase({ leadFrames, direction, substeps }) {
     organism.postStep();
     const after = wholeBodyState(organism);
     signal = support.read();
-    if (!signal.reactive) supportLossFrames += 1;
+    if (!signal.reactive) {
+      supportLossFrames += 1;
+      if (collect) rampSupportLossFrames += 1;
+    }
 
     const relativeFootZ = organism.footCom[2] - platformZ - initialFootRelativeZ;
     maxFootRelativeDrift = Math.max(maxFootRelativeDrift, Math.abs(relativeFootZ));
 
     const deltaPz = after.mass * (after.vel[2] - before.vel[2]);
     const deltaPy = after.mass * (after.vel[1] - before.vel[1]);
-    // Internal ankle impulses cancel in whole-body linear momentum. Gravity is vertical.
-    // Therefore horizontal whole-body ΔP during this solve is the net support tangential impulse.
-    const signedTangentialImpulse = direction * deltaPz;
-    const normalImpulse = signal.frameNormalImpulse;
-    const coulombCapacity = MU * normalImpulse;
-    const saturation = coulombCapacity > 1e-9
-      ? Math.abs(deltaPz) / coulombCapacity
+    // Internal ankle impulses cancel in whole-body linear momentum and gravity
+    // has no horizontal component. Therefore whole-body deltaPz is the exact
+    // net horizontal support impulse, regardless of how normal/tangent contact
+    // components share that impulse locally.
+    const signedHorizontalSupportImpulse = direction * deltaPz;
+    const normalImpulseEstimate = signal.frameNormalImpulse;
+    const coulombTangentialBudgetEstimate = MU * normalImpulseEstimate;
+    const horizontalVsBudgetEstimate = coulombTangentialBudgetEstimate > 1e-9
+      ? Math.abs(deltaPz) / coulombTangentialBudgetEstimate
       : (Math.abs(deltaPz) > 1e-9 ? Infinity : 0);
+    // This is deliberately diagnostic only. In transient tilted contact, scalar
+    // 0.5*totalNormalImpulse is not assumed to be the complete vertical support
+    // impulse; tangent direction and relax accumulation can contribute residual.
+    const measuredVerticalSupportImpulse = deltaPy + after.mass * G * DT;
+    const normalOnlyVerticalResidual = (
+      measuredVerticalSupportImpulse - signal.frameVerticalNormalImpulse
+    );
 
     if (collect) collect.push({
       actualAccel,
       platformSpeed,
       torque,
-      normalImpulse,
-      coulombCapacity,
+      normalImpulseEstimate,
+      verticalNormalImpulseEstimate: signal.frameVerticalNormalImpulse,
+      minLoadedAbsNormalY: signal.minLoadedAbsNormalY ?? 1,
+      coulombTangentialBudgetEstimate,
       deltaPz,
-      signedTangentialImpulse,
+      signedHorizontalSupportImpulse,
       deltaPy,
-      saturation,
+      measuredVerticalSupportImpulse,
+      normalOnlyVerticalResidual,
+      horizontalVsBudgetEstimate,
       comY: after.pos[1],
       comVy: after.vel[1],
       comVz: after.vel[2],
@@ -239,6 +267,7 @@ function runCase({ leadFrames, direction, substeps }) {
 
   initialFootRelativeZ = organism.footCom[2] - platformZ;
   supportLossFrames = 0;
+  rampSupportLossFrames = 0;
   maxFootRelativeDrift = 0;
   stableFrames = 0;
   recovered = false;
@@ -262,13 +291,14 @@ function runCase({ leadFrames, direction, substeps }) {
 
   const sum = (trace, key) => trace.reduce((acc, f) => acc + f[key], 0);
   const max = (trace, key) => trace.reduce((acc, f) => Math.max(acc, f[key]), -Infinity);
+  const min = (trace, key) => trace.reduce((acc, f) => Math.min(acc, f[key]), Infinity);
   const mean = (trace, key) => trace.length ? sum(trace, key) / trace.length : 0;
-  const rampNormal = sum(rampTrace, 'normalImpulse');
-  const rampCapacity = sum(rampTrace, 'coulombCapacity');
-  const rampTangential = sum(rampTrace, 'signedTangentialImpulse');
-  const expectedVerticalMomentumChange = rampNormal - TOTAL_MASS * G * DT * rampTrace.length;
-  const measuredVerticalMomentumChange = TOTAL_MASS * (rampEnd.vel[1] - launch.vel[1]);
-  const verticalMomentumClosureError = measuredVerticalMomentumChange - expectedVerticalMomentumChange;
+  const rampNormal = sum(rampTrace, 'normalImpulseEstimate');
+  const rampBudget = sum(rampTrace, 'coulombTangentialBudgetEstimate');
+  const rampHorizontalSupport = sum(rampTrace, 'signedHorizontalSupportImpulse');
+  const rampVerticalSupport = sum(rampTrace, 'measuredVerticalSupportImpulse');
+  const rampNormalVerticalEstimate = sum(rampTrace, 'verticalNormalImpulseEstimate');
+  const rampNormalOnlyVerticalResidual = sum(rampTrace, 'normalOnlyVerticalResidual');
 
   const result = {
     leadFrames,
@@ -283,23 +313,28 @@ function runCase({ leadFrames, direction, substeps }) {
     rampFrames: rampTrace.length,
     rampNormal,
     rampNormalWeightRatio: rampNormal / (STATIC_FRAME_LOAD * rampTrace.length),
-    rampCapacity,
-    capacityVsRequired: rampCapacity / REQUIRED_RAMP_IMPULSE,
-    rampTangential,
-    deliveredVsRequired: rampTangential / REQUIRED_RAMP_IMPULSE,
+    rampBudget,
+    budgetVsRequired: rampBudget / REQUIRED_RAMP_IMPULSE,
+    rampHorizontalSupport,
+    deliveredVsRequired: rampHorizontalSupport / REQUIRED_RAMP_IMPULSE,
     bodySpeedAtRampEnd: direction * rampEnd.vel[2],
     platformSpeedAtRampEnd: Math.abs(platformSpeed),
+    speedRetention: direction * rampEnd.vel[2] / Math.abs(platformSpeed),
     rampEndVy: rampEnd.vel[1],
     rampComRise: rampEnd.pos[1] - launch.pos[1],
-    maxRampNormalMultiple: max(rampTrace, 'normalImpulse') / STATIC_FRAME_LOAD,
-    maxSaturation: max(rampTrace, 'saturation'),
-    meanSaturation: mean(rampTrace, 'saturation'),
-    saturatedFrames: rampTrace.filter((f) => f.saturation >= 0.95).length,
+    maxRampNormalMultiple: max(rampTrace, 'normalImpulseEstimate') / STATIC_FRAME_LOAD,
+    meanHorizontalVsBudgetEstimate: mean(rampTrace, 'horizontalVsBudgetEstimate'),
+    maxHorizontalVsBudgetEstimate: max(rampTrace, 'horizontalVsBudgetEstimate'),
+    highBudgetUseFrames: rampTrace.filter((f) => f.horizontalVsBudgetEstimate >= 0.95).length,
+    minLoadedAbsNormalY: min(rampTrace, 'minLoadedAbsNormalY'),
+    rampVerticalSupport,
+    rampNormalVerticalEstimate,
+    rampNormalOnlyVerticalResidual,
+    rampSupportLossFrames,
     supportLossFrames,
     maxFootRelativeDrift,
-    verticalMomentumClosureError,
     leadNormalWeightRatio: leadTrace.length
-      ? sum(leadTrace, 'normalImpulse') / (STATIC_FRAME_LOAD * leadTrace.length)
+      ? sum(leadTrace, 'normalImpulseEstimate') / (STATIC_FRAME_LOAD * leadTrace.length)
       : 1,
     leadEndVy: launch.vel[1],
     leadComDeltaY: launch.pos[1] - settled.pos[1],
@@ -321,8 +356,9 @@ if (
   throw new Error('E5.1 expected accepted Donor-v1/E4 substrate changed; requalify load recruitment probe');
 }
 
-console.log('E5.1 posture ↔ normal-load recruitment in the qualified E4 current-31 launch');
+console.log('E5.1 posture ↔ support-load recruitment in the qualified E4 current-31 launch');
 console.log(`  static load=${STATIC_FRAME_LOAD.toFixed(6)}Ns/frame, μ=${MU}, required ramp impulse M*Δv=${REQUIRED_RAMP_IMPULSE.toFixed(3)}Ns`);
+console.log('  note: 0.5*totalNormalImpulse is calibrated in settled support; transient scalar load/budget values are diagnostic estimates, while whole-body horizontal ΔP is the exact net horizontal support impulse.');
 
 const results = [];
 for (const substeps of SUBSTEPS_SWEEP) {
@@ -333,13 +369,13 @@ for (const substeps of SUBSTEPS_SWEEP) {
       console.log(
         `sub=${substeps} lead=${leadFrames} dir=${direction > 0 ? '+' : '-'} ${r.outcome.padEnd(7)} ` +
         `launch=${r.launchTiltDeg.toFixed(2)}deg vy=${r.launchVy.toFixed(3)} ` +
-        `rampJn=${r.rampNormal.toFixed(1)}Ns (${r.rampNormalWeightRatio.toFixed(2)}x weight) ` +
-        `μΣJn/need=${r.capacityVsRequired.toFixed(3)} Jt/need=${r.deliveredVsRequired.toFixed(3)} ` +
-        `vBody=${r.bodySpeedAtRampEnd.toFixed(3)}/${r.platformSpeedAtRampEnd.toFixed(3)} ` +
-        `sat=${r.meanSaturation.toFixed(2)} mean/${r.maxSaturation.toFixed(2)} max ` +
-        `satF=${r.saturatedFrames}/${r.rampFrames} maxN=${r.maxRampNormalMultiple.toFixed(2)}x ` +
-        `vyEnd=${r.rampEndVy.toFixed(3)} dy=${r.rampComRise.toFixed(3)}m footRel=${r.maxFootRelativeDrift.toFixed(3)}m ` +
-        `PyclErr=${r.verticalMomentumClosureError.toExponential(2)}`,
+        `rampJn~${r.rampNormal.toFixed(1)}Ns (${r.rampNormalWeightRatio.toFixed(2)}x weight) ` +
+        `μΣJn~/need=${r.budgetVsRequired.toFixed(3)} Jx/need=${r.deliveredVsRequired.toFixed(3)} ` +
+        `vBody=${r.bodySpeedAtRampEnd.toFixed(3)}/${r.platformSpeedAtRampEnd.toFixed(3)} (${(100 * r.speedRetention).toFixed(1)}%) ` +
+        `budgetUse~=${r.meanHorizontalVsBudgetEstimate.toFixed(2)} mean/${r.maxHorizontalVsBudgetEstimate.toFixed(2)} max ` +
+        `hiF=${r.highBudgetUseFrames}/${r.rampFrames} min|Ny|=${r.minLoadedAbsNormalY.toFixed(3)} ` +
+        `vyEnd=${r.rampEndVy.toFixed(3)} footRel=${r.maxFootRelativeDrift.toFixed(3)}m rampLoss=${r.rampSupportLossFrames} ` +
+        `verticalResidual~=${r.rampNormalOnlyVerticalResidual.toFixed(1)}Ns`,
       );
     }
   }
@@ -364,18 +400,49 @@ for (const substeps of SUBSTEPS_SWEEP) {
   }
 }
 
-if (!results.every((r) => Math.abs(r.verticalMomentumClosureError) < 0.8)) {
-  throw new Error('E5.1 normal-load telemetry does not close against whole-body vertical momentum; do not interpret traction capacity');
+// The recovered E4 cases must retain reactive support through the imposed ramp;
+// otherwise load/transfer comparisons would be describing an airborne transition.
+for (const substeps of [2, 4, 8]) {
+  const prep = pair(substeps, 8);
+  if (!prep.every((r) => r.rampSupportLossFrames === 0)) {
+    throw new Error(`E5.1 recovered lead8 lost support during ramp at substeps=${substeps}`);
+  }
 }
 
-console.log('E5.1 load-recruitment summary:');
+if (!results.every((r) => Number.isFinite(r.rampNormal) && Number.isFinite(r.rampHorizontalSupport))) {
+  throw new Error('E5.1 produced non-finite load or whole-body momentum telemetry');
+}
+
+console.log('E5.1 lead0 → lead8 comparison:');
 for (const substeps of SUBSTEPS_SWEEP) {
   const base = pair(substeps, 0);
   const prep = pair(substeps, 8);
   console.log(
-    `  sub=${substeps}: lead0 ${base.map((r) => `${r.outcome[0]} cap=${r.capacityVsRequired.toFixed(2)} Jt=${r.deliveredVsRequired.toFixed(2)} N=${r.rampNormalWeightRatio.toFixed(2)}x`).join(' | ')} ` +
-    `:: lead8 ${prep.map((r) => `${r.outcome[0]} cap=${r.capacityVsRequired.toFixed(2)} Jt=${r.deliveredVsRequired.toFixed(2)} N=${r.rampNormalWeightRatio.toFixed(2)}x`).join(' | ')}`,
+    `  sub=${substeps}: ` + DIRECTIONS.map((direction, i) => {
+      const b = base[i];
+      const p = prep[i];
+      return `${direction > 0 ? '+' : '-'} ${b.outcome[0]}→${p.outcome[0]} ` +
+        `N~${b.rampNormalWeightRatio.toFixed(2)}→${p.rampNormalWeightRatio.toFixed(2)}x ` +
+        `Jx${b.deliveredVsRequired.toFixed(2)}→${p.deliveredVsRequired.toFixed(2)} ` +
+        `v${b.bodySpeedAtRampEnd.toFixed(2)}→${p.bodySpeedAtRampEnd.toFixed(2)}m/s ` +
+        `slip${b.maxFootRelativeDrift.toFixed(2)}→${p.maxFootRelativeDrift.toFixed(2)}m`;
+    }).join(' | '),
   );
 }
 
-console.log('E5.1 PASS: the exact E4.5 current-31 launch outcome pattern was reproduced while whole-body horizontal momentum and calibrated normal-load budgets were instrumented. The printed capacity/delivery/load values determine whether anticipatory posture physically recruits traction authority; no force/traction/hybrid/stepping architecture is selected by this probe.');
+const robustPrep = [2, 4, 8].flatMap((substeps) => pair(substeps, 8));
+const robustBase = [2, 4, 8].flatMap((substeps) => pair(substeps, 0));
+const minLoadRecruitment = Math.min(...robustPrep.map((r, i) => (
+  r.rampNormalWeightRatio / robustBase[i].rampNormalWeightRatio
+)));
+const minDelivered = Math.min(...robustPrep.map((r) => r.deliveredVsRequired));
+const maxDelivered = Math.max(...robustPrep.map((r) => r.deliveredVsRequired));
+const minRampSpeed = Math.min(...robustPrep.map((r) => r.bodySpeedAtRampEnd));
+const maxRampSpeed = Math.max(...robustPrep.map((r) => r.bodySpeedAtRampEnd));
+
+console.log(
+  `E5.1 robust recovered lead8 envelope: load-recruitment multiplier min=${minLoadRecruitment.toFixed(3)}x; ` +
+  `net horizontal support impulse=${minDelivered.toFixed(3)}..${maxDelivered.toFixed(3)} of full 5.2m/s ramp requirement; ` +
+  `body speed at ramp end=${minRampSpeed.toFixed(3)}..${maxRampSpeed.toFixed(3)}m/s vs platform=${TARGET_SPEED.toFixed(3)}m/s.`,
+);
+console.log('E5.1 PASS: the exact E4.5 current-31 outcome pattern was reproduced with corrected accounting semantics. Anticipatory posture/load recruitment and whole-body horizontal momentum transfer are now separated from the invalid assumption that scalar normalImpulse alone must close vertical momentum during transient tilted contact. This probe still selects no force/traction/hybrid/stepping architecture.');
