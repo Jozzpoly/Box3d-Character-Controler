@@ -22,7 +22,7 @@ const SUITES = {
     { name: 'E11 residual-contact interaction diagnostics', scripts: ['scripts/e11-1a-residual-contact-interaction-decomposition.mjs'] },
     { name: 'E12 graded capacity entitlement', scripts: ['scripts/e12-0a-capacity-entitled-residual.mjs','scripts/e12-1a-capacity-entitled-braking.mjs','scripts/e12-2a-dynamic-support-placement-calibration.mjs','scripts/e12-2b-galilean-placement-decomposition.mjs'] },
     { name: 'E13 world-coupled authority placement binding', scripts: ['scripts/e13-0b-prismatic-world-stop-binding.mjs','scripts/e13-0c1-embodied-free-prismatic-representation.mjs','scripts/e13-0d-embodied-world-stop-neutrality.mjs','scripts/e13-1a-world-coupled-placement-factorial.mjs','scripts/e13-2a-current31-world-coupled-trajectory.mjs','scripts/e13-2b-prepared-world-stop-engagement.mjs'] },
-    { name: 'E14 contextual reaction ownership', scripts: ['scripts/e14-0a-reaction-placement-accounting.mjs'] },
+    { name: 'E14 contextual authority', scripts: ['scripts/e14-0a-reaction-placement-accounting.mjs','scripts/e14-1a-authority-kernel.mjs','scripts/e14-1b-continuous-authority-smoke.mjs','scripts/e14-1c-browser-contract.mjs'] },
   ],
   donor: [
     { name: 'Donor contract / equivalence / input', scripts: ['scripts/donor-contract-smoke.mjs','scripts/donor-smoke.mjs','scripts/donor-v1-smoke.mjs','scripts/mobile-input-smoke.mjs'] },
