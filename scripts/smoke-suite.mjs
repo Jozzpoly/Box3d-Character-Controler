@@ -20,6 +20,7 @@ const SUITES = {
     { name: 'E9 rigid-stow split representation', scripts: ['scripts/e9-0a-weld-binding-calibration.mjs'] },
     { name: 'E10 one-piece support brace', scripts: ['scripts/e10-0a-revolute-current-angle-latch.mjs','scripts/e10-0b-acquired-support-brace-transition.mjs'] },
     { name: 'E11 residual-contact interaction diagnostics', scripts: ['scripts/e11-1a-residual-contact-interaction-decomposition.mjs'] },
+    { name: 'E12 graded capacity entitlement', scripts: ['scripts/e12-0a-capacity-entitled-residual.mjs'] },
   ],
   donor: [
     { name: 'Donor contract / equivalence / input', scripts: ['scripts/donor-contract-smoke.mjs','scripts/donor-smoke.mjs','scripts/donor-v1-smoke.mjs','scripts/mobile-input-smoke.mjs'] },
