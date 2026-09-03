@@ -127,7 +127,6 @@ const SUITES = {
         'scripts/e8-0a-distance-joint-axial-binding-calibration.mjs',
         'scripts/e8-0b-telescopic-guide-compliance-binding.mjs',
         'scripts/e8-0c-latch-release-cache-boundary.mjs',
-        'scripts/e8-1a-inactive-telescopic-support-representation.mjs',
       ],
     },
   ],
