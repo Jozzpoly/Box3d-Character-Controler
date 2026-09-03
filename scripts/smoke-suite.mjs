@@ -19,6 +19,7 @@ const SUITES = {
     { name: 'E8 unilateral axial compliance', scripts: ['scripts/e8-0a-distance-joint-axial-binding-calibration.mjs','scripts/e8-0b-telescopic-guide-compliance-binding.mjs','scripts/e8-0c-latch-release-cache-boundary.mjs'] },
     { name: 'E9 rigid-stow split representation', scripts: ['scripts/e9-0a-weld-binding-calibration.mjs'] },
     { name: 'E10 one-piece support brace', scripts: ['scripts/e10-0a-revolute-current-angle-latch.mjs','scripts/e10-0b-acquired-support-brace-transition.mjs'] },
+    { name: 'E11 physics-first residual authority', scripts: ['scripts/e11-0a-physics-first-locked-deficit-residual.mjs'] },
   ],
   donor: [
     { name: 'Donor contract / equivalence / input', scripts: ['scripts/donor-contract-smoke.mjs','scripts/donor-smoke.mjs','scripts/donor-v1-smoke.mjs','scripts/mobile-input-smoke.mjs'] },
