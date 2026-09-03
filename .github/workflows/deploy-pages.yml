@@ -41,6 +41,16 @@ jobs:
             e14-1d-diagnostics.json
             e14-1e-preparation-crucible.json
           if-no-files-found: error
+      - name: Qualify E15 hybrid bridge
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        run: node scripts/e15-hybrid-bridge-smoke.mjs --out=e15-hybrid-bridge.json
+      - name: Upload E15 hybrid evidence
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        uses: actions/upload-artifact@v4
+        with:
+          name: e15-hybrid-bridge
+          path: e15-hybrid-bridge.json
+          if-no-files-found: error
       - name: Build playground
         run: npm run build
       - name: Configure Pages
