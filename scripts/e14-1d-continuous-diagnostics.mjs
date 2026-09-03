@@ -10,6 +10,7 @@ function phaseSummary(samples) {
   const sum = (key) => finite.reduce((total, s) => total + s[key], 0);
   return {
     frames: finite.length,
+    preparationFrames: finite.filter((s) => s.preparing).length,
     first: finite[0] ?? null,
     last: finite.at(-1) ?? null,
     q: { min: min('entitlement'), mean: mean('entitlement'), max: max('entitlement') },
@@ -45,21 +46,22 @@ function runFrames(sim, count, input) {
   return samples;
 }
 
-async function runScenario(policy, friction = 0.95) {
-  const sim = await createE14ContinuousSim({ policy, friction });
+async function runScenario(policy, { friction = 0.95, preparationFrames = 0 } = {}) {
+  const sim = await createE14ContinuousSim({ policy, friction, preparationFrames });
   try {
     const initial = sim.snapshot();
-    const launch = runFrames(sim, 18, 1);
-    const release = runFrames(sim, 12, 0);
-    const reverse = runFrames(sim, 18, -1);
+    const launch = runFrames(sim, 18 + preparationFrames, 1);
+    const release = runFrames(sim, 12 + preparationFrames, 0);
+    const reverse = runFrames(sim, 18 + preparationFrames, -1);
     return {
       policy,
       friction,
+      preparationFrames,
       initial,
       launch: phaseSummary(launch),
       release: phaseSummary(release),
       reverse: phaseSummary(reverse),
-      firstLaunchFrames: launch.slice(0, 12),
+      firstLaunchFrames: launch.slice(0, 12 + preparationFrames),
     };
   } finally {
     sim.destroy();
@@ -99,7 +101,7 @@ async function matchedFirstCommand() {
 
 const diagnostics = {
   generatedBy: 'scripts/e14-1d-continuous-diagnostics.mjs',
-  note: 'Observation-only E14.1 diagnostic. No gameplay-quality threshold is implied.',
+  note: 'Observation-only E14.1 diagnostic. Lead8 is an E4-derived temporal oracle, not a selected gameplay delay or production policy.',
   reference: {
     playerMass: 80,
     supportMass: 800,
@@ -113,10 +115,12 @@ const diagnostics = {
   },
   matchedFirstCommand: await matchedFirstCommand(),
   scenarios: {
-    natural: await runScenario(E14_AUTHORITY_POLICIES.NATURAL_ONLY),
-    external: await runScenario(E14_AUTHORITY_POLICIES.ENTITLED_EXTERNAL),
-    reciprocal: await runScenario(E14_AUTHORITY_POLICIES.ENTITLED_RECIPROCAL),
-    zeroFrictionExternal: await runScenario(E14_AUTHORITY_POLICIES.ENTITLED_EXTERNAL, 0),
+    naturalNoLead: await runScenario(E14_AUTHORITY_POLICIES.NATURAL_ONLY),
+    externalNoLead: await runScenario(E14_AUTHORITY_POLICIES.ENTITLED_EXTERNAL),
+    reciprocalNoLead: await runScenario(E14_AUTHORITY_POLICIES.ENTITLED_RECIPROCAL),
+    externalLead8Oracle: await runScenario(E14_AUTHORITY_POLICIES.ENTITLED_EXTERNAL, { preparationFrames: 8 }),
+    reciprocalLead8Oracle: await runScenario(E14_AUTHORITY_POLICIES.ENTITLED_RECIPROCAL, { preparationFrames: 8 }),
+    zeroFrictionExternalNoLead: await runScenario(E14_AUTHORITY_POLICIES.ENTITLED_EXTERNAL, { friction: 0 }),
   },
 };
 
