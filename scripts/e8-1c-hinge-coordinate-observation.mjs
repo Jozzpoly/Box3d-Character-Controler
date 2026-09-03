@@ -11,6 +11,13 @@ const replayPath = fileURLToPath(new URL('./.e8-1c-hinge-coordinate.tmp.mjs', im
 const original = readFileSync(sourcePath, 'utf8');
 
 const edits = [
+  // E8.1b's executable wrapper supplied this no-op outside the immutable source.
+  // Put the same no-op directly into the generated replay so the measurement
+  // child can execute without prototype mutation.
+  [
+    '    segmentAlignmentError() { return 0; }, springForce() { return 0; }, settledSpringPreload() { return 0; }, destroyAuxReaders() {},',
+    '    segmentAlignmentError() { return 0; }, springForce() { return 0; }, settledSpringPreload() { return 0; }, captureSettledSpringPreload() {}, destroyAuxReaders() {},',
+  ],
   [
     '    this.maxHingeError = 0;\n    this.maxPrismaticError = 0;',
     '    this.maxHingeError = 0;\n    this.maxNativeHingeError = 0;\n    this.maxPrismaticError = 0;',
