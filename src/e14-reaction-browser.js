@@ -433,9 +433,12 @@ async function run() {
       const totalMomentum = PLAYER_MASS * player.vx + SUPPORT_MASS * supportV;
       const relativeV = player.vx - supportV;
       const t = organism.telemetry();
-      let state = signal.reactive ? 'REACTIVE' : 'SUPPORT LOST';
+      let state = 'REACTIVE';
       let stateClass = 'e3-state-recovering';
-      if (t.fallObserved) {
+      if (!signal.reactive) {
+        state = 'SUPPORT LOST';
+        stateClass = 'e3-state-fallen';
+      } else if (t.fallObserved) {
         state = 'FALL OBSERVED';
         stateClass = 'e3-state-fallen';
       } else if (t.recovered) {
