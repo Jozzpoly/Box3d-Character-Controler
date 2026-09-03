@@ -1,5 +1,5 @@
 import Box3D from 'box3d.js/inline';
-import { BalanceOrganism3D } from './e3-balance-organism-3d.js';
+import { SagittalBalanceOrganism } from './e3-balance-organism.js';
 import {
   E14_AUTHORITY_POLICIES,
   authorityGrantForShortfall,
@@ -52,20 +52,6 @@ function vec3(getter, body) {
   return out;
 }
 
-function upFromQuat(q) {
-  const [x, y, z, w] = q;
-  return [
-    2 * (x * y - w * z),
-    1 - 2 * (x * x + z * z),
-    2 * (y * z + w * x),
-  ];
-}
-
-function signedLeanX(rotation) {
-  const up = upFromQuat(rotation);
-  return Math.atan2(up[0], up[1]);
-}
-
 export async function createE14ContinuousSim(userConfig = {}) {
   const config = { ...E14_DEFAULTS, ...userConfig };
   if (!(config.supportMass > 0)) throw new Error('E14 supportMass must be positive');
@@ -80,8 +66,9 @@ export async function createE14ContinuousSim(userConfig = {}) {
   worldDef.gravity = [0, -config.gravity, 0];
   const world = b3.b3CreateWorld(worldDef);
 
-  // Preserve the qualified E12.2b / E14.0 support family: physically free only
-  // along browser X, with no hidden wider-world horizontal reaction path.
+  // E14.1 deliberately returns to the exact sagittal E4/E12 representation
+  // instead of rotating the asymmetric foot into browser X. The support is free
+  // only along Z, preserving the 0.34 m sagittal foot half-length and ankle axis.
   const supportDef = b3.b3DefaultBodyDef();
   supportDef.type = b3.b3BodyType.b3_dynamicBody;
   supportDef.position = [0, -config.supportHalf[1], 0];
@@ -89,8 +76,8 @@ export async function createE14ContinuousSim(userConfig = {}) {
   supportDef.angularDamping = 0;
   supportDef.enableSleep = false;
   supportDef.enableContactRecycling = false;
+  supportDef.motionLocks.linearX = true;
   supportDef.motionLocks.linearY = true;
-  supportDef.motionLocks.linearZ = true;
   supportDef.motionLocks.angularX = true;
   supportDef.motionLocks.angularY = true;
   supportDef.motionLocks.angularZ = true;
@@ -106,7 +93,7 @@ export async function createE14ContinuousSim(userConfig = {}) {
     throw new Error(`E14 support mass contract drifted: ${actualSupportMass}`);
   }
 
-  const organism = new BalanceOrganism3D(b3, world, {
+  const organism = new SagittalBalanceOrganism(b3, world, {
     mode: 'finite',
     maxTorque: config.maxBalanceTorque,
     footFriction: config.friction,
@@ -173,49 +160,47 @@ export async function createE14ContinuousSim(userConfig = {}) {
     const footV = vec3(b3.b3Body_GetLinearVelocity, organism.foot);
     const torsoV = vec3(b3.b3Body_GetLinearVelocity, organism.torso);
     return {
-      x: (organism.footMass * organism.footCom[0] + organism.torsoMass * organism.torsoCom[0]) / actualPlayerMass,
-      vx: (organism.footMass * footV[0] + organism.torsoMass * torsoV[0]) / actualPlayerMass,
+      axisPosition: (organism.footMass * organism.footCom[2] + organism.torsoMass * organism.torsoCom[2]) / actualPlayerMass,
+      axisVelocity: (organism.footMass * footV[2] + organism.torsoMass * torsoV[2]) / actualPlayerMass,
     };
   }
 
-  function applyPlayerImpulseX(impulse) {
+  function applyPlayerAxisImpulse(impulse) {
     if (Math.abs(impulse) <= 1e-12) return;
     b3.b3Body_ApplyLinearImpulseToCenter(
       organism.foot,
-      [impulse * organism.footMass / actualPlayerMass, 0, 0],
+      [0, 0, impulse * organism.footMass / actualPlayerMass],
       true,
     );
     b3.b3Body_ApplyLinearImpulseToCenter(
       organism.torso,
-      [impulse * organism.torsoMass / actualPlayerMass, 0, 0],
+      [0, 0, impulse * organism.torsoMass / actualPlayerMass],
       true,
     );
   }
 
-  function applySupportImpulseX(impulse) {
+  function applySupportAxisImpulse(impulse) {
     if (Math.abs(impulse) <= 1e-12) return;
-    b3.b3Body_ApplyLinearImpulseToCenter(support, [impulse, 0, 0], true);
+    b3.b3Body_ApplyLinearImpulseToCenter(support, [0, 0, impulse], true);
   }
 
-  // BalanceOrganism3D's normal preStep targets upright posture. For the E14
-  // longitudinal lab we use the same finite internal ankle authority but target
-  // a signed X lean derived from effective-up acceleration. Positive lean means
-  // the torso top leans toward +X; its physical actuator is torque about Z.
+  // Exact E4 sagittal effective-up controller, including torque sign and X-axis
+  // ankle actuation. This is a research actuator, not a promoted locomotion law.
   function posturePreStep(desiredAccel) {
     organism._sync();
     const targetLean = Math.atan2(desiredAccel, config.gravity);
-    const currentLean = signedLeanX(organism.torsoRotation);
-    const omegaZ = organism.torsoAngularVelocity[2];
-    const requestedZ = organism.kp * (currentLean - targetLean) - organism.kd * omegaZ;
+    const currentLean = organism.torsoTilt;
+    const omega = organism.torsoAngularVelocity[0];
+    const requested = -organism.kp * (currentLean - targetLean) - organism.kd * omega;
     const maxTorque = lastSupport.reactive ? config.maxBalanceTorque : 0;
-    const torqueZ = clamp(requestedZ, -maxTorque, maxTorque);
-    organism.lastBalanceTorque = [0, 0, torqueZ];
-    if (Math.abs(torqueZ) > 1e-9) {
-      const angularImpulse = torqueZ * config.dt;
-      b3.b3Body_ApplyAngularImpulse(organism.torso, [0, 0, angularImpulse], true);
-      b3.b3Body_ApplyAngularImpulse(organism.foot, [0, 0, -angularImpulse], true);
+    const torque = clamp(requested, -maxTorque, maxTorque);
+    organism.lastBalanceTorque = torque;
+    if (Math.abs(torque) > 1e-9) {
+      const angularImpulse = torque * config.dt;
+      b3.b3Body_ApplyAngularImpulse(organism.torso, [angularImpulse, 0, 0], true);
+      b3.b3Body_ApplyAngularImpulse(organism.foot, [-angularImpulse, 0, 0], true);
     }
-    return { targetLean, currentLean, torqueZ };
+    return { targetLean, currentLean, torque };
   }
 
   function nextCommandTarget(nextInput = input) {
@@ -262,7 +247,7 @@ export async function createE14ContinuousSim(userConfig = {}) {
     }
 
     const playerBefore = playerState();
-    const supportVBefore = vec3(b3.b3Body_GetLinearVelocity, support)[0];
+    const supportVBefore = vec3(b3.b3Body_GetLinearVelocity, support)[2];
     const posture = posturePreStep(desiredAccel);
 
     // Physics earns first claim on the requested motion.
@@ -270,9 +255,9 @@ export async function createE14ContinuousSim(userConfig = {}) {
     organism.postStep();
 
     const playerAfterPhysics = playerState();
-    const supportVAfterPhysics = vec3(b3.b3Body_GetLinearVelocity, support)[0];
-    const relativeBefore = playerBefore.vx - supportVBefore;
-    const relativeAfterPhysics = playerAfterPhysics.vx - supportVAfterPhysics;
+    const supportVAfterPhysics = vec3(b3.b3Body_GetLinearVelocity, support)[2];
+    const relativeBefore = playerBefore.axisVelocity - supportVBefore;
+    const relativeAfterPhysics = playerAfterPhysics.axisVelocity - supportVAfterPhysics;
     const physicalRelativeDeltaV = relativeAfterPhysics - relativeBefore;
     const supportNow = readSupport();
     const q = supportNow.reactive && lastSupport.reactive
@@ -310,12 +295,12 @@ export async function createE14ContinuousSim(userConfig = {}) {
       throw new Error(`E14 authority accounting mismatch expected=${grant.grantedRelativeDeltaV} reconstructed=${reconstructedGrant}`);
     }
 
-    applyPlayerImpulseX(grant.playerImpulse);
-    applySupportImpulseX(grant.supportImpulse);
+    applyPlayerAxisImpulse(grant.playerImpulse);
+    applySupportAxisImpulse(grant.supportImpulse);
 
     const playerFinal = playerState();
-    const supportVFinal = vec3(b3.b3Body_GetLinearVelocity, support)[0];
-    const immediateMeasuredGrant = (playerFinal.vx - supportVFinal) - relativeAfterPhysics;
+    const supportVFinal = vec3(b3.b3Body_GetLinearVelocity, support)[2];
+    const immediateMeasuredGrant = (playerFinal.axisVelocity - supportVFinal) - relativeAfterPhysics;
     if (Math.abs(immediateMeasuredGrant - grant.grantedRelativeDeltaV) > RELATIVE_DV_EPS) {
       throw new Error(`E14 immediate relative Δv mismatch expected=${grant.grantedRelativeDeltaV} measured=${immediateMeasuredGrant}`);
     }
@@ -326,7 +311,7 @@ export async function createE14ContinuousSim(userConfig = {}) {
     }
 
     const supportPosition = vec3(b3.b3Body_GetPosition, support);
-    const combinedMomentum = actualPlayerMass * playerFinal.vx + actualSupportMass * supportVFinal;
+    const combinedMomentum = actualPlayerMass * playerFinal.axisVelocity + actualSupportMass * supportVFinal;
 
     lastSupport = supportNow;
     frame += 1;
@@ -334,14 +319,15 @@ export async function createE14ContinuousSim(userConfig = {}) {
       frame,
       input,
       policy,
+      axis: 'z',
       targetRelativeVelocity: targetRelV,
       desiredAcceleration: desiredAccel,
       preparing,
       preparationFramesConfigured: config.preparationFrames,
       preparationFramesRemaining: preparationRemaining,
-      playerVelocity: playerFinal.vx,
+      playerVelocity: playerFinal.axisVelocity,
       supportVelocity: supportVFinal,
-      relativeVelocity: playerFinal.vx - supportVFinal,
+      relativeVelocity: playerFinal.axisVelocity - supportVFinal,
       physicalRelativeDeltaV,
       requestedShortfall,
       entitlement: q,
@@ -352,13 +338,13 @@ export async function createE14ContinuousSim(userConfig = {}) {
       grantedRelativeDeltaV: grant.grantedRelativeDeltaV,
       totalAuthorityMomentum: grant.totalAuthorityMomentum,
       combinedMomentum,
-      playerX: playerFinal.x,
-      supportX: supportPosition[0],
+      playerAxisPosition: playerFinal.axisPosition,
+      supportAxisPosition: supportPosition[2],
       targetLean: posture.targetLean,
-      signedLeanX: posture.currentLean,
+      signedLean: posture.currentLean,
       torsoTilt: organism.torsoTilt,
-      torsoAngularVelocity: organism.torsoAngularVelocity[2],
-      balanceTorque: posture.torqueZ,
+      torsoAngularVelocity: organism.torsoAngularVelocity[0],
+      balanceTorque: posture.torque,
       fallen: organism.fallObserved,
       recovered: organism.isRecovered(),
     };
@@ -390,11 +376,11 @@ export async function createE14ContinuousSim(userConfig = {}) {
   }
 
   function shovePlayer(impulse = 50) {
-    applyPlayerImpulseX(impulse);
+    applyPlayerAxisImpulse(impulse);
   }
 
   function shoveSupport(impulse = 200) {
-    applySupportImpulseX(impulse);
+    applySupportAxisImpulse(impulse);
   }
 
   function snapshot() {
