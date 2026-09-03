@@ -121,6 +121,14 @@ const SUITES = {
         'scripts/e7-1b-ground-contact-identity.mjs',
       ],
     },
+    {
+      name: 'E8 unilateral axial compliance',
+      scripts: [
+        'scripts/e8-0a-distance-joint-axial-binding-calibration.mjs',
+        'scripts/e8-0b-telescopic-guide-compliance-binding.mjs',
+        'scripts/e8-0c-latch-release-cache-boundary.mjs',
+      ],
+    },
   ],
   donor: [
     {
