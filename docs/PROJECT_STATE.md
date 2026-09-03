@@ -1,42 +1,42 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-03, after E13 world-coupled authority-placement closure**
+Grounded: **2026-09-03, E14.1C pinned-boundary Owner instrument candidate after successful pre-public branch qualification**
 
-This is the compact canonical orientation layer. Detailed experiment history belongs in stage ledgers. Before any future write, re-fetch live `main` and its exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
+This is the compact canonical orientation layer. Detailed experiment history belongs in the stage ledgers. Before any future write, re-fetch live `main` and exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
 
 ## 0. Current snapshot
 
-- Accepted public/default player: **A‴ / Donor v1**, unchanged.
-- Accepted ground agency remains `31 m/s²` acceleration / `36 m/s²` braking.
-- E3.1 remains the only public experimental balance surface.
-- E3.2–E13 are machine research only.
-- E12 qualified a graded physical-capacity entitlement as a research principle and separated support-relative agency from reaction placement.
-- E13 introduced a genuine external world reference and closed the immediate placement boundary.
-- **No E13 mechanism has been promoted to runtime or Donor.**
+- Accepted public/default player remains **A‴ / Donor v1**.
+- Accepted reference ground agency remains `31 m/s²` acceleration / `36 m/s²` braking.
+- E14 does **not** promote new mechanics into Donor/default runtime.
+- Existing public experimental routes remain:
+  - `?mode=e14` / `?mode=reaction` — E14.0 reaction-placement surface;
+  - `?mode=e14lab` / `?mode=contextual` — E14 continuous Owner Lab, upgraded by E14.1C once the current branch is merged/deployed.
+- E14.1B Owner play produced the first meaningful evidence that the current mechanism can become a primitive physical toy, but not evidence of a good character controller.
+- The immediate research frontier is **E14.1C — Pinned Boundary Skill Probe**.
+- E14.1C is instrumentation/Owner-surface work, **not physics redesign**.
+- Pre-public branch qualification at `4b70cbf6e37566c357c84eed87a67ce9b2310d01` passed mechanics smoke, mandatory instrumentation contracts, corrected diagnostics and build.
+- Exact merged-main CI + Pages still determines the publication gate. Do not treat branch PASS as publication PASS.
 
-Newest ledger:
+Current E14 stage document:
 
-[`E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md)
+[`E14_CONTEXTUAL_AUTHORITY_LAB.md`](E14_CONTEXTUAL_AUTHORITY_LAB.md)
 
-Current durable boundary:
+Current hard stop:
 
-> **Do not manufacture a world reaction path when authority needs somewhere to react and then treat that path as causally neutral. If the external world carries reaction, that coupling must already exist as part of the physical/gameplay situation, with its history and consequences left visible.**
+> **Publish and qualify the E14.1C Owner instrument, then STOP. Owner must choose the pinned specimen during public DISCOVERY.**
 
-Next high-value problem:
-
-> **Which naturally present environmental relationships should legitimately carry player-authority reaction, and when should accepted agency remain explicitly controller/world-external instead?**
-
-This is a contextual reaction-ownership / environmental-causality question, not another stop, `q`, friction, residual-ratio or support-mass sweep.
+Do not automatically proceed to World Transfer, Strategy Repertoire, replay infrastructure, recovery controller or Donor promotion.
 
 ## 1. Project identity
 
-This repository is an **Embodied Player Laboratory**.
+This repository is an **Embodied Player Laboratory**, not a realistic-ragdoll project.
 
 Central question:
 
-> How can a player possess a physically meaningful body while retaining enough control, readability and fun that physics becomes part of gameplay rather than an obstacle?
+> **How can a player possess a physically meaningful body while retaining enough control, readability and fun that physics becomes part of gameplay rather than an obstacle?**
 
-Working tension:
+Central tension:
 
 > **PLAYER INTENT ↔ PHYSICAL CONSEQUENCE**
 
@@ -48,303 +48,226 @@ Method:
 
 > **Controlled enough to explain, open enough to play.**
 
-Mechanics and controller complexity must pay rent in useful agency, embodiment, gameplay value or explanatory power. Physical purity is not a goal by itself.
+Mechanical/controller complexity must pay rent in agency, embodiment, causal readability, gameplay value or explanatory power. Physical purity is not a goal by itself.
 
 ## 2. Authority hierarchy
 
-1. **Owner hands-on judgement** — feel, legibility, artificiality and whether behavior is worth pursuing.
-2. **Live `main` + exact SHA + CI** — implementation truth.
-3. **Stage ledgers** — research/provenance truth.
-4. Active experimental branches — provisional evidence.
-5. Historical conversations/handoffs — context only when live evidence does not contradict them.
+1. **Owner hands-on judgement** — feel, causal readability, artificiality, fun and whether a behavior/mechanism is worth pursuing.
+2. **Live `main` + exact SHA + source + CI/Pages** — implementation/publication truth.
+3. Current stage handoff/orientation — current research intent where repo docs lag live work.
+4. Stage ledgers/docs — provenance and prior qualification.
+5. Historical branches/conversations/recommendations — context only.
 
-Machine PASS cannot prove feel. Negative/confounded evidence must not be rewritten into success.
+Machine PASS does not prove feel. Owner fun does not prove a causal claim. Negative, confounded, protocol-miss and tooling-defect evidence must retain their correct class.
 
-## 3. Accepted player — A‴ / Donor v1
+## 3. Accepted player / inherited boundaries
 
 Normal public/default runtime remains **A‴ / Donor v1**.
 
-Key accepted values:
+Key accepted/reference values relevant to E14:
 
-- virtual interaction mass `80 kg`;
+- player interaction mass `80 kg`;
 - max speed `5.2 m/s`;
-- sprint `1.32`;
 - ground acceleration `31 m/s²`;
-- ground deceleration `36 m/s²`;
-- air acceleration `7.5 m/s²`;
-- air deceleration `1.2 m/s²`;
+- ground braking `36 m/s²`;
 - gravity `20 m/s²`;
-- jump speed `7.2 m/s`;
 - fixed outer `dt=1/60 s`;
-- canonical `4` Box3D substeps.
+- canonical `4` Box3D substeps;
+- finite balance torque reference `320 Nm`;
+- friction reference `μ=.95`;
+- support mass reference `800 kg`;
+- E14 Owner Lab `preparationFrames=0`.
 
-Current static/kinematic interpretation:
+Do not silently weaken accepted `31/36` to make embodiment easier.
 
-> **Constraint velocity is relative, and the player may retain only constrained normal authority still justified by current intent.**
+E12 research entitlement remains:
 
-Historical `createDonorCharacter(...)` remains frozen Donor v0 / A″.
+`q = clamp( μ × J_n~ / 25.3333, 0, 1 )`
 
-Representation fact:
+within its qualified scope. It is not a production policy or universal support-quality metric.
 
-> **A‴ is a controller-owned mover. Its accepted translation is not articulated rigid-body propulsion.**
+E11/E12/E14 causal order remains physics-first:
 
-Research E3+ asks which parts of accepted agency can be physically earned or honestly supplemented without destroying control/feel. None of E3–E13 has promoted new locomotion mechanics into Donor/runtime.
-
-Do not silently weaken accepted `31/36 m/s²` agency merely to make embodiment easier.
+1. intent requests support-relative motion;
+2. finite body/posture attempts it;
+3. contact physics solves first;
+4. actual physical contribution/support evidence are measured;
+5. bounded supplemental shortfall may be granted;
+6. reaction routing is explicit;
+7. the next frame starts from the resulting state.
 
 ## 4. Durable research lineage
 
-### E3 — finite physical posture
+### E3 — finite posture
 
-Finite `320 Nm` support-mediated balance produced a real embodied struggle and positive Owner response. Direct `64 N·s` recovered while `80 N·s` fell; a real `35 kg` ram at `3 m/s` recovered while `4 m/s` fell.
+Finite support-mediated posture established a real embodied struggle. `FALL` remains valid historical failure of the E3/E4 balance objective. For future player gameplay, loss of upright posture need not necessarily mean permanent loss of agency, but that is not an E14.1C implementation change.
 
-Bounded internal angular momentum later showed a real local mechanism but failed solver-resolution robustness. Do not rescue it by torque/stroke/gain/substep sweep.
+### E4 — locomotion/posture compatibility
 
-### E4 — preparation before demand
+Preparation can physically help finite posture coexist with current-strength launch/braking. `lead8` is a foresight oracle, not a gameplay timing contract. Preparation-only testing later showed that hidden target freezing can oppose translation already generated by the body.
 
-Current-strength `31 m/s²` launch and `36 m/s²` braking can coexist with finite posture when the body physically prepares. `lead8` survived substeps `2/4/8` but not `1`.
+### E5–E12 — authority accounting and graded entitlement
 
-`lead8` is research evidence, not gameplay timing. Solver substeps are an evidence axis, not a tuning knob.
+Research separated physical/contact contribution from supplemental authority, rejected weak binary eligibility, qualified graded capacity entitlement in bounded cases, and separated **support-relative agency** from **reaction placement**.
 
-### E5 — translational authority accounting
+On an isolated free player+support pair, fair External vs Reciprocal placement is nearly Galilean-equivalent in local relative/contact/posture behavior; that isolated pair cannot choose placement on its own.
 
-With ordinary `μ=.95` support and recovered lead8 posture, real contact supplied about **64.6–71.0%** of full `80 kg × 5.2 m/s` ramp impulse; body speed reached about `4.20–4.42 m/s` while support reached `5.2 m/s`.
+### E13 — wider-world coupling
 
-E5 separated:
+Genuine external world coupling can make reaction placement materially observable. However, quiet engagement being neutral does not imply active-state engagement is neutral.
 
-- **world-external authority** — can preserve translation without reciprocal support momentum, including without support;
-- **support-mediated authority** — exists through support and can preserve equal-and-opposite momentum accounting.
+Durable rule:
 
-A naive world-external residual can close response gaps but can mask physical insufficiency.
+> **Do not create an external reaction path at authority time and then call it causally neutral plumbing.**
 
-### E6 — primary-path latent translation rejected
+If the wider world carries reaction, the physical/gameplay coupling must already arise naturally from the situation and retain its history/consequences.
 
-Hard rule:
+### E14.0 — Owner-readable placement
 
-> **Representation match before actuation.**
+Owner could distinguish world-external wind-like acceleration from reciprocal support recoil. This rejected global scenario-named reaction modes as a long-term controller architecture, but selected no production policy.
 
-Adding latent translation into the qualified primary ankle changed mechanics while inactive. Do not continue primary-ankle latent-DOF variants.
+### E14.1B — continuous lab + Owner play
 
-### E7 — real second contact, no stable load regulation
+Corrected E14.1 uses the exact sagittal E4/E12 representation: motion world `Z`, ankle/balance world `X`, qualified `0.34 m` sagittal foot half-length.
 
-A representation-neutral `1 kg × 0.9 m` one-piece parallel probe passed inactive matching. Finite `18 Nm` internal placement acquired real persistent probe↔ground contact in both directions while primary support remained intact.
+At reference no-lead settings:
 
-Quiet settling transferred almost no meaningful body load to the probe. Demand-aligned COM shift caused primary support unload/fall while probe stayed grounded.
+- Natural strongly under-delivers accepted agency and remains a useful physical-truth probe;
+- External and Reciprocal recover nearly identical local support-relative agency;
+- both finite-body specimens can still fall;
+- the main immediate tension is **agency demand ↔ finite embodied capacity**, not External vs Reciprocal.
 
-> **Contact acquisition is not support capacity. A useful support mechanism must prove stable, regulatable load sharing.**
+Owner's ~`142.6 s` spontaneous mobile session moved from comparison into unscripted tuning/play. The strongest signal is that E14 began acting like a **primitive physical toy**. Competing sources remain open: boundary/competence play, tuning/experimentation, slapstick/novelty, world/affordance proxy and missing strategy repertoire.
 
-### E8/E9 — serial support representation rejected
+## 5. E14.1C — current frontier
 
-E8 qualified local axial-compliance / guide / latch primitives, but an embodied mass/COM/inertia-matched split telescope failed inactive representation.
+Central question:
 
-E9 removed prismatic/spring complexity. Even a rigidly welded split still failed the strict internal representation gate.
+> **Can one unchanged current-E14 configuration support enough causal repeatability, sensitivity, flexibility and persistence that Owner can learn to predict/correct it without further parameter tuning?**
 
-> **On the current substrate/contract, another serial constrained body is not a free route to better support mechanics.**
+This is deliberately not a test of which policy is best or how to build the final player.
 
-### E10 — one-piece brace helps but does not create stable support capacity
+A locked-play negative has three possible interpretations, not two:
 
-The already-qualified one-piece probe can be latched cleanly after real acquisition. The transition is quiet and resists low-demand drift.
+- H1 boundary/competence play weakens;
+- tuning/experimentation may be the main value;
+- **ACTION SPACE / INSTRUMENT INSUFFICIENT TO TEST H1** — current one-strategy organism may simply offer too few meaningful alternatives.
 
-Under current31 demand it still fails stable dual-support HOLD. The brace materially reduces peak fall, so the mechanism is real, but support continuity/load regulation remain insufficient.
+Machine does not decide fun/skill.
 
-> **Contact acquisition + a clean latch + a rigid brace is still not stable/regulatable support capacity.**
+## 6. E14.1C instrument truth
 
-Ledger: [`E10_ONE_PIECE_SUPPORT_BRACE.md`](E10_ONE_PIECE_SUPPORT_BRACE.md).
+The bounded implementation introduces:
 
-### E11 — binary physical eligibility rejected
+- versioned pure specimen configuration contract;
+- deterministic canonical serialization and stable specimen ID;
+- URL-shareable/reloadable pinned specimens on existing `?mode=e14lab` route;
+- PIN / clean RESTORE / LOCK semantics;
+- locked-play UI that removes discovery sliders/policy/pause/step/shoves from the primary interaction surface;
+- clean restore with neutral input `0`, cleared stale held state, declared running state and fresh settle;
+- generic later specimen qualifier for no-input sanity, reset determinism, repeated trace determinism, finite telemetry and qualitative input differentiation;
+- explicit mandatory finite telemetry contract;
+- abstract floor/grid world-axis guides instead of false-affordance non-collidable vertical posts.
 
-E11 made residual assistance physics-first.
+PIN stores configuration, **not** Box2D bodies/contacts/solver caches/runtime snapshot.
 
-Durable results:
+Format v1 reference specimen:
 
-1. fixed physical-only deficit is not independently additive because earlier assist changes later slip/contact demand;
-2. lower later physical impulse is not automatically masking — reduced relative slip can legitimately reduce frictional work;
-3. a boolean `support + positive physical impulse` gate is still too weak: weak `μ=.20` traction could unlock accepted-looking translation dominated by external authority while posture still fell.
+`e14c1|s1|m=800|f=0.95|a=31|b=36|t=320|p=entitled-reciprocal`
 
-> **A materially weak physical channel must not become only a key that unlocks dominant accepted-looking translation.**
+Reference ID:
 
-Ledger: [`E11_PHYSICS_FIRST_RESIDUAL.md`](E11_PHYSICS_FIRST_RESIDUAL.md).
+`E14C1-befd707b`
 
-### E12 — graded capacity survives; placement is a separate variable
+## 7. Instrumentation provenance correction
 
-E12 qualified a physically derived research entitlement:
+Historical exact-head E14 diagnostic artifact:
 
-`J_n~ = 0.5 × totalNormalImpulse`
+- workflow `33802322554`;
+- artifact `9911568231`;
+- head `b858bf48e300b8c9297cd22ac86357f658fedccc`.
 
-`q = clamp( μ × J_n~ / (0.95 × 80 × 20 × 1/60), 0, 1 )`
+Its E14.1d body-lean phase summaries were invalid because the consumer still read `signedLeanX` while the corrected sagittal sim emitted `signedLean`. This is an observation/tooling defect, not a physics negative. Do not rewrite the historical artifact as corrected.
 
-Canonical current31:
+Corrected evidence from E14.1C implementation commit:
 
-- normal `μ=.95`: `5.218 / 5.273 m/s`, both RECOVER;
-- weak `μ=.20`: `1.748 / 1.707 m/s`, both FALL;
-- zero friction: `q=0`, zero assist.
+- commit `4b70cbf6e37566c357c84eed87a67ce9b2310d01`;
+- workflow `33811359560`;
+- artifact `9914925276`;
+- schema `e14-1d-corrected-sagittal-telemetry-v2`;
+- body/target lean extrema finite across all diagnostic scenario phases.
 
-Canonical current36 braking, after restoring exact E4.6 state history:
+Mandatory instrumentation now fails on missing required fields, `NaN`, infinities, stale `signedLeanX` and wrong sagittal axis semantics.
 
-- normal support stops essentially at zero and recovers;
-- weak support ends around `3.22–3.39 m/s` and falls;
-- zero friction gets no assist.
+## 8. Validation model
 
-On a real `800 kg` dynamic support, fair world-external vs reciprocal comparison must preserve the same **support-relative** granted agency:
+Report E14.1C through three separate gates.
 
-- world-external `J=M_player × Δv_rel`;
-- reciprocal `J=M_reduced × Δv_rel` with equal-and-opposite support recoil.
+### MECHANICS GATE
 
-An isolated free player+support pair is then almost exactly Galilean-equivalent in relative/contact/posture behavior. With zero player damping the match is near machine precision; canonical `0.015` player damping breaks it by only about `0.006%` of the granted pulse over one second.
+Existing research + Donor regressions. No E14.1C claim may hide a Donor/mechanics regression.
 
-> **Support-relative agency and reaction placement are distinct design variables, and an isolated free player+support pair cannot choose placement.**
+### INSTRUMENTATION GATE
 
-Ledger: [`E12_GRADED_CAPACITY_ENTITLEMENT.md`](E12_GRADED_CAPACITY_ENTITLEMENT.md).
+Required finite telemetry, versioned specimen roundtrip/validation/ID, clean restore, lock mutation boundary, query share/reload, generic qualifier and browser axis/temporal/UI contract.
 
-### E13 — genuine world coupling discriminates placement, but late engagement is not neutral
+Key instrumentation contracts are part of mandatory smoke through `scripts/e14-1c-browser-contract.mjs`; diagnostic artifact upload is supplementary provenance rather than the only qualification path.
 
-E13 introduced an external world reference while preserving the E12 fair support-relative placement contract.
+### PUBLICATION GATE
 
-#### Representation qualification
+Exact merged `main`, build, Pages deployment, E14.1C route availability and unchanged default Donor.
 
-- Direct tangent wall contact failed inactive representation and remains negative/confounded provenance.
-- A corrected prismatic unilateral world stop passed isolated binding after removing a source-confirmed `fixedRotation` harness conflict.
-- The free-prismatic `800 kg` support passed embodied inactive representation.
-- Enabling the zero-gap stop at a **quiet settled state** was passive-neutral.
+Do not summarize these three evidence classes merely as `green`.
 
-#### Genuine world-coupled one-step discrimination
+## 9. Files intentionally outside E14.1C mechanics blast radius
 
-E13.1a factorial `{world-external, reciprocal} × {stop OFF, ON}` delivered the same support-relative grant before solve.
+E14.1C should not require changes to:
 
-Stop-isolated wider-world effect:
+- `src/e14-authority-kernel.js`;
+- `src/e14-continuous-sim.js`;
+- `src/e3-balance-organism.js`;
+- Donor files/default runtime;
+- dependencies;
+- current routing semantics in `src/bootstrap.js`.
 
-- world-external: approximately `0 N·s`;
-- reciprocal: **`33.177096 / 33.177056 N·s`**.
+A future need to change those for PIN/LOCK would be a scope alarm requiring causal justification.
 
-> **A genuine external reaction path ends the isolated Galilean ambiguity: reaction placement becomes physically observable.**
+## 10. Owner protocol after publication
 
-#### Intermittent reaction path
+After exact-main publication gate passes:
 
-A second-pulse persistence probe did not qualify its own lower-boundary crossing: RELEASE crossed only about `56–60 µm` versus the predeclared `100 µm` discrimination scale.
+> **DISCOVERY → find something interesting → PIN → LOCK → play → record.**
 
-This is a protocol miss, not a persistence verdict. It also shows that the unilateral reaction path behaves like a real intermittent contact: the first reaction can move the support into the allowed side.
+Owner selects the specimen. Machine must not optimize/select one beforehand.
 
-#### Bounded current31 trajectory
+Locked play should preserve A/D, camera and clean pinned reset. Do not give a scripted ideal solution or target success rate.
 
-With a fixed lead8 + 11-frame current31 command trajectory, reciprocal stop ON produced about **`153–174 N·s`** more wider-world ramp momentum effect than reciprocal stop OFF.
+Analyse the recording and spontaneous feedback first, then ask questions if needed.
 
-But the stop also generated about **`56.8 / 68.6 N·s`** ON−OFF world effect during lead8 **before translational authority began**.
+After Owner supplies the pinned representation, run the exact config through the generic qualifier without parameter tuning.
 
-This exposed the decisive confound: the world reference was already participating in posture mechanics.
+## 11. Outcome boundary
 
-#### Prepared-state engagement boundary — MATERIAL / MATERIAL
+Possible post-Owner outcomes:
 
-E13.2b prepared two identical free-prismatic systems through exact lead8 with no translational authority, then at the actual current translation gave both the same limit geometry and enabled the lower stop only in the candidate.
+- **Boundary skill supported** → smallest next candidate is one-property World Transfer (mass **or** friction), but not inside E14.1C.
+- **Locked play flat with real action-space** → H1 weakens; build/tune/test sandbox value may strengthen.
+- **Action-space/instrument insufficient** → do not falsify H1; next frontier becomes Strategy Repertoire, without assuming a second leg.
+- **Numerical/solver chaos** → stop and decompose.
+- **Mostly slapstick/spectacle** → secondary value only unless it also helps the central player-intent/physical-consequence problem.
 
-The API transition itself was mutation-free. One subsequent identical internal posture solve produced:
+## 12. Hard stop / next action
 
-- differential world impulse **`80.793918 N·s`** in one mirror;
-- **`72.348356 N·s`** in the other;
-- material relative/support/angular-velocity changes beyond previously-paid representation/transition bands.
+Current execution must end at:
 
-No authority pulse, arbitrary gap, body reset or support reset existed.
+> **E14.1C Owner instrument is public and mechanically/instrumentally qualified; no Owner specimen has yet been selected.**
 
-> **Quiet-state neutrality does not imply active-state neutrality. Engaging the external world relation after physical preparation is itself a large physical event because the support already has world-relative state.**
+Then **STOP FOR OWNER**.
 
-Therefore:
+Before any future continuation:
 
-> **Do not create a reciprocal world reaction path after the fact and call it neutral plumbing. Once external coupling is real, reaction placement is inseparable from environmental contact history/topology.**
-
-This does **not** reject reciprocal mechanics in a naturally world-braced situation, and it does not select world-external authority for production.
-
-Ledger: [`E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md).
-
-## 5. Runtime / smoke consequence
-
-Runtime remains unchanged:
-
-- normal URL: A‴ / Donor v1;
-- Donor v0/A″ frozen;
-- E3.1 public balance surface isolated;
-- E3.2–E13 machine research only.
-
-Durable positive research smoke now includes the E13 closure set:
-
-- E13.0b corrected prismatic world-stop binding;
-- E13.0c1 embodied free-prismatic representation;
-- E13.0d quiet embodied stop neutrality;
-- E13.1a world-coupled placement factorial;
-- E13.2a bounded current31 world-coupled trajectory;
-- E13.2b prepared-state engagement boundary.
-
-E13.0a wall variants and E13.1b second-pulse persistence remain executable negative/confounded/protocol-miss provenance outside mandatory green smoke.
-
-Earlier negative/confounded E7.2, E8.1, E9.0b, E10.1, E11.0a, E11.2a and first E12.1a also remain provenance rather than artificial PASSes.
-
-## 6. Durable invariants
-
-Preserve unless new evidence explicitly overturns them:
-
-- Owner judgement and machine evidence are different evidence classes.
-- A‴ numeric feel is accepted; do not silently weaken `31/36` to make embodiment easier.
-- Internal actuation must not receive hidden world reaction merely to stabilize behavior.
-- Contact-earned and world-external authority must be accounted separately.
-- A new mechanical representation must pass inactive matching before active causal claims.
-- Contact acquisition is not stable load capacity.
-- Do not keep replacing the primary ankle or recursively add serial bodies after E6–E9.
-- E10 partial fall reduction is not enough to justify support-mechanism tuning.
-- A local effect at one solver resolution is not robust capability evidence.
-- Lower physical impulse is not automatically masking; relative demand matters.
-- Binary contact / positive-impulse gating is not sufficient anti-masking for world-external residual authority.
-- A graded physical-capacity entitlement is qualified research evidence for canonical current31/current36, not a production formula.
-- Support-relative agency and reaction placement are distinct variables; compare placement with fair reduced-mass accounting.
-- An isolated free player+support pair cannot meaningfully choose world-external versus reciprocal placement by local relative/contact/posture behavior.
-- Genuine external world coupling can make reaction placement materially observable.
-- **Quiet world-reference engagement can be neutral while engagement after physical preparation is materially non-neutral. State history matters.**
-- **Do not manufacture an external reaction path at authority time and then treat it as causally invisible.**
-- Reciprocal mechanics are not rejected; if the world carries reaction, the environmental coupling must be naturally present and evaluated as mechanics/gameplay.
-- Physical purity is not the goal; causal honesty and gameplay value are.
-- Complexity must earn information or gameplay value.
-- Confounded harness failures are corrected causally, not counted as physical failures or silently tuned away.
-
-## 7. Current highest-value unknown
-
-E13 exhausts the immediate “add a genuine world reference so placement can be distinguished” question.
-
-The next useful research question is narrower and more ecological:
-
-> **Which naturally present environmental relationships should legitimately carry player-authority reaction, and when should accepted agency remain explicitly controller/world-external instead?**
-
-A useful next specimen should have the external coupling **already present independently of the authority command**. Candidate families include:
-
-- a support already braced/anchored by the level before player intent;
-- an externally driven support;
-- a third-body/environment contact with its own causal history.
-
-Do not create a stop exactly at the current support position merely to harvest reaction. Do not choose a wall gap, spring stiffness, support mass or clutch timing to force a preferred architecture.
-
-The purpose of the next stage is not momentum purity. It is to discover **reaction ownership that is causally honest, mechanically legible and potentially valuable to gameplay**.
-
-A genuinely new physical support mechanism remains admissible if it introduces a capability E6–E10 did not already exercise. More anatomy is not the default.
-
-## 8. Validation / provenance hygiene
-
-Canonical validation command:
-
-`npm run smoke`
-
-Split suites:
-
-- `npm run smoke:research`;
-- `npm run smoke:donor`.
-
-Suite membership lives in `scripts/smoke-suite.mjs`.
-
-Important rule:
-
-> **A failed research experiment may remain executable provenance without belonging to permanent green smoke.**
-
-At E13 closure the experimental research branch contains no runtime/Donor/source promotion; only E13 research scripts, smoke membership and closure documentation differ from the E12 canonical base.
-
-Before continuing from a future conversation:
-
-1. verify live `main` SHA and CI;
+1. verify live `main` exact SHA and CI/Pages;
 2. read this file;
-3. read [`E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md);
-4. inspect branch/history only if needed for evidence or provenance;
-5. do not automatically resume E13 stop variants.
+3. read [`E14_CONTEXTUAL_AUTHORITY_LAB.md`](E14_CONTEXTUAL_AUTHORITY_LAB.md);
+4. preserve the historical E13/E14 evidence classes;
+5. do not choose or tune the pinned specimen for Owner.

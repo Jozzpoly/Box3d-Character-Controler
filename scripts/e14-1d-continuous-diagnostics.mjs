@@ -1,27 +1,28 @@
 import fs from 'node:fs';
 import { createE14ContinuousSim } from '../src/e14-continuous-sim.js';
 import { E14_AUTHORITY_POLICIES } from '../src/e14-authority-kernel.js';
+import { assertE14TelemetrySample, assertE14TelemetrySeries } from '../src/e14-telemetry-contract.js';
 
-function phaseSummary(samples) {
-  const finite = samples.filter(Boolean);
-  const mean = (key) => finite.reduce((sum, s) => sum + s[key], 0) / Math.max(1, finite.length);
+function phaseSummary(samples, label) {
+  const finite = assertE14TelemetrySeries(samples.filter(Boolean), label);
+  const mean = (key) => finite.reduce((sum, s) => sum + s[key], 0) / finite.length;
   const min = (key) => Math.min(...finite.map((s) => s[key]));
   const max = (key) => Math.max(...finite.map((s) => s[key]));
   const sum = (key) => finite.reduce((total, s) => total + s[key], 0);
   return {
     frames: finite.length,
     preparationFrames: finite.filter((s) => s.preparing).length,
-    first: finite[0] ?? null,
-    last: finite.at(-1) ?? null,
+    first: finite[0],
+    last: finite.at(-1),
     q: { min: min('entitlement'), mean: mean('entitlement'), max: max('entitlement') },
     relativeVelocity: { min: min('relativeVelocity'), max: max('relativeVelocity') },
     targetError: {
       maxAbs: Math.max(...finite.map((s) => Math.abs(s.targetRelativeVelocity - s.relativeVelocity))),
-      final: finite.length ? finite.at(-1).targetRelativeVelocity - finite.at(-1).relativeVelocity : 0,
+      final: finite.at(-1).targetRelativeVelocity - finite.at(-1).relativeVelocity,
     },
     leanDeg: {
-      min: min('signedLeanX') * 180 / Math.PI,
-      max: max('signedLeanX') * 180 / Math.PI,
+      min: min('signedLean') * 180 / Math.PI,
+      max: max('signedLean') * 180 / Math.PI,
       targetMin: min('targetLean') * 180 / Math.PI,
       targetMax: max('targetLean') * 180 / Math.PI,
     },
@@ -35,21 +36,21 @@ function phaseSummary(samples) {
     supplementalRelativeDeltaVSum: sum('grantedRelativeDeltaV'),
     playerAuthorityImpulseSum: sum('playerImpulse'),
     supportAuthorityImpulseSum: sum('supportImpulse'),
-    systemMomentum: { min: min('combinedMomentum'), max: max('combinedMomentum'), final: finite.at(-1)?.combinedMomentum ?? 0 },
+    systemMomentum: { min: min('combinedMomentum'), max: max('combinedMomentum'), final: finite.at(-1).combinedMomentum },
   };
 }
 
 function runFrames(sim, count, input) {
   sim.setInput(input);
   const samples = [];
-  for (let i = 0; i < count; i++) samples.push(sim.step(true));
+  for (let i = 0; i < count; i++) samples.push(assertE14TelemetrySample(sim.step(true), `runFrames input=${input} frame=${i}`));
   return samples;
 }
 
 async function runScenario(policy, { friction = 0.95, preparationFrames = 0 } = {}) {
   const sim = await createE14ContinuousSim({ policy, friction, preparationFrames });
   try {
-    const initial = sim.snapshot();
+    const initial = assertE14TelemetrySample(sim.snapshot(), `${policy} initial`);
     const launch = runFrames(sim, 18 + preparationFrames, 1);
     const release = runFrames(sim, 12 + preparationFrames, 0);
     const reverse = runFrames(sim, 18 + preparationFrames, -1);
@@ -58,9 +59,9 @@ async function runScenario(policy, { friction = 0.95, preparationFrames = 0 } = 
       friction,
       preparationFrames,
       initial,
-      launch: phaseSummary(launch),
-      release: phaseSummary(release),
-      reverse: phaseSummary(reverse),
+      launch: phaseSummary(launch, `${policy} launch`),
+      release: phaseSummary(release, `${policy} release`),
+      reverse: phaseSummary(reverse, `${policy} reverse`),
       firstLaunchFrames: launch.slice(0, 12 + preparationFrames),
     };
   } finally {
@@ -78,7 +79,7 @@ async function matchedFirstCommand() {
     const sim = await createE14ContinuousSim({ policy });
     try {
       sim.setInput(1);
-      result[policy] = sim.step(true);
+      result[policy] = assertE14TelemetrySample(sim.step(true), `${policy} matched first command`);
     } finally {
       sim.destroy();
     }
@@ -101,7 +102,8 @@ async function matchedFirstCommand() {
 
 const diagnostics = {
   generatedBy: 'scripts/e14-1d-continuous-diagnostics.mjs',
-  note: 'Observation-only E14.1 diagnostic. Lead8 is an E4-derived temporal oracle, not a selected gameplay delay or production policy.',
+  schema: 'e14-1d-corrected-sagittal-telemetry-v2',
+  note: 'Observation-only E14.1 diagnostic. Historical pre-E14.1C artifacts used stale signedLeanX in phase summaries; corrected evidence is new evidence, not a retroactive repair. Lead8 remains an E4-derived temporal oracle, not a gameplay delay or production policy.',
   reference: {
     playerMass: 80,
     supportMass: 800,
@@ -126,4 +128,4 @@ const diagnostics = {
 
 const outputPath = process.argv[2] ?? 'e14-1d-diagnostics.json';
 fs.writeFileSync(outputPath, `${JSON.stringify(diagnostics, null, 2)}\n`);
-console.log(`E14 diagnostics written to ${outputPath}`);
+console.log(`E14 corrected diagnostics written to ${outputPath}`);
