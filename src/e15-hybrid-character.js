@@ -62,7 +62,7 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
       this.position[1] + this.bodyOffsetY,
       this.position[2],
     ];
-    bodyDef.linearDamping = 0.02;
+    bodyDef.linearDamping = 0;
     bodyDef.angularDamping = 0.08;
     bodyDef.enableSleep = false;
     bodyDef.enableContactRecycling = false;
