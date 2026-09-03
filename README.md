@@ -14,7 +14,7 @@ Working model:
 
 Implementation/probes may be disposable; accepted observations are not.
 
-For a fresh takeover or long-gap return, start with [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md), then [`docs/README.md`](docs/README.md) and the newest stage ledger, currently [`docs/E9_RIGID_STOW_SPLIT.md`](docs/E9_RIGID_STOW_SPLIT.md).
+For a fresh takeover or long-gap return, start with [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md), then [`docs/README.md`](docs/README.md) and the newest stage ledger, currently [`docs/E10_ONE_PIECE_SUPPORT_BRACE.md`](docs/E10_ONE_PIECE_SUPPORT_BRACE.md).
 
 ## Current accepted player — Donor v1 / A‴
 
@@ -48,6 +48,8 @@ Accepted-strength `31 m/s²` launch and `36 m/s²` braking can coexist with fini
 
 With ordinary `μ=.95` support and recovered lead8 posture, real contact supplied roughly **64.6–71.0%** of full `80 kg × 5.2 m/s` ramp impulse. World-external residual authority can close the gap but changes reciprocity and can mask physical insufficiency.
 
+E5 therefore leaves an explicit fork: earn more agency physically, or preserve accepted agency with a separately accounted bounded residual.
+
 ### E6 — primary-path latent DOFs rejected
 
 Hard rule:
@@ -56,7 +58,7 @@ Hard rule:
 
 Adding latent translation into the qualified primary ankle path changed mechanics before actuation. That family was closed.
 
-### E7 — real second contact, no stable load path
+### E7 — real second contact, no stable load regulation
 
 A representation-neutral `1 kg × 0.9 m` parallel probe passed inactive matching. Finite `18 Nm` equal-and-opposite internal actuation acquired real persistent probe↔ground contact in both sagittal directions.
 
@@ -64,55 +66,53 @@ But the hinged probe did not establish meaningful stable body-load transfer. Und
 
 > **Contact acquisition is not support capacity.**
 
-### E8 — axial-compliance substrate viable; serial telescope rejected
+### E8/E9 — serial split economics rejected
 
-E8 qualified:
+E8 qualified finite compression-only axial-compliance primitives, but the embodied mass/COM/inertia-matched split telescope failed the strict inactive mechanical representation gate.
 
-- finite compression-only distance-joint response;
-- guide + unilateral-compliance role separation;
-- cache-safe internal prismatic latch release.
+E9 removed the prismatic joint and spring entirely. Even a rigidly welded split preserving branch mass, COM and sagittal inertia failed internal representation (`~0.292–0.294°` placement-hinge and `~0.323–0.328°` weld drift versus `0.25°`).
 
-A mass/COM/inertia-matched split telescope nevertheless failed inactive mechanical representation: placement-hinge drift about `0.295°` exceeded the predeclared `0.25°` gate. Removing the spring did not fix it; native revolute telemetry confirmed the drift.
+Therefore another serial constrained body is not a free way to obtain a better support mechanism on the current substrate.
 
-### E9 — rigid split also rejected
+### E10 — one-piece brace transitions cleanly but still fails support regulation
 
-E9 tested whether E8 failed specifically because of the latent prismatic/compliance DOF.
+E10 returned to the already-qualified one-piece E7 probe and changed only its existing revolute **after real support acquisition**.
 
-First, the pinned zero-Hz weld primitive passed finite disturbance controls with large margin.
+Positive boundary:
 
-Then the same qualified E7 branch was split into two rigidly welded `0.5 kg × 0.45 m` bodies while preserving total branch mass, COM and sagittal pivot inertia exactly. There was **no prismatic joint and no distance spring**.
+- isolated current-angle latch: **PASS**;
+- real acquisition→brace transition: **PASS**;
+- matched first-frame whole-body impulse difference only `0.0424 / 0.0445 N·s` versus the existing `0.8 N·s` E5 calibration band;
+- low-demand brace drift only `0.0095° / 0.0180°` versus `0.25°`.
 
-Macro current31/lead8 response matched the one-piece E7 probe almost exactly, but internal mechanical equivalence still failed:
+But the project-relevant load hypothesis failed:
 
-- placement hinge about `0.292–0.294°` > `0.25°`;
-- weld relative alignment about `0.323–0.328°` > `0.25°`.
+- quiet upright bracing did not meaningfully recruit body load onto the probe;
+- under the exact E7.2b/current31 demand, unlatched controls reproduced `FALL/FALL`;
+- the brace reduced peak torso excursion from about `99.6°` to `33–34°`, so it had a real stabilizing effect;
+- nevertheless neither direction reached HOLD;
+- primary support was absent for `100 / 73` target-phase frames and probe support for `4 / 6`;
+- the brace yielded by `5.79° / 5.63°`, far outside its own `0.25°` qualified envelope.
 
 Therefore:
 
-> **The problem is broader than the latent prismatic DOF. On this substrate and representation contract, adding another serial constrained body to the qualified support branch is itself mechanically consequential under the current organism dynamics.**
+> **Contact acquisition + a rigid brace is still not sufficient stable/regulatable support capacity.**
 
-Do not proceed to the proposed rigid-stow → prismatic/compliance clutch. Do not relax the `0.25°` gate or tune weld stiffness, mass, geometry or substeps to manufacture a pass.
+Do not rescue E10 by sweeping brace angle, torque, length, latch timing, solver settings or evidence thresholds.
 
-Ledger: [`docs/E9_RIGID_STOW_SPLIT.md`](docs/E9_RIGID_STOW_SPLIT.md).
+Ledger: [`docs/E10_ONE_PIECE_SUPPORT_BRACE.md`](docs/E10_ONE_PIECE_SUPPORT_BRACE.md).
 
 ## Current research direction
 
-The next physical candidate should **reuse the already-qualified one-piece E7 probe rather than split it again**.
+The project deliberately returns to the **E5 design fork** rather than automatically growing more anatomy.
 
-The smallest high-information question is:
+The next stage is a bounded decision/decomposition stage, not another joint tweak:
 
-> **After real E7 ground acquisition, can the existing probe↔torso revolute become a mechanical brace/latch at its acquired angle and establish a stable load-bearing path without adding a latent body/DOF while inactive?**
+> **Which remaining design class has better information and gameplay economics: a genuinely new minimal physical support capability, or an honest bounded residual authority layered on top of physically earned contact contribution?**
 
-Bounded sequence:
+A new physical mechanism is justified only if it introduces a causal capability E6–E10 did not already test; another serial body, stiffness variant or fixed-support lock is not enough.
 
-1. qualify latch-at-current-angle transition semantics / cache behavior;
-2. reproduce E7.1 ground acquisition unchanged;
-3. engage the brace only after real loaded ground contact and prove no material transition kick;
-4. test mirrored stable/regulatable body-load sharing using E5/E7 calibrated load accounting;
-5. only on load-path PASS, ask whether it physically earns additional current31/current36 translational impulse;
-6. only after machine qualification expose a useful candidate to Owner play/feel judgement.
-
-If this simple one-piece route also fails before meaningful load sharing, step back to the E5 design fork rather than recursively growing anatomy: compare another minimal mechanism against an **honest bounded gameplay assist** with contact-earned and externally granted authority accounted separately.
+A bounded assist is not forbidden by the project. It must remain explicit, separately accounted, physically support-aware where justified, incapable of silently masking total support loss, and compatible with the body remaining reactive/readable rather than decorative.
 
 The goal is a controllable physical player, not maximal mechanical purity or maximal body-part count.
 
@@ -126,7 +126,7 @@ Experimental E3 balance playground:
 
 `https://jozzpoly.github.io/Box3d-Character-Controler/?mode=balance`
 
-E3.2–E9 are machine research only.
+E3.2–E10 are machine research only.
 
 ## Normal controls
 
