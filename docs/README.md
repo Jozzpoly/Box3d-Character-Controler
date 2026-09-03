@@ -1,153 +1,112 @@
 # Documentation map
 
-This directory contains both **current authority** and **historical research evidence**. Do not read every file on every takeover.
+This directory contains both current authority and historical research evidence. Do not read every file on every takeover.
 
 ## Start here
 
-For a fresh takeover, long-gap return or uncertain state:
-
-1. [`PROJECT_STATE.md`](PROJECT_STATE.md) — **canonical current-state/orientation layer**;
+1. [`PROJECT_STATE.md`](PROJECT_STATE.md) — compact canonical orientation;
 2. repository [`README.md`](../README.md) — public/current overview;
-3. newest relevant stage ledger — currently [`E8_UNILATERAL_AXIAL_COMPLIANCE.md`](E8_UNILATERAL_AXIAL_COMPLIANCE.md).
+3. newest relevant ledger — currently [`E9_RIGID_STOW_SPLIT.md`](E9_RIGID_STOW_SPLIT.md).
 
-Then inspect code, CI and older ledgers only as required by the live question.
+`main` + exact SHA + CI are implementation truth. Branch names and historical handoffs are provenance/context only.
 
-`main` + exact SHA + CI are implementation truth. A branch name is never current authority by itself.
+## Accepted runtime / donor
 
-## Current accepted runtime / donor
-
-- [`DONOR_CONTRACT.md`](DONOR_CONTRACT.md) — stable downstream API, profile and lifecycle contract;
-- [`E2_3E_STABILIZATION.md`](E2_3E_STABILIZATION.md) — promotion of A‴ / Donor v1 to current-best behavior;
-- [`DONOR_STABILIZATION.md`](DONOR_STABILIZATION.md) — earlier donor stabilization provenance;
-- [`MOBILE_PAGES.md`](MOBILE_PAGES.md) — mobile/Pages evidence and current mobile boundary.
+- [`DONOR_CONTRACT.md`](DONOR_CONTRACT.md) — stable downstream contract;
+- [`E2_3E_STABILIZATION.md`](E2_3E_STABILIZATION.md) — A‴ / Donor v1 promotion;
+- [`DONOR_STABILIZATION.md`](DONOR_STABILIZATION.md) — prior donor stabilization;
+- [`MOBILE_PAGES.md`](MOBILE_PAGES.md) — mobile/Pages evidence.
 
 The normal public/default player remains **A‴ / Donor v1** unless `PROJECT_STATE.md` says otherwise.
 
 ## Current research lineage
 
-- [`E3_ROTATIONAL_EMBODIMENT.md`](E3_ROTATIONAL_EMBODIMENT.md) — E3.1 rotational embodiment / first Owner-positive balance surface;
-- [`E3_1_VALIDATION_LOOP.md`](E3_1_VALIDATION_LOOP.md) — E3.1 post-Owner causal decomposition;
-- [`E3_1_SUPPORT_TRANSITIONS.md`](E3_1_SUPPORT_TRANSITIONS.md) — support-transition/contact-signal semantics;
-- [`E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — bounded internal angular momentum and solver-resolution robustness failure;
+- [`E3_ROTATIONAL_EMBODIMENT.md`](E3_ROTATIONAL_EMBODIMENT.md) — finite posture / first Owner-positive physical balance;
+- [`E3_1_VALIDATION_LOOP.md`](E3_1_VALIDATION_LOOP.md) and [`E3_1_SUPPORT_TRANSITIONS.md`](E3_1_SUPPORT_TRANSITIONS.md) — causal support semantics;
+- [`E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — local mechanism, solver-resolution robustness failure;
 - [`E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](E4_LOCOMOTION_POSTURE_COMPATIBILITY.md) — accepted translational demand vs finite posture;
-- [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — authority placement, physical contact contribution and residual-authority accounting;
-- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — rejection of latent translation in the primary ankle path before actuation;
-- [`E7_PARALLEL_SUPPORT_SET.md`](E7_PARALLEL_SUPPORT_SET.md) — parallel support representation, real finite ground acquisition, and failure of the tested single-hinge strut to establish stable body-load sharing;
-- [`E8_UNILATERAL_AXIAL_COMPLIANCE.md`](E8_UNILATERAL_AXIAL_COMPLIANCE.md) — compression-only axial substrate, guided-telescopic composition, cache-safe latch release, and failure of the first mass/inertia-matched embodied serial telescope at inactive representation matching.
+- [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — physical contact contribution vs world-external residual;
+- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — latent translation in primary ankle rejected before actuation;
+- [`E7_PARALLEL_SUPPORT_SET.md`](E7_PARALLEL_SUPPORT_SET.md) — representation-neutral parallel support and real ground acquisition, but no stable load-bearing path;
+- [`E8_UNILATERAL_AXIAL_COMPLIANCE.md`](E8_UNILATERAL_AXIAL_COMPLIANCE.md) — viable axial-compliance primitives, failed mass/inertia-matched latent serial telescope;
+- [`E9_RIGID_STOW_SPLIT.md`](E9_RIGID_STOW_SPLIT.md) — weld primitive PASS, but even a no-prismatic rigid two-body split fails the strict inactive mechanical representation gate.
 
-These are research ledgers. They do not automatically promote mechanics into the player runtime.
+These ledgers are research authority, not automatic runtime promotion.
 
-## Current E7 → E8 result in one paragraph
+## Current E7 → E9 result
 
-E7 proved that a representation-neutral parallel body can be internally placed into real second ground contact, but not that the tested rigid probe can establish stable/regulatable body-load sharing. E8 then qualified a finite compression-only distance spring, a limit-guide/compliance composition, and a cache-safe internal prismatic latch release. The first embodied E8 telescope deliberately split the qualified `1 kg × 0.9 m` E7 probe into two `0.5 kg × 0.45 m` segments while analytically preserving total mass, COM and sagittal pivot inertia. After removing a proven split-induced distal↔torso self-contact, the candidate remained macroscopically very close to the E5 current31/lead8 reference, but its exact locked placement hinge drifted about `0.295°`, above the predeclared `0.25°` inactive gate. Removing the distance spring did not change the defect, and native revolute-joint angle telemetry reproduced the same `0.296716°` maximum. Therefore:
+E7 established two valuable facts: a one-piece parallel probe can preserve the qualified organism while inactive, and finite internal actuation can place it into real second ground contact. What it did **not** establish was a stable/regulatable load-bearing path.
 
-> **The axial-compliance substrate is real, but the tested latent serial telescopic representation is not qualified to advance into placement, load-sharing or locomotion tests.**
+E8 explored axial compliance by splitting that probe into a serial telescope. The substrate primitives worked, but the embodied split failed inactive mechanical matching at roughly `0.295°` placement-hinge drift versus the predeclared `0.25°` gate.
 
-Do not relax the gate or tune the failed topology into a pass.
+E9 removed the latent prismatic DOF and spring entirely. A zero-Hz weld was first qualified in isolation, then used to make a mass/COM/inertia-matched rigid split. Macro E5/E7 behavior was virtually identical to the one-piece probe, yet the embedded serial assembly again exceeded the internal gate (`~0.292–0.294°` placement hinge and `~0.323–0.328°` weld relative alignment).
 
-## Historical E1/E2 evidence
+Therefore:
 
-[`RESEARCH.md`](RESEARCH.md) is the preserved early ledger through E2. Its authority banner is binding: stage-local words such as “current” and “next” are historical, not live plan.
-
-Focused E2 ledgers remain useful only when a live question touches their exact causal boundary:
-
-- [`E2_1_LOCALIZATION.md`](E2_1_LOCALIZATION.md);
-- [`E2_2_RECIPROCITY.md`](E2_2_RECIPROCITY.md);
-- [`E2_2B_MOMENTUM_PERSISTENCE.md`](E2_2B_MOMENTUM_PERSISTENCE.md);
-- [`E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md`](E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md);
-- [`E2_2C1_OWNER_FREEPLAY_CAPTURE.md`](E2_2C1_OWNER_FREEPLAY_CAPTURE.md);
-- [`E2_2C2_MOMENTUM_SEMANTICS.md`](E2_2C2_MOMENTUM_SEMANTICS.md);
-- [`E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md`](E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md);
-- [`E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md`](E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md);
-- [`E2_3C_CONSTRAINT_VELOCITY_POLICY.md`](E2_3C_CONSTRAINT_VELOCITY_POLICY.md);
-- [`E2_3D_PRODUCTION_SPECIMEN.md`](E2_3D_PRODUCTION_SPECIMEN.md).
-
-Do not reopen these by default merely because they exist.
+> **Do not continue the split-body clutch family. The current evidence points to the extra serial constrained body itself as mechanically consequential under the strict representation contract, not merely to the latent prismatic DOF.**
 
 ## Validation map
 
-Canonical top-level command:
+Canonical command:
 
 `npm run smoke`
 
 Split into:
 
-- `npm run smoke:research` — deterministic research/regression suite;
-- `npm run smoke:donor` — donor contract/equivalence + mobile input suite.
+- `npm run smoke:research`;
+- `npm run smoke:donor`.
 
-Suite membership/order live in [`../scripts/smoke-suite.mjs`](../scripts/smoke-suite.mjs).
+Suite membership lives in [`../scripts/smoke-suite.mjs`](../scripts/smoke-suite.mjs).
 
-Important distinction:
+Important rule:
 
-> **A research script can remain in the repository as historical evidence without belonging to canonical smoke forever.**
+> **A failed research experiment may remain executable provenance without belonging to permanent green smoke.**
 
-Durable positive E6 smoke:
+Durable positive smoke currently includes:
 
-- `e6-0a-prismatic-binding-calibration.mjs`;
-- `e6-1a-wheel-two-dof-binding-calibration.mjs`.
+- E6 binding calibrations;
+- E7.0a/b inactive representation;
+- E7.1a/b finite ground acquisition/contact identity;
+- E8.0a/b/c axial-compliance/latch substrate results;
+- E9.0a weld binding calibration.
 
-Negative E6 representation probes remain executable provenance outside mandatory green smoke.
+Negative provenance outside mandatory smoke includes:
 
-Durable positive E7 smoke:
+- E7.2 load-transfer falsifiers;
+- E8.1 embodied serial-telescope falsifiers/decomposition;
+- E9.0b rigid-split inactive representation falsifier.
 
-- `e7-0a-inactive-parallel-support-probe.mjs`;
-- `e7-0b-contact-reachable-inactive-probe.mjs`;
-- `e7-1a-finite-internal-support-acquisition.mjs`;
-- `e7-1b-ground-contact-identity.mjs`.
-
-Negative E7 load-bearing falsifiers remain executable provenance outside mandatory green smoke:
-
-- `e7-2a-settled-support-load-transfer.mjs`;
-- `e7-2b-demand-aligned-load-transfer.mjs`.
-
-Durable positive E8 smoke:
-
-- `e8-0a-distance-joint-axial-binding-calibration.mjs` — finite mirrored compression-only axial compliance;
-- `e8-0b-telescopic-guide-compliance-binding.mjs` — limit-guide suspension + interior unilateral-compliance role separation;
-- `e8-0c-latch-release-cache-boundary.mjs` — cache-safe internal exact-lock release procedure.
-
-Negative E8 embodied-representation provenance remains outside mandatory green smoke:
-
-- `e8-1a-inactive-telescopic-support-representation.mjs`;
-- `e8-1b-constraint-topology-decomposition.mjs` plus its retained source;
-- `e8-1c-hinge-coordinate-observation.mjs`.
-
-E8.0b's first run at `9547c06b4ded38570618fae3403d0dd3d7112dd0` remains a confounded reader failure. E8.1a's first split-induced self-contact is also retained as a confounded failure rather than rewritten as architecture evidence.
-
-Removing a probe from mandatory smoke must be an evidence decision, not cleanup by age. A negative experiment must not be rewritten into an artificial PASS merely to make CI green.
-
-The GitHub Actions workflow remains deliberately simple: every push runs full smoke + production build; Pages configure/upload/deploy occurs only on `main`.
+Do not rewrite negative experiments into artificial PASSes merely to keep CI green.
 
 ## Current physical-research boundary
 
-The failed E8.1 serial topology must not be activated merely because its macro E5 response looked close.
+The next physical candidate should reuse the already-qualified **one-piece E7 probe**, not add another latent serial body.
 
-The next high-information question should remove the failed property from the inactive representation rather than tune it:
+Highest-information next question:
 
-> **Can a mass/COM/inertia-matched split auxiliary branch be mechanically rigid while inactive and still reproduce the already-qualified one-piece E7 probe inside the same strict representation envelope?**
+> **After real E7 ground acquisition, can the existing probe↔torso revolute be latched/braced at its acquired angle and establish a stable load-bearing path without adding a new body or inactive DOF?**
 
-A native weld joint makes a rigid-stow specimen substrate-plausible, but this is only a candidate family. First qualify inactive rigid split. Only on PASS should a separate rigid-stow → prismatic/compliance clutch transition be designed and tested for state continuity and absence of material impulse/energy injection.
+Expected decision chain:
 
-A minimal articulated support and explicit bounded gameplay authority remain live alternatives.
+1. qualify revolute latch-at-current-angle transition/cache semantics;
+2. reproduce unchanged E7.1 acquisition;
+3. engage brace only after real loaded contact and prove no material transition kick;
+4. test mirrored stable/regulatable load sharing;
+5. only after load-path PASS test additional current31/current36 physically earned agency;
+6. only after machine qualification seek Owner feel judgement.
 
-## Branch / provenance hygiene
+If this simple one-piece route also fails without a clear causal correction, step back to the E5 fork. Compare another minimal physical mechanism against explicit bounded gameplay assistance instead of recursively growing anatomy.
+
+## Historical evidence
+
+[`RESEARCH.md`](RESEARCH.md) preserves the early ledger through E2. Focused E2 files are useful only when the live question touches their causal boundary. Stage-local words such as “current” or “next” inside historical ledgers are historical, not live plan.
+
+## Repository hygiene
 
 - `main` is canonical;
-- active unmerged branch is provisional evidence only;
-- merged historical branches are not live state;
-- `experiment/*`, `research/*`, `foundation/*`, `stabilize/*` names are provenance labels, not architecture commitments;
-- temporary/stale branches are never authority merely because they exist;
-- do not mass-delete historical branches solely for aesthetics if they carry unique provenance.
-
-## Repository hygiene boundary
-
-Prefer cleanup that reduces ambiguity or maintenance cost without rewriting history:
-
-- keep one canonical orientation layer;
-- keep detailed evidence in stage ledgers rather than inflating `PROJECT_STATE.md` indefinitely;
-- preserve corrected failures/confounds;
-- keep runtime, donor, research harness and presentation claims distinct;
+- active branches are provisional evidence;
+- preserve corrected/confounded failures;
+- keep runtime, Donor, research harness and presentation claims distinct;
 - avoid refactors inside experiments unless correctness requires them;
-- do not introduce process/CI ceremony without an observed problem.
-
-Current dependency note: direct package versions are pinned in `package.json`, but there is **no npm lockfile** and CI uses `npm install`. Treat dependency-resolution/install changes as a separate validated substrate-maintenance task.
+- do not introduce process ceremony without an observed problem;
+- direct package versions are pinned, but there is no npm lockfile and CI uses `npm install`; dependency-resolution changes require separate validation.
