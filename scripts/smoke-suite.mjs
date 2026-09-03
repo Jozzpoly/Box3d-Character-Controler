@@ -18,7 +18,7 @@ const SUITES = {
     { name: 'E7 parallel support-set representation', scripts: ['scripts/e7-0a-inactive-parallel-support-probe.mjs','scripts/e7-0b-contact-reachable-inactive-probe.mjs','scripts/e7-1a-finite-internal-support-acquisition.mjs','scripts/e7-1b-ground-contact-identity.mjs'] },
     { name: 'E8 unilateral axial compliance', scripts: ['scripts/e8-0a-distance-joint-axial-binding-calibration.mjs','scripts/e8-0b-telescopic-guide-compliance-binding.mjs','scripts/e8-0c-latch-release-cache-boundary.mjs'] },
     { name: 'E9 rigid-stow split representation', scripts: ['scripts/e9-0a-weld-binding-calibration.mjs'] },
-    { name: 'E10 one-piece support brace', scripts: ['scripts/e10-0a-revolute-current-angle-latch.mjs'] },
+    { name: 'E10 one-piece support brace', scripts: ['scripts/e10-0a-revolute-current-angle-latch.mjs','scripts/e10-0b-acquired-support-brace-transition.mjs'] },
   ],
   donor: [
     { name: 'Donor contract / equivalence / input', scripts: ['scripts/donor-contract-smoke.mjs','scripts/donor-smoke.mjs','scripts/donor-v1-smoke.mjs','scripts/mobile-input-smoke.mjs'] },
