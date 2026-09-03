@@ -1,39 +1,47 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-03, after Owner-selected E14 pin qualification and bounded braking-ablation evidence**
+Grounded: **2026-09-03, after Owner braking A/B and machine-qualified one-property World Transfer preparation**
 
-This is the compact canonical orientation layer. Detailed stage provenance remains in the E14 ledger and the post-PIN checkpoint. Before any future write, re-fetch live `main` and exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
+This is the compact canonical orientation layer. Detailed provenance lives in the E14 stage ledger and current checkpoint docs. Before any future write, re-fetch live `main` and exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
 
 ## 0. Current snapshot
 
 - Accepted public/default player remains **A‴ / Donor v1**.
 - Accepted reference ground agency remains `31 m/s²` acceleration / `36 m/s²` braking.
-- E14 does **not** promote new mechanics into Donor/default runtime.
+- E14 has **not** promoted new mechanics into Donor/default runtime.
 - Public experimental routes remain:
   - `?mode=e14` / `?mode=reaction` — E14.0 reaction-placement surface;
   - `?mode=e14lab` / `?mode=contextual` — E14.1C pinned-boundary Owner instrument.
 - E14.1C runtime/publication gates remain PASS.
-- Owner has now selected a concrete E14 specimen during public play.
-- Exact generic machine qualification of that specimen passed without tuning.
-- A one-variable `braking 36 → 3` causal ablation shows that the Owner pin's braking asymmetry materially changes deterministic Natural-only posture/contact trajectories.
-- This does **not** yet establish boundary skill, a production controller or a preferred braking value.
-- Current action is **Owner A/B play: exact pin vs symmetric-braking ablation**.
+- Owner-selected specimen:
+  - `e14c1|s1|m=1180|f=0.65|a=3|b=36|t=1000|p=natural-only`
+  - ID `E14C1-261a1519`.
+- Exact generic machine qualification passed without tuning.
+- Bounded `b=36 → b=3` ablation proved braking asymmetry is a deterministic causal lever.
+- Owner A/B now gives that lever gameplay meaning: `b=36` feels faster to recenter, more controllable, stiffer/livelier and allows better manipulation of the current one-leg locomotion; `b=3` feels like a flexible stick that continues bending/swinging.
+- This supports a **seed of boundary/competence play**. It does not establish a good player controller or production mechanics.
+- The next bounded test is a one-property World Transfer: support mass `1180 → 800 kg`, with all controller fields unchanged.
+- The transfer specimen is machine-qualified and now awaits Owner play.
 
-Current post-PIN checkpoint:
+Current World Transfer checkpoint:
+
+[`E14_WORLD_TRANSFER_MASS_2026-09-03.md`](E14_WORLD_TRANSFER_MASS_2026-09-03.md)
+
+Owner-pin causal checkpoint:
 
 [`E14_OWNER_PIN_CAUSAL_CHECKPOINT_2026-09-03.md`](E14_OWNER_PIN_CAUSAL_CHECKPOINT_2026-09-03.md)
 
-Earlier detailed E14 stage ledger:
+Earlier E14 stage ledger:
 
 [`E14_CONTEXTUAL_AUTHORITY_LAB.md`](E14_CONTEXTUAL_AUTHORITY_LAB.md)
 
-Its final pre-PIN `STOP FOR OWNER / no specimen selected` statement is historical after this checkpoint and must not override the newer current state.
+Earlier `STOP FOR OWNER A/B` statements are historical after this state.
 
 Current hard stop:
 
-> **Owner pin selected and exact-qualified; braking asymmetry is a proven deterministic causal lever in this specimen, but its gameplay meaning remains unresolved. STOP FOR OWNER A/B.**
+> **Owner A/B supports the high-braking variant as an intentionally useful control-quality lever in the current organism; one-property mass transfer `1180 → 800 kg` is machine-qualified. STOP FOR OWNER WORLD TRANSFER.**
 
-Do not automatically proceed to World Transfer, Strategy Repertoire, replay infrastructure, recovery controller or Donor promotion.
+Do not automatically proceed to friction transfer, Strategy Repertoire, replay infrastructure, recovery controller or Donor promotion.
 
 ## 1. Project identity
 
@@ -85,7 +93,7 @@ Relevant reference values:
 - support mass reference `800 kg`;
 - E14 Owner Lab `preparationFrames=0`.
 
-Do not silently weaken accepted `31/36` to make embodiment easier. The Owner-selected E14 specimen's `a=3` is an experimental lab configuration, not a Donor/reference change.
+Do not silently weaken accepted `31/36` to make embodiment easier. The current E14 Owner specimen's `a=3`, `b=36`, `t=1000` are experimental lab values, not Donor/reference changes.
 
 E12 research entitlement remains:
 
@@ -133,9 +141,7 @@ Owner distinguished world-external wind-like acceleration from reciprocal suppor
 
 Corrected E14.1 uses the exact sagittal E4/E12 representation: motion world `Z`, ankle/balance world `X`, qualified `0.34 m` sagittal foot half-length.
 
-At reference no-lead settings Natural strongly under-delivers accepted agency; External and Reciprocal recover nearly identical local support-relative agency; finite-body specimens can still fall. The immediate tension remained **agency demand ↔ finite embodied capacity**.
-
-Owner's spontaneous mobile play then became unscripted tuning/exploration, producing the first meaningful evidence that E14 can behave like a primitive physical toy. Competing explanations remained boundary/competence play, tuning/experimentation, slapstick/novelty, world/affordance proxy and missing strategy repertoire.
+At reference no-lead settings Natural strongly under-delivers accepted agency; External and Reciprocal recover nearly identical local support-relative agency; finite-body specimens can still fall. Owner spontaneous play then turned the lab into a primitive physical toy and motivated the pinned-boundary probe.
 
 ### E14.1C — pinned-boundary instrument
 
@@ -143,100 +149,126 @@ E14.1C added versioned specimen serialization/identity, PIN / clean RESTORE / LO
 
 E14.1C did not change the authority kernel, continuous physics sim, balance organism or Donor/default mechanics.
 
-## 5. Owner-selected specimen — current frontier
+## 5. Owner-selected specimen — qualified
 
-Owner-selected canonical config:
+Canonical config:
 
 `e14c1|s1|m=1180|f=0.65|a=3|b=36|t=1000|p=natural-only`
 
-ID:
+ID: `E14C1-261a1519`
 
-`E14C1-261a1519`
+Qualification evidence:
 
-Owner judgement after play: still far from a player, but slow progress is perceptible and there may be a small promising signal. This is value/feel evidence only.
+- branch `experiment/e14-owner-pin-1180-065-3-36-1000`;
+- commit `e231be4a02de1e57ee2ea99da09aeb1c89979737`;
+- workflow `33813566783` — SUCCESS;
+- artifact `9915719258`.
 
-Important semantics:
+Machine verdict:
 
-- support mass `1180 kg`;
-- friction `.65`;
-- acceleration `3`;
-- braking `36`;
-- max balance torque `1000 Nm`;
-- policy `natural-only`.
+- no-input `SANE`;
+- reset determinism PASS / delta `0`;
+- repeated trace determinism PASS / delta `0`;
+- input differentiation `6/6` declared pairs;
+- finite/current telemetry.
 
-Machine did not choose or optimize this config.
+This rejects easy numerical-chaos/non-repeatability explanations. It cannot prove skill/fun.
 
-## 6. Exact specimen qualification — PASS within machine scope
+## 6. Braking A/B — causal + Owner-readable result
 
-Evidence branch:
-
-`experiment/e14-owner-pin-1180-065-3-36-1000`
-
-Qualification commit:
-
-`e231be4a02de1e57ee2ea99da09aeb1c89979737`
-
-Workflow `33813566783` — SUCCESS.
-
-Artifact `9915719258`.
-
-Verdict:
-
-- no-input: `SANE`;
-- reset determinism: PASS / delta `0`;
-- repeated trace determinism: PASS / delta `0`;
-- input differentiation: `INPUT_DIFFERENTIATED`, all `6/6` declared pairs differentiated;
-- finite/current telemetry passed.
-
-This rejects easy numerical-chaos/non-repeatability explanations under the declared apparatus. It cannot emit FUN/SKILL PASS.
-
-## 7. Braking-asymmetry causal probe — PASS as sensitivity evidence
-
-Source semantics matter: with `natural-only`, supplemental translational authority grant is zero, but target-relative-velocity logic still produces `desiredAcceleration`; posture maps that to `targetLean = atan2(desiredAcceleration, gravity)`.
-
-For the Owner pin:
-
-- `a=3` → target lean about `8.53°`;
-- `b=36` release/reversal phase → target lean up to about `60.95°`;
-- with `kp=1600` and `t=1000`, the strong braking transient can saturate the balance actuator.
-
-Bounded ablation changed only `b=36 → b=3`.
-
-Ablation canonical config:
+Ablation changed only `b=36 → b=3`:
 
 `e14c1|s1|m=1180|f=0.65|a=3|b=3|t=1000|p=natural-only`
 
-ID:
+ID: `E14C1-6d63bdef`.
 
-`E14C1-6d63bdef`
+Machine evidence:
 
-Final evidence head `d5a6fcaed7b5c07d9947388316b8252cbb830e95`; workflow `33813784471` SUCCESS; artifact `9915781223`.
+- evidence head `d5a6fcaed7b5c07d9947388316b8252cbb830e95`;
+- workflow `33813784471` — SUCCESS;
+- artifact `9915781223`;
+- all four tap/hold × release/reversal comparisons differentiated;
+- both variants deterministic with worst repeated delta `0`.
 
-All four tap/hold × release/reversal trajectories differentiated, while repeated runs of both variants remained deterministic with worst sample delta `0`.
+Under `natural-only`, supplemental translational grant is zero, but `acceleration` / `braking` still shape target-relative-velocity; its derivative drives `targetLean`. Therefore `a=3 / b=36` is also a posture-response asymmetry.
 
-Representative longer evidence:
+Owner A/B result after direct locked comparison:
 
-- hold→release max abs relative velocity: pinned `~1.184 m/s`, symmetric brake `~0.621 m/s`;
-- hold→reversal: pinned `~1.409 m/s`, symmetric brake `~0.621 m/s`;
-- pinned had brief support-loss frames in these longer traces (`2` / `3`), symmetric brake had `0`;
-- max torso lean remained similar rather than simply increasing (`~15.28°` pinned vs `~15.79°` symmetric in hold→release).
+- `b=36` returns toward useful position faster;
+- gives more control;
+- improves the current one-leg walking/manipulation;
+- feels stiffer, livelier and more energetic;
+- `b=3` feels like a flexible stick.
 
-Therefore braking asymmetry is a real deterministic causal lever in command timing, torque saturation, support/contact response and trajectory. This does **not** establish whether that lever is desirable embodied control or an accidental posture kick.
+Comparative video (~31.1 s) contains the high-braking pin first and the `b=3` ablation later. Visual review is consistent with the Owner report: `b=36` repeatedly produces short usable catches near upright; `b=3` more often continues through upright into larger opposite excursions. This is supportive observational evidence, not a standardized trace.
 
-## 8. Current hypothesis boundary
+Current interpretation:
 
-Current best model:
+> **The braking asymmetry is not merely a numerical perturbation or spectacle knob; Owner can intentionally read it as control quality and use it to manipulate the embodied state.**
 
-> **Mild `a=3` builds motion/posture; release/reversal under `b=36` produces a much stronger counter-posture transient; with `t=1000` this can become a physically mediated catch/counter action.**
+This supports a seed of H1 boundary/competence play, but does not establish a final controller.
 
-Because the specimen is `natural-only`, observed support/player translation in this probe is not produced by supplemental authority grant.
+Important architecture warning: the current labels `acceleration` / `braking` are semantically overloaded in Natural-only. They act partly as posture-command response rates. Do not promote those names/contracts into a final player API yet.
 
-Two live interpretations remain:
+## 7. One-property World Transfer — machine-qualified, Owner pending
 
-1. a useful state-dependent physical action and seed of boundary/competence play;
-2. an interesting but synthetic posture kick created by the velocity-target braking contract.
+Question:
 
-Owner hands-on A/B is required to separate them.
+> **Does the same learned controller remain usable when the support reacts differently, and does Owner adapt to that changed physical consequence?**
+
+Only support mass changes:
+
+### Familiar world
+
+`e14c1|s1|m=1180|f=0.65|a=3|b=36|t=1000|p=natural-only`
+
+`E14C1-261a1519`
+
+### Transfer world
+
+`e14c1|s1|m=800|f=0.65|a=3|b=36|t=1000|p=natural-only`
+
+`E14C1-f315bc9d`
+
+The `800 kg` value is the existing E14 reference support mass, not a tuned optimum.
+
+Machine prequalification:
+
+- branch `experiment/e14-world-transfer-mass-800`;
+- head `f5079a99521f974354ef370454032f5148a1b204`;
+- workflow `33814965049` — SUCCESS;
+- artifact `9916199522`.
+
+Both variants are `SANE`, deterministic (`delta=0`), finite and input-differentiated.
+
+Representative `longerHold`:
+
+- `1180 kg`: support velocity `-0.01826 m/s`, player velocity `0.26818 m/s`, max lean `9.700°`;
+- `800 kg`: support velocity `-0.02592 m/s`, player velocity `0.25807 m/s`, max lean `9.747°`.
+
+Thus the lighter support reacts more strongly while body/local-response geometry remains recognizably similar. This is the intended transfer rather than a broken second specimen.
+
+Friction remains `.65`; do not vary it in the same test.
+
+## 8. Current Owner protocol
+
+Exact two-world comparison; no tuning:
+
+- A — familiar `1180 kg` support;
+- B — transfer `800 kg` support;
+- all other fields remain `f=.65, a=3, b=36, t=1000, natural-only`.
+
+No ideal rhythm or target success rate.
+
+Primary evidence:
+
+- whether the one-leg walking/catch action survives at all;
+- whether Owner spontaneously changes timing/correction after feeling stronger support recoil;
+- whether the change reads as a world property rather than arbitrary controller damage;
+- whether performance/control improves again after adaptation;
+- whether returning to `1180 kg` makes learned timing differences immediately legible.
+
+Strong positive evidence is **adaptation**, not equal performance.
 
 ## 9. Instrumentation provenance correction remains binding
 
@@ -246,38 +278,20 @@ Corrected evidence began at commit `4b70cbf6e37566c357c84eed87a67ce9b2310d01`, w
 
 Do not rewrite historical evidence classes.
 
-## 10. Current Owner protocol
+## 10. Hard stop / next action
 
-Exact A/B only; no parameter sweep:
+Current stage:
 
-- **A — Owner pin:** `m=1180, f=.65, a=3, b=36, t=1000, natural-only`;
-- **B — symmetric-braking ablation:** identical except `b=3`.
+> **Owner A/B supports `b=36` as an intentionally useful control-quality lever in the current one-leg organism. One-property support-mass transfer `1180 → 800 kg` is machine-qualified.**
 
-Owner should play both spontaneously rather than follow an ideal timing script or target success rate.
-
-Primary questions:
-
-- does the interesting catch/counter feel weaken or disappear in B?;
-- is A used through state-reading/correction or mostly through a reusable release/reversal kick?;
-- does B retain an interesting action-space?
-- after returning to A, is the difference legible and intentionally usable?
-
-Analyse recording and spontaneous feedback before selecting any next mechanics experiment.
-
-## 11. Hard stop / next action
-
-Current execution has reached:
-
-> **Owner pin selected and exact-qualified; braking asymmetry is causally active, gameplay meaning unresolved.**
-
-**STOP FOR OWNER A/B.**
+**STOP FOR OWNER WORLD TRANSFER.**
 
 Do not yet:
 
-- tune braking or torque toward a preferred value;
-- automatically run a torque ablation;
-- start World Transfer;
+- sweep support mass;
+- change friction simultaneously;
+- retune braking or torque for `800 kg`;
 - start Strategy Repertoire;
-- change or promote Donor/default runtime;
-- promote Natural-only;
-- claim H1 boundary skill as established.
+- add recovery mechanics;
+- promote Natural-only/current lab values;
+- change Donor/default runtime.
