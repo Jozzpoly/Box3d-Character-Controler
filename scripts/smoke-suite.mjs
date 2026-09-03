@@ -21,7 +21,7 @@ const SUITES = {
     { name: 'E10 one-piece support brace', scripts: ['scripts/e10-0a-revolute-current-angle-latch.mjs','scripts/e10-0b-acquired-support-brace-transition.mjs'] },
     { name: 'E11 residual-contact interaction diagnostics', scripts: ['scripts/e11-1a-residual-contact-interaction-decomposition.mjs'] },
     { name: 'E12 graded capacity entitlement', scripts: ['scripts/e12-0a-capacity-entitled-residual.mjs','scripts/e12-1a-capacity-entitled-braking.mjs','scripts/e12-2a-dynamic-support-placement-calibration.mjs','scripts/e12-2b-galilean-placement-decomposition.mjs'] },
-    { name: 'E13 world-coupled authority placement binding', scripts: ['scripts/e13-0b-prismatic-world-stop-binding.mjs','scripts/e13-0c1-embodied-free-prismatic-representation.mjs','scripts/e13-0d-embodied-world-stop-neutrality.mjs','scripts/e13-1a-world-coupled-placement-factorial.mjs','scripts/e13-1b-second-pulse-diagnostic.mjs','scripts/e13-1b-second-pulse-world-coupling.mjs'] },
+    { name: 'E13 world-coupled authority placement binding', scripts: ['scripts/e13-0b-prismatic-world-stop-binding.mjs','scripts/e13-0c1-embodied-free-prismatic-representation.mjs','scripts/e13-0d-embodied-world-stop-neutrality.mjs','scripts/e13-1a-world-coupled-placement-factorial.mjs'] },
   ],
   donor: [
     { name: 'Donor contract / equivalence / input', scripts: ['scripts/donor-contract-smoke.mjs','scripts/donor-smoke.mjs','scripts/donor-v1-smoke.mjs','scripts/mobile-input-smoke.mjs'] },
