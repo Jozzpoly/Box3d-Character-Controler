@@ -11,6 +11,10 @@ function bodyKey(body) {
   return `${body.index1}:${body.world0}:${body.generation}`;
 }
 
+function fmt(value, digits = 3) {
+  return Number.isFinite(value) ? value.toFixed(digits) : '—';
+}
+
 function setupScene(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -22,9 +26,10 @@ function setupScene(canvas) {
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xaebfc8);
-  scene.fog = new THREE.Fog(0xaebfc8, 18, 48);
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 100);
-  camera.position.set(6.2, 3.0, 7.3);
+  scene.fog = new THREE.Fog(0xaebfc8, 20, 55);
+
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 120);
+  camera.position.set(7.6, 3.2, 5.0);
   camera.up.set(0, 1, 0);
 
   scene.add(new THREE.HemisphereLight(0xeaf4f7, 0x59605c, 1.6));
@@ -32,28 +37,36 @@ function setupScene(canvas) {
   sun.position.set(6, 10, 7);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1536, 1536);
-  sun.shadow.camera.left = -9;
-  sun.shadow.camera.right = 9;
-  sun.shadow.camera.top = 9;
-  sun.shadow.camera.bottom = -9;
+  sun.shadow.camera.left = -10;
+  sun.shadow.camera.right = 10;
+  sun.shadow.camera.top = 10;
+  sun.shadow.camera.bottom = -10;
   sun.shadow.camera.near = 0.5;
-  sun.shadow.camera.far = 30;
+  sun.shadow.camera.far = 32;
   scene.add(sun);
 
-  const grid = new THREE.GridHelper(30, 60, 0x596468, 0x707b7f);
+  const grid = new THREE.GridHelper(36, 72, 0x596468, 0x707b7f);
   grid.position.y = -0.42;
   grid.material.transparent = true;
-  grid.material.opacity = 0.34;
+  grid.material.opacity = 0.36;
   scene.add(grid);
 
-  for (const x of [-4, 0, 4]) {
-    const post = new THREE.Mesh(
-      new THREE.BoxGeometry(0.09, 1.8, 0.09),
-      new THREE.MeshStandardMaterial({ color: x === 0 ? 0xe9b44c : 0x7c8589, roughness: 0.8 }),
-    );
-    post.position.set(x, 0.48, -3.2);
-    post.castShadow = true;
-    scene.add(post);
+  // The experiment axis is world Z. Put fixed references along that axis so
+  // support recoil and common-world drift are readable without moving camera.
+  for (const z of [-6, -3, 0, 3, 6]) {
+    for (const x of [-3.2, 3.2]) {
+      const origin = z === 0;
+      const post = new THREE.Mesh(
+        new THREE.BoxGeometry(origin ? 0.12 : 0.08, origin ? 2.1 : 1.5, origin ? 0.12 : 0.08),
+        new THREE.MeshStandardMaterial({
+          color: origin ? 0xe9b44c : 0x727d81,
+          roughness: 0.8,
+        }),
+      );
+      post.position.set(x, origin ? 0.62 : 0.34, z);
+      post.castShadow = true;
+      scene.add(post);
+    }
   }
 
   const controls = new OrbitControls(camera, canvas);
@@ -61,7 +74,7 @@ function setupScene(canvas) {
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minDistance = 2;
-  controls.maxDistance = 16;
+  controls.maxDistance = 18;
   controls.maxPolarAngle = Math.PI * 0.49;
   controls.update();
 
@@ -74,6 +87,7 @@ function setupScene(canvas) {
   }
   window.addEventListener('resize', resize);
   resize();
+
   return { renderer, scene, camera, controls };
 }
 
@@ -83,10 +97,10 @@ function createPanel() {
   panel.setAttribute('aria-label', 'E14 contextual authority laboratory controls');
   panel.innerHTML = `
     <div class="lab-title">E14.1B · CONTEXTUAL AUTHORITY LAB</div>
-    <div class="lab-sub">continuous support-relative agency · thin Owner surface</div>
+    <div class="lab-sub">immediate A/D · physics first · no hidden anticipation · experimental</div>
 
     <div class="lab-section">
-      <div class="lab-label">Authority policy · diagnostic endpoints</div>
+      <div class="lab-label">Supplemental authority policy</div>
       <div class="lab-row lab-policy-row">
         <button data-policy="${E14_AUTHORITY_POLICIES.NATURAL_ONLY}">Natural</button>
         <button data-policy="${E14_AUTHORITY_POLICIES.ENTITLED_EXTERNAL}">External</button>
@@ -125,7 +139,7 @@ function createPanel() {
     </div>
 
     <div class="lab-section lab-telemetry" id="lab-telemetry"></div>
-    <p class="lab-note" id="lab-envelope">REFERENCE VALUES · 31/36 · μ=.95 · 800 kg · 320 Nm · 60 Hz / 4 substeps</p>
+    <p class="lab-note" id="lab-envelope">REFERENCE · 31/36 · μ=.95 · 800 kg · 320 Nm · 60 Hz / 4 substeps</p>
   `;
   document.body.appendChild(panel);
   return panel;
@@ -137,13 +151,9 @@ function disposeWorldView(scene, worldView) {
   worldView.object3d.traverse((obj) => {
     if (!obj.isMesh) return;
     obj.geometry?.dispose?.();
-    if (Array.isArray(obj.material)) obj.material.forEach((m) => m.dispose?.());
+    if (Array.isArray(obj.material)) obj.material.forEach((material) => material.dispose?.());
     else obj.material?.dispose?.();
   });
-}
-
-function fmt(value, digits = 3) {
-  return Number.isFinite(value) ? value.toFixed(digits) : '—';
 }
 
 async function run() {
@@ -155,11 +165,12 @@ async function run() {
   const debugEl = document.querySelector('#debug');
   const touchEl = document.querySelector('#touch-controls');
 
-  debugEl.hidden = true;
-  touchEl.hidden = true;
+  if (!(canvas instanceof HTMLCanvasElement)) throw new Error('E14 Lab expected #app canvas');
+  if (debugEl) debugEl.hidden = true;
+  if (touchEl) touchEl.hidden = true;
   phaseEl.textContent = 'EXPERIMENT · E14 CONTEXTUAL AUTHORITY LAB · NOT DONOR';
-  controlsEl.innerHTML = '<strong>A / D</strong> continuous intent · <strong>Drag</strong> orbit · <strong>Wheel</strong> zoom';
-  secondaryEl.innerHTML = '<strong>R</strong> reset · change sliders to rebuild specimen';
+  controlsEl.innerHTML = '<strong>A / D</strong> immediate intent · <strong>Drag</strong> orbit · <strong>Wheel</strong> zoom';
+  secondaryEl.innerHTML = '<strong>R</strong> reset · sliders rebuild specimen · gold posts mark world Z=0';
   statusEl.textContent = 'Loading E14.1B thin Owner Lab…';
 
   const { renderer, scene, camera, controls } = setupScene(canvas);
@@ -171,6 +182,7 @@ async function run() {
     ...E14_DEFAULTS,
     supportHalf: [...E14_DEFAULTS.supportHalf],
     policy: E14_AUTHORITY_POLICIES.ENTITLED_RECIPROCAL,
+    preparationFrames: 0,
   };
   let sim = null;
   let worldView = null;
@@ -185,36 +197,36 @@ async function run() {
     }
   }
 
-  function renderTelemetry(s) {
-    if (!s) return;
+  function renderTelemetry(sample) {
+    if (!sample) return;
     telemetryEl.innerHTML = `
-      <div><span>state</span><strong>${s.fallen ? 'FALL OBSERVED' : s.recovered ? 'RECOVERED' : s.reactiveSupport ? 'REACTIVE' : 'NO SUPPORT'}</strong></div>
-      <div><span>target v rel</span><strong>${fmt(s.targetRelativeVelocity)} m/s</strong></div>
-      <div><span>actual v rel</span><strong>${fmt(s.relativeVelocity)} m/s</strong></div>
-      <div><span>player v world</span><strong>${fmt(s.playerVelocity)} m/s</strong></div>
-      <div><span>support v world</span><strong>${fmt(s.supportVelocity)} m/s</strong></div>
-      <div><span>q entitlement</span><strong>${fmt(s.entitlement)}</strong></div>
-      <div><span>natural Δv rel</span><strong>${fmt(s.physicalRelativeDeltaV, 4)}</strong></div>
-      <div><span>supplemental Δv rel</span><strong>${fmt(s.grantedRelativeDeltaV, 4)}</strong></div>
-      <div><span>player authority J</span><strong>${fmt(s.playerImpulse, 2)} N·s</strong></div>
-      <div><span>support reaction J</span><strong>${fmt(s.supportImpulse, 2)} N·s</strong></div>
-      <div><span>system pX</span><strong>${fmt(s.combinedMomentum, 2)} N·s</strong></div>
-      <div><span>target lean</span><strong>${fmt(THREE.MathUtils.radToDeg(s.targetLean), 1)}°</strong></div>
-      <div><span>body lean</span><strong>${fmt(THREE.MathUtils.radToDeg(s.signedLeanX), 1)}°</strong></div>
-      <div><span>balance torque</span><strong>${fmt(s.balanceTorque, 1)} Nm</strong></div>
+      <div><span>state</span><strong>${sample.fallen ? 'FALL OBSERVED' : sample.recovered ? 'RECOVERED' : sample.reactiveSupport ? 'REACTIVE' : 'NO SUPPORT'}</strong></div>
+      <div><span>target v rel</span><strong>${fmt(sample.targetRelativeVelocity)} m/s</strong></div>
+      <div><span>actual v rel</span><strong>${fmt(sample.relativeVelocity)} m/s</strong></div>
+      <div><span>player v world Z</span><strong>${fmt(sample.playerVelocity)} m/s</strong></div>
+      <div><span>support v world Z</span><strong>${fmt(sample.supportVelocity)} m/s</strong></div>
+      <div><span>q entitlement</span><strong>${fmt(sample.entitlement)}</strong></div>
+      <div><span>natural Δv rel</span><strong>${fmt(sample.physicalRelativeDeltaV, 4)}</strong></div>
+      <div><span>supplemental Δv rel</span><strong>${fmt(sample.grantedRelativeDeltaV, 4)}</strong></div>
+      <div><span>player authority J</span><strong>${fmt(sample.playerImpulse, 2)} N·s</strong></div>
+      <div><span>support reaction J</span><strong>${fmt(sample.supportImpulse, 2)} N·s</strong></div>
+      <div><span>system pZ</span><strong>${fmt(sample.combinedMomentum, 2)} N·s</strong></div>
+      <div><span>target lean</span><strong>${fmt(THREE.MathUtils.radToDeg(sample.targetLean), 1)}°</strong></div>
+      <div><span>body lean</span><strong>${fmt(THREE.MathUtils.radToDeg(sample.signedLean), 1)}°</strong></div>
+      <div><span>balance torque</span><strong>${fmt(sample.balanceTorque, 1)} Nm</strong></div>
     `;
 
-    const outside = (
+    const outsideReference = (
       config.supportMass !== E14_DEFAULTS.supportMass ||
       config.friction !== E14_DEFAULTS.friction ||
       config.acceleration !== E14_DEFAULTS.acceleration ||
       config.braking !== E14_DEFAULTS.braking ||
       config.maxBalanceTorque !== E14_DEFAULTS.maxBalanceTorque
     );
-    envelopeEl.textContent = outside
-      ? 'EXPLORATORY / OUTSIDE REFERENCE VALUES · allowed, but do not treat as qualified evidence'
-      : 'REFERENCE VALUES · mechanism experimental, not Donor promotion';
-    envelopeEl.classList.toggle('wild', outside);
+    envelopeEl.textContent = outsideReference
+      ? 'EXPLORATORY / OUTSIDE REFERENCE VALUES · useful for play, not qualified evidence'
+      : 'REFERENCE VALUES · mechanism experimental · no Donor promotion';
+    envelopeEl.classList.toggle('wild', outsideReference);
   }
 
   async function rebuild(reason = 'reset') {
@@ -241,7 +253,8 @@ async function run() {
       resetSerial += 1;
       disposeWorldView(scene, oldWorldView);
       oldSim?.destroy();
-      statusEl.textContent = `Ready · ${config.policy} · specimen ${resetSerial} · hold A/D and experiment`;
+      statusEl.textContent = `Ready · ${config.policy} · specimen ${resetSerial} · hold A/D and play`;
+      renderTelemetry(sim.snapshot());
     } catch (error) {
       statusEl.textContent = `E14 Lab rebuild failed: ${error?.message ?? error}`;
       console.error(error);
@@ -274,6 +287,7 @@ async function run() {
       if (held === value) setHeld(0);
     });
   }
+
   bindHold('#lab-left', -1);
   bindHold('#lab-right', 1);
 
@@ -297,7 +311,7 @@ async function run() {
       config.policy = button.dataset.policy;
       sim?.setPolicy(config.policy);
       syncPolicyButtons();
-      statusEl.textContent = `Policy → ${config.policy} · state preserved`; 
+      statusEl.textContent = `Policy → ${config.policy} · physical state preserved`;
       return;
     }
     if (button.id === 'lab-reset') rebuild('reset');
@@ -306,7 +320,10 @@ async function run() {
       sim?.setPaused(paused);
       button.textContent = paused ? 'Resume' : 'Pause';
     }
-    if (button.id === 'lab-step') sim?.step(true);
+    if (button.id === 'lab-step') {
+      sim?.step(true);
+      renderTelemetry(sim?.snapshot());
+    }
     if (button.id === 'lab-shove-player') sim?.shovePlayer(55);
     if (button.id === 'lab-shove-support') sim?.shoveSupport(260);
   });
