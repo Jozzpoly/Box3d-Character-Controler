@@ -43,11 +43,6 @@ function makeSupport(world) {
   bd.linearDamping = 0;
   bd.angularDamping = 0;
   bd.enableSleep = false;
-  bd.motionLocks.linearX = true;
-  bd.motionLocks.linearY = true;
-  bd.motionLocks.angularX = true;
-  bd.motionLocks.angularY = true;
-  bd.motionLocks.angularZ = true;
   const body = b3.b3CreateBody(world, bd);
 
   const sd = b3.b3DefaultShapeDef();
@@ -74,7 +69,7 @@ function axisQuaternion(direction) {
   return direction > 0 ? Y_NEG_90 : Y_POS_90;
 }
 
-function addWorldStop(world, support, direction) {
+function addPrismaticBinding(world, support, direction, limited) {
   if (typeof b3.b3DefaultPrismaticJointDef !== 'function' || typeof b3.b3CreatePrismaticJoint !== 'function') {
     throw new Error('E13.0b requires prismatic-joint bindings in box3d.js@0.1.1');
   }
@@ -86,17 +81,22 @@ function addWorldStop(world, support, direction) {
   jd.base.bodyIdB = support;
   jd.base.localFrameA = { position: [0, 0, 0], quaternion: q };
   jd.base.localFrameB = { position: [0, 0, 0], quaternion: q };
-  jd.enableLimit = true;
+  // Control and candidate use the same prismatic representation. The only
+  // causal difference is whether its already-declared unilateral limit is on.
+  // The joint itself removes the five non-axial relative DOFs; body-level
+  // angular locks are deliberately absent because pinned Box3D classifies that
+  // configuration as fixedRotation and then skips the axial limit solver path.
+  jd.enableLimit = limited;
   jd.lowerTranslation = 0;
   // The upper bound is geometry-derived, not fitted to the pulse: one full
   // support length. The one-frame q=1 pulse moves <1 mm, so this side is
   // intentionally causally inactive in the calibration.
   jd.upperTranslation = UPPER_TRAVEL;
   jd.enableMotor = false;
-  b3.b3CreatePrismaticJoint(world, jd);
+  return b3.b3CreatePrismaticJoint(world, jd);
 }
 
-function readState(body, direction) {
+function readState(body, direction, joint) {
   const p = [0, 0, 0];
   const v = [0, 0, 0];
   b3.b3Body_GetPosition(p, body);
@@ -106,6 +106,7 @@ function readState(body, direction) {
     p,
     v,
     mass,
+    jointTranslation: b3.b3PrismaticJoint_GetTranslation(joint),
     axisPosition: direction * p[2],
     axisVelocity: direction * v[2],
     axisMomentum: direction * mass * v[2],
@@ -129,22 +130,23 @@ function run({ direction, limited, axisSign }) {
     throw new Error(`E13.0b support mass ${mass} != ${SUPPORT_MASS}kg`);
   }
 
-  if (limited) addWorldStop(world, support, direction);
+  const joint = addPrismaticBinding(world, support, direction, limited);
 
   // One neutral solve is the inactive qualification. At the exact lower limit
   // the world-stop candidate must not preload or drift before any recoil exists.
   b3.b3World_Step(world, DT, SUBSTEPS);
-  const qualified = readState(support, direction);
+  const qualified = readState(support, direction, joint);
 
   applyAxisImpulse(support, direction, axisSign);
-  const immediate = readState(support, direction);
+  const immediate = readState(support, direction, joint);
   b3.b3World_Step(world, DT, SUBSTEPS);
-  const after = readState(support, direction);
+  const after = readState(support, direction, joint);
 
   const solverReaction = after.axisMomentum - immediate.axisMomentum;
   const result = {
     direction,
     limited,
+    limitEnabled: b3.b3PrismaticJoint_IsLimitEnabled(joint),
     axisSign,
     qualified,
     immediate,
@@ -163,10 +165,10 @@ if (
   throw new Error('E13.0b expected canonical Donor-v1/E12 substrate');
 }
 
-console.log('E13.0b prismatic unilateral world-stop binding calibration');
-console.log(`  support=${SUPPORT_MASS}kg; mirrored joint axis; lower=0m; upper=${UPPER_TRAVEL.toFixed(1)}m (= one support length)`);
+console.log('E13.0b corrected prismatic unilateral world-stop binding calibration');
+console.log(`  support=${SUPPORT_MASS}kg; FREE/LIMIT use the same mirrored prismatic joint; only enableLimit differs; lower=0m; upper=${UPPER_TRAVEL.toFixed(1)}m (= one support length)`);
 console.log(`  exact E12 q=1 reciprocal recoil impulse=${E12_Q1_RECIPROCAL_IMPULSE.toFixed(6)}Ns from reduced mass ${REDUCED_MASS.toFixed(6)}kg * current31 dVrel ${E12_Q1_RELATIVE_DV.toFixed(6)}m/s`);
-console.log('  each specimen: one neutral inactive-qualification solve -> one matched impulse -> one solver step; zero gravity/damping/contact/motor.');
+console.log('  each specimen: one neutral inactive-qualification solve -> one matched impulse -> one solver step; zero gravity/damping/contact/motor/body motion locks.');
 console.log('  local +axis is mirrored with intent; +axis is allowed, -axis is the support-recoil/lower-limit side.');
 
 const results = [];
@@ -177,10 +179,10 @@ for (const direction of DIRECTIONS) {
       results.push(r);
       console.log(
         `  dir=${direction > 0 ? '+' : '-'} ${limited ? 'LIMIT' : 'FREE '} ${axisSign > 0 ? 'allowed' : 'recoil '} ` +
-        `pre P=${r.qualified.axisMomentum.toExponential(2)}Ns z=${r.qualified.axisPosition.toExponential(2)}m | ` +
+        `pre P=${r.qualified.axisMomentum.toExponential(2)}Ns t=${r.qualified.jointTranslation.toExponential(2)}m | ` +
         `P immediate->post=${r.immediate.axisMomentum.toFixed(6)}->${r.after.axisMomentum.toFixed(6)}Ns ` +
         `reaction=${r.solverReaction.toFixed(6)}Ns ` +
-        `vPost=${r.after.axisVelocity.toFixed(7)}m/s zPost=${r.after.axisPosition.toExponential(3)}m`,
+        `vPost=${r.after.axisVelocity.toFixed(7)}m/s tPost=${r.after.jointTranslation.toExponential(3)}m`,
       );
     }
   }
@@ -191,11 +193,21 @@ function find(direction, limited, axisSign) {
 }
 
 for (const r of results) {
+  if (r.limitEnabled !== r.limited) {
+    throw new Error(`E13.0b limit enable state mismatched specimen dir=${r.direction} limited=${r.limited} sign=${r.axisSign}`);
+  }
   if (
     Math.abs(r.qualified.axisMomentum) > PRELOAD_FRACTION_MAX * E12_Q1_RECIPROCAL_IMPULSE ||
-    Math.abs(r.qualified.axisPosition) > OFF_AXIS_EPS
+    Math.abs(r.qualified.axisPosition) > OFF_AXIS_EPS ||
+    Math.abs(r.qualified.jointTranslation) > OFF_AXIS_EPS
   ) {
     throw new Error(`E13.0b inactive qualification preloaded/drifted dir=${r.direction} limited=${r.limited} sign=${r.axisSign}`);
+  }
+  if (
+    Math.abs(r.qualified.jointTranslation - r.qualified.axisPosition) > OFF_AXIS_EPS ||
+    Math.abs(r.after.jointTranslation - r.after.axisPosition) > OFF_AXIS_EPS
+  ) {
+    throw new Error(`E13.0b prismatic translation disagrees with actual support displacement dir=${r.direction} limited=${r.limited} sign=${r.axisSign}`);
   }
   if (
     Math.abs(r.after.p[0]) > OFF_AXIS_EPS ||
@@ -223,12 +235,24 @@ for (const direction of DIRECTIONS) {
   if (Math.abs(limitAllowed.after.axisMomentum - freeAllowed.after.axisMomentum) > (1 - FREE_FRACTION_MIN) * expected) {
     throw new Error(`E13.0b allowed side diverged from matched free reference dir=${direction}`);
   }
+  if (
+    freeAllowed.after.jointTranslation < OFF_AXIS_EPS ||
+    Math.abs(limitAllowed.after.jointTranslation - freeAllowed.after.jointTranslation) > OFF_AXIS_EPS
+  ) {
+    throw new Error(`E13.0b allowed-side translation is not effectively free dir=${direction}`);
+  }
 
   if (Math.abs(freeRecoil.after.axisMomentum) < FREE_FRACTION_MIN * expected) {
     throw new Error(`E13.0b free recoil reference did not retain impulse dir=${direction}`);
   }
+  if (freeRecoil.after.jointTranslation > -OFF_AXIS_EPS) {
+    throw new Error(`E13.0b free recoil reference did not move through the lower side dir=${direction}`);
+  }
   if (Math.abs(limitRecoil.after.axisMomentum) > BLOCKED_FRACTION_MAX * expected) {
     throw new Error(`E13.0b lower limit failed to block E12 recoil dir=${direction}`);
+  }
+  if (limitRecoil.after.jointTranslation < -OFF_AXIS_EPS) {
+    throw new Error(`E13.0b lower limit admitted material negative translation dir=${direction}`);
   }
   if (limitRecoil.solverReaction < FREE_FRACTION_MIN * expected) {
     throw new Error(`E13.0b lower limit failed to transmit recoil into world dir=${direction}`);
@@ -245,8 +269,14 @@ const posRecoil = find(1, true, -1);
 if (Math.abs(negAllowed.after.axisMomentum - posAllowed.after.axisMomentum) > MIRROR_FRACTION_MAX * E12_Q1_RECIPROCAL_IMPULSE) {
   throw new Error('E13.0b allowed-side response is not mirrored closely enough');
 }
+if (Math.abs(negAllowed.after.jointTranslation - posAllowed.after.jointTranslation) > OFF_AXIS_EPS) {
+  throw new Error('E13.0b allowed-side translation is not mirrored closely enough');
+}
 if (Math.abs(negRecoil.solverReaction - posRecoil.solverReaction) > MIRROR_FRACTION_MAX * E12_Q1_RECIPROCAL_IMPULSE) {
   throw new Error('E13.0b recoil world reaction is not mirrored closely enough');
+}
+if (Math.abs(negRecoil.after.jointTranslation - posRecoil.after.jointTranslation) > OFF_AXIS_EPS) {
+  throw new Error('E13.0b blocked-side translation is not mirrored closely enough');
 }
 
 console.log('E13.0b PASS');
