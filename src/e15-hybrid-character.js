@@ -1,5 +1,4 @@
 import { ConstraintVelocityCharacter } from './constraint-velocity-character.js';
-import { installVelocityOnlyDynamicContactMemory } from './donor/contact-memory.js';
 
 const IDENTITY_QUAT = [0, 0, 0, 1];
 
@@ -33,8 +32,11 @@ function finiteVector(vector) {
  * The accepted Donor v1 controller remains authoritative for traversal and intent.
  * A separate finite-mass Box3D upper-body mass is driven toward that carrier by
  * bounded linear impulses and bounded upright torque. Its uncommanded horizontal
- * physics response during the world step is fed back into Donor velocity as a
- * bounded perturbation.
+ * physics response during the world step is fed back as a distinct external-velocity
+ * consequence, so responsive Donor braking does not have to erase it immediately.
+ *
+ * Root dynamic-contact memory retains exact Donor v1 velocity-only semantics. The
+ * physical-body feedback channel is intentionally separate and explicit.
  *
  * This deliberately does NOT claim mass-equivalent whole-body physics. It asks a
  * narrower question: can accepted responsive agency coexist with a physical body
@@ -178,9 +180,17 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
   }
 
   postStep(dt) {
+    const externalBeforeRootContact = [...this.externalVelocity];
     super.postStep(dt);
-    this._syncBody();
 
+    // Preserve current Donor v1 semantics: root dynamic contact may alter current
+    // velocity, but does not create a persistent external target by itself.
+    if (this.lastDynamicContacts > 0) {
+      this.externalVelocity[0] = externalBeforeRootContact[0];
+      this.externalVelocity[2] = externalBeforeRootContact[2];
+    }
+
+    this._syncBody();
     this.b3.getBodyContactData(this._bodyContacts, this.embodimentBody);
     this.lastBodyContacts = this.b3.getNumContacts(this._bodyContacts);
 
@@ -204,8 +214,13 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
     const feedback = clampMagnitude3(requestedFeedback, this.maxFeedbackDeltaV);
     this.lastFeedbackClipped = Math.hypot(...requestedFeedback) > this.maxFeedbackDeltaV + 1e-12;
     this.lastBodyFeedbackImpulse = this.virtualMass * Math.hypot(feedback[0], feedback[2]);
+
+    // The body consequence is a separate velocity component. Donor intent remains
+    // responsive around it while the existing external drag determines persistence.
     this.velocity[0] += feedback[0];
     this.velocity[2] += feedback[2];
+    this.externalVelocity[0] += feedback[0];
+    this.externalVelocity[2] += feedback[2];
 
     const dx = this.bodyTarget[0] - this.bodyPosition[0];
     const dy = this.bodyTarget[1] - this.bodyPosition[1];
@@ -257,6 +272,5 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
 }
 
 export function createE15HybridCharacter(b3, world, options = {}) {
-  const character = new E15HybridCharacter(b3, world, options);
-  return installVelocityOnlyDynamicContactMemory(character);
+  return new E15HybridCharacter(b3, world, options);
 }
