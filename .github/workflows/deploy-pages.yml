@@ -33,6 +33,7 @@ jobs:
           node scripts/e14-1d-continuous-diagnostics.mjs e14-1d-diagnostics.json
           node scripts/e14-1e-preparation-coupling-crucible.mjs e14-1e-preparation-crucible.json
           node scripts/e14-1c-pinned-specimen-qualification.mjs --spec='e14c1|s1|m=1180|f=0.65|a=3|b=36|t=1000|p=natural-only' --out=e14-owner-pin-qualification.json
+          node scripts/e14-owner-pin-braking-ablation.mjs e14-owner-pin-braking-ablation.json
       - name: Upload E14 diagnostics
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
@@ -42,6 +43,7 @@ jobs:
             e14-1d-diagnostics.json
             e14-1e-preparation-crucible.json
             e14-owner-pin-qualification.json
+            e14-owner-pin-braking-ablation.json
           if-no-files-found: error
       - name: Build playground
         run: npm run build
