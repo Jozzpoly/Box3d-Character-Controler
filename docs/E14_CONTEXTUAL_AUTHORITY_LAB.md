@@ -1,6 +1,6 @@
 # E14 — Contextual Authority Laboratory
 
-Status: **E14.1C pinned-boundary Owner instrument implemented and pre-public qualified on bounded branch; no Donor/default promotion. Publication must be verified on exact merged `main` before Owner play.**
+Status: **E14.1C pinned-boundary Owner instrument is public and mechanically/instrumentally qualified on `main`; no Owner specimen has been selected. STOP FOR OWNER.**
 
 This document is the current E14 stage orientation. Earlier E14.0/E14.1B statements below remain provenance; they are not rewritten into a cleaner success story.
 
@@ -209,9 +209,9 @@ The former vertical gold reference posts visually resembled physical obstacles w
 
 E14.1C does **not** add environment obstacles.
 
-## 11. Generic pre-public qualification apparatus
+## 11. Generic qualification apparatus
 
-The reusable machine apparatus can run a later exact Owner-selected pinned specimen without changing its parameters.
+The reusable machine apparatus can run an exact later Owner-selected pinned specimen without changing its parameters.
 
 It checks:
 
@@ -223,17 +223,17 @@ It checks:
 
 It deliberately has no arbitrary gameplay success threshold. Possible machine statements include numerical instability, telemetry failure or an action-space that appears narrow under the declared traces. It cannot emit `FUN PASS` or `SKILL PASS`.
 
-The concrete Owner specimen is **not** selected or qualified pre-public.
+The concrete Owner specimen was **not** selected or qualified pre-public.
 
 ## 12. Validation gates
 
 E14.1C reports three separate evidence classes.
 
-### Mechanics gate
+### Mechanics gate — PASS
 
-Existing research and Donor smoke must remain green. E14.1C must not change Donor/default mechanics.
+Existing research and Donor smoke remain green. The E14.1C diff does not modify `src/e14-authority-kernel.js`, `src/e14-continuous-sim.js`, `src/e3-balance-organism.js`, Donor/default runtime, dependencies or bootstrap routing semantics.
 
-### Instrumentation gate
+### Instrumentation gate — PASS
 
 Mandatory validation covers:
 
@@ -249,30 +249,46 @@ Mandatory validation covers:
 - generic qualifier execution;
 - browser sagittal/temporal/UI contract.
 
-The key instrumentation checks run from mandatory `e14-1c-browser-contract.mjs`; they do not depend only on an optional uploaded artifact.
+Key instrumentation checks run from mandatory `e14-1c-browser-contract.mjs`; they do not depend only on an optional uploaded artifact.
 
-### Publication gate
+### Publication gate — PASS
 
-Requires exact merged-main build/CI/Pages verification and the experimental route to be public while default Donor remains unchanged.
+E14.1C runtime was merged through PR #29. Publication evidence:
 
-A branch CI PASS is **not** publication PASS.
+- merged runtime/main commit `b6589decb120567aa16deb0bb90d78a05d2328ec`;
+- exact-main workflow `33811769614` — completed / SUCCESS;
+- mechanics smoke — SUCCESS;
+- branch-only diagnostic capture/upload — skipped on `main` by workflow design;
+- Vite build — SUCCESS;
+- Pages configure — SUCCESS;
+- Pages artifact upload — SUCCESS;
+- Pages deploy — SUCCESS.
 
-## 13. Pre-public evidence at first implementation commit
+The existing experimental routing contract continues to expose E14.1C through `?mode=e14lab` / `?mode=contextual`; default route remains Donor v1.
 
-At branch commit `4b70cbf6e37566c357c84eed87a67ce9b2310d01`, workflow `33811359560` completed successfully:
+## 13. Pre-public branch evidence
+
+First implementation commit `4b70cbf6e37566c357c84eed87a67ce9b2310d01`, workflow `33811359560`:
 
 - mechanics smoke: SUCCESS;
-- instrumentation sub-contracts (invoked from mandatory E14 browser contract): SUCCESS;
-- corrected E14 diagnostic capture: SUCCESS;
-- diagnostic upload: SUCCESS;
+- mandatory instrumentation contracts: SUCCESS;
+- corrected E14 diagnostic capture/upload: SUCCESS;
 - Vite build: SUCCESS;
-- Pages configure/upload/deploy: skipped by branch design.
+- Pages: skipped by branch design.
 
-No physics kernel, balance organism, Donor/default runtime or bootstrap routing semantics were changed by that implementation commit.
+Final branch/docs head `3266c1231f132ff7d5a4c5f97d97a35539272334`, workflow `33811670175`:
 
-## 14. Owner protocol after publication
+- mechanics smoke: SUCCESS;
+- instrumentation contracts: SUCCESS;
+- diagnostics: SUCCESS;
+- build: SUCCESS;
+- Pages: skipped by branch design.
 
-Only after exact-main publication gate passes:
+No Owner specimen was selected by machine during qualification.
+
+## 14. Owner protocol — current next action
+
+The instrument is now at the Owner boundary:
 
 > **DISCOVERY → find something interesting → PIN → LOCK → play → record.**
 
@@ -311,8 +327,8 @@ Do not implement any of those next stages inside E14.1C.
 
 ## 17. Hard stop
 
-Natural E14.1C boundary:
+Current stage boundary has been reached:
 
-> **Owner instrument public and mechanically/instrumentally qualified; no Owner specimen has yet been selected.**
+> **E14.1C Owner instrument is public and mechanically/instrumentally qualified; no Owner specimen has yet been selected.**
 
-At that boundary: **STOP FOR OWNER**.
+**STOP FOR OWNER.**

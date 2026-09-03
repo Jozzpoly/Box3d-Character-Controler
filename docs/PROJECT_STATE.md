@@ -1,22 +1,31 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-03, E14.1C pinned-boundary Owner instrument candidate after successful pre-public branch qualification**
+Grounded: **2026-09-03, after E14.1C public qualification / STOP FOR OWNER**
 
-This is the compact canonical orientation layer. Detailed experiment history belongs in the stage ledgers. Before any future write, re-fetch live `main` and exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
+This is the compact canonical orientation layer. Detailed experiment history belongs in stage ledgers. Before any future write, re-fetch live `main` and exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
 
 ## 0. Current snapshot
 
 - Accepted public/default player remains **A‴ / Donor v1**.
 - Accepted reference ground agency remains `31 m/s²` acceleration / `36 m/s²` braking.
 - E14 does **not** promote new mechanics into Donor/default runtime.
-- Existing public experimental routes remain:
+- Public experimental routes:
   - `?mode=e14` / `?mode=reaction` — E14.0 reaction-placement surface;
-  - `?mode=e14lab` / `?mode=contextual` — E14 continuous Owner Lab, upgraded by E14.1C once the current branch is merged/deployed.
+  - `?mode=e14lab` / `?mode=contextual` — E14.1C Pinned Boundary Skill Probe Owner instrument.
 - E14.1B Owner play produced the first meaningful evidence that the current mechanism can become a primitive physical toy, but not evidence of a good character controller.
-- The immediate research frontier is **E14.1C — Pinned Boundary Skill Probe**.
-- E14.1C is instrumentation/Owner-surface work, **not physics redesign**.
-- Pre-public branch qualification at `4b70cbf6e37566c357c84eed87a67ce9b2310d01` passed mechanics smoke, mandatory instrumentation contracts, corrected diagnostics and build.
-- Exact merged-main CI + Pages still determines the publication gate. Do not treat branch PASS as publication PASS.
+- E14.1C is now **public and mechanically/instrumentally qualified**.
+- No Owner specimen has yet been selected.
+- Current action is **Owner DISCOVERY → PIN → LOCK → PLAY → recording**. Machine must not choose the specimen.
+
+Publication evidence for the E14.1C runtime:
+
+- PR #29 — merged;
+- runtime/main merge commit `b6589decb120567aa16deb0bb90d78a05d2328ec`;
+- exact-main workflow `33811769614` — completed / SUCCESS;
+- mechanics smoke — SUCCESS;
+- build — SUCCESS;
+- Pages configure/upload/deploy — SUCCESS;
+- main diagnostic capture/upload — skipped by workflow design, not a diagnostic verdict.
 
 Current E14 stage document:
 
@@ -24,7 +33,7 @@ Current E14 stage document:
 
 Current hard stop:
 
-> **Publish and qualify the E14.1C Owner instrument, then STOP. Owner must choose the pinned specimen during public DISCOVERY.**
+> **E14.1C Owner instrument is public and qualified; STOP FOR OWNER. Do not select, tune or qualify a concrete pinned specimen until Owner chooses one during public DISCOVERY.**
 
 Do not automatically proceed to World Transfer, Strategy Repertoire, replay infrastructure, recovery controller or Donor promotion.
 
@@ -139,7 +148,7 @@ At reference no-lead settings:
 
 Owner's ~`142.6 s` spontaneous mobile session moved from comparison into unscripted tuning/play. The strongest signal is that E14 began acting like a **primitive physical toy**. Competing sources remain open: boundary/competence play, tuning/experimentation, slapstick/novelty, world/affordance proxy and missing strategy repertoire.
 
-## 5. E14.1C — current frontier
+## 5. E14.1C — current Owner boundary
 
 Central question:
 
@@ -157,7 +166,7 @@ Machine does not decide fun/skill.
 
 ## 6. E14.1C instrument truth
 
-The bounded implementation introduces:
+The public instrument introduces:
 
 - versioned pure specimen configuration contract;
 - deterministic canonical serialization and stable specimen ID;
@@ -189,7 +198,7 @@ Historical exact-head E14 diagnostic artifact:
 
 Its E14.1d body-lean phase summaries were invalid because the consumer still read `signedLeanX` while the corrected sagittal sim emitted `signedLean`. This is an observation/tooling defect, not a physics negative. Do not rewrite the historical artifact as corrected.
 
-Corrected evidence from E14.1C implementation commit:
+Corrected evidence from the first E14.1C implementation commit:
 
 - commit `4b70cbf6e37566c357c84eed87a67ce9b2310d01`;
 - workflow `33811359560`;
@@ -199,48 +208,42 @@ Corrected evidence from E14.1C implementation commit:
 
 Mandatory instrumentation now fails on missing required fields, `NaN`, infinities, stale `signedLeanX` and wrong sagittal axis semantics.
 
-## 8. Validation model
+## 8. Validation model and current verdicts
 
-Report E14.1C through three separate gates.
+### MECHANICS GATE — PASS
 
-### MECHANICS GATE
+Existing research + Donor regressions remain green. E14.1C did not modify the authority kernel, continuous physics sim, balance organism or Donor/default runtime.
 
-Existing research + Donor regressions. No E14.1C claim may hide a Donor/mechanics regression.
+### INSTRUMENTATION GATE — PASS
 
-### INSTRUMENTATION GATE
-
-Required finite telemetry, versioned specimen roundtrip/validation/ID, clean restore, lock mutation boundary, query share/reload, generic qualifier and browser axis/temporal/UI contract.
+Required finite telemetry, versioned specimen roundtrip/validation/ID, clean restore, lock mutation boundary, query share/reload, generic qualifier and browser axis/temporal/UI contract pass mandatory validation.
 
 Key instrumentation contracts are part of mandatory smoke through `scripts/e14-1c-browser-contract.mjs`; diagnostic artifact upload is supplementary provenance rather than the only qualification path.
 
-### PUBLICATION GATE
+### PUBLICATION GATE — PASS
 
-Exact merged `main`, build, Pages deployment, E14.1C route availability and unchanged default Donor.
-
-Do not summarize these three evidence classes merely as `green`.
+Runtime publication at `b6589decb120567aa16deb0bb90d78a05d2328ec` passed exact-main workflow `33811769614`, including build and Pages deployment. Main diagnostic capture/upload remained skipped by workflow design.
 
 ## 9. Files intentionally outside E14.1C mechanics blast radius
 
-E14.1C should not require changes to:
+E14.1C did not change:
 
 - `src/e14-authority-kernel.js`;
 - `src/e14-continuous-sim.js`;
 - `src/e3-balance-organism.js`;
 - Donor files/default runtime;
 - dependencies;
-- current routing semantics in `src/bootstrap.js`.
+- routing semantics in `src/bootstrap.js`.
 
 A future need to change those for PIN/LOCK would be a scope alarm requiring causal justification.
 
-## 10. Owner protocol after publication
-
-After exact-main publication gate passes:
+## 10. Owner protocol — next action
 
 > **DISCOVERY → find something interesting → PIN → LOCK → play → record.**
 
 Owner selects the specimen. Machine must not optimize/select one beforehand.
 
-Locked play should preserve A/D, camera and clean pinned reset. Do not give a scripted ideal solution or target success rate.
+Locked play preserves A/D, camera and clean pinned reset. Do not give a scripted ideal solution or target success rate.
 
 Analyse the recording and spontaneous feedback first, then ask questions if needed.
 
@@ -258,11 +261,11 @@ Possible post-Owner outcomes:
 
 ## 12. Hard stop / next action
 
-Current execution must end at:
+Current execution has reached:
 
 > **E14.1C Owner instrument is public and mechanically/instrumentally qualified; no Owner specimen has yet been selected.**
 
-Then **STOP FOR OWNER**.
+**STOP FOR OWNER.**
 
 Before any future continuation:
 
