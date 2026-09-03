@@ -24,6 +24,7 @@ export const E14_DEFAULTS = Object.freeze({
   braking: 36,
   maxSpeed: 5.2,
   maxBalanceTorque: 320,
+  preparationFrames: 0,
   settleFrames: 90,
   supportHalf: Object.freeze([2.2, 0.16, 2.2]),
 });
@@ -70,6 +71,9 @@ export async function createE14ContinuousSim(userConfig = {}) {
   if (!(config.supportMass > 0)) throw new Error('E14 supportMass must be positive');
   if (!(config.playerMass > 0)) throw new Error('E14 playerMass must be positive');
   if (!(config.dt > 0) || !(config.substeps >= 1)) throw new Error('E14 solver configuration invalid');
+  if (!Number.isInteger(config.preparationFrames) || config.preparationFrames < 0) {
+    throw new Error('E14 preparationFrames must be a non-negative integer');
+  }
 
   const b3 = await Box3D();
   const worldDef = b3.b3DefaultWorldDef();
@@ -121,6 +125,8 @@ export async function createE14ContinuousSim(userConfig = {}) {
   let targetRelV = 0;
   let paused = false;
   let frame = 0;
+  let preparationRemaining = 0;
+  let preparationAcceleration = 0;
   let lastSupport = { reactive: false, frameNormalImpulse: 0 };
   let last = null;
 
@@ -212,19 +218,48 @@ export async function createE14ContinuousSim(userConfig = {}) {
     return { targetLean, currentLean, torqueZ };
   }
 
-  function step(force = false) {
-    if (paused && !force) return last;
-
-    const beforeTarget = targetRelV;
-    targetRelV = targetRelativeVelocity({
+  function nextCommandTarget(nextInput = input) {
+    return targetRelativeVelocity({
       currentTarget: targetRelV,
-      input,
+      input: nextInput,
       maxSpeed: config.maxSpeed,
       acceleration: config.acceleration,
       braking: config.braking,
       dt: config.dt,
     });
-    const desiredAccel = (targetRelV - beforeTarget) / config.dt;
+  }
+
+  function beginPreparationFor(nextInput) {
+    if (config.preparationFrames <= 0) {
+      preparationRemaining = 0;
+      preparationAcceleration = 0;
+      return;
+    }
+    const previewTarget = nextCommandTarget(nextInput);
+    const previewAcceleration = (previewTarget - targetRelV) / config.dt;
+    if (Math.abs(previewAcceleration) <= 1e-12) {
+      preparationRemaining = 0;
+      preparationAcceleration = 0;
+      return;
+    }
+    preparationRemaining = config.preparationFrames;
+    preparationAcceleration = previewAcceleration;
+  }
+
+  function step(force = false) {
+    if (paused && !force) return last;
+
+    const preparing = preparationRemaining > 0;
+    const beforeTarget = targetRelV;
+    let desiredAccel = 0;
+    if (preparing) {
+      // E4-style temporal oracle: posture may physically prepare, but no
+      // translational authority or command-target advance is allowed during lead.
+      desiredAccel = preparationAcceleration;
+    } else {
+      targetRelV = nextCommandTarget(input);
+      desiredAccel = (targetRelV - beforeTarget) / config.dt;
+    }
 
     const playerBefore = playerState();
     const supportVBefore = vec3(b3.b3Body_GetLinearVelocity, support)[0];
@@ -251,7 +286,7 @@ export async function createE14ContinuousSim(userConfig = {}) {
         })
       : 0;
 
-    const requestedShortfall = physicsFirstShortfall({
+    const requestedShortfall = preparing ? 0 : physicsFirstShortfall({
       targetRelativeVelocity: targetRelV,
       relativeVelocityAfterPhysics: relativeAfterPhysics,
       maxRelativeDeltaV: Math.max(config.acceleration, config.braking) * config.dt,
@@ -285,6 +320,11 @@ export async function createE14ContinuousSim(userConfig = {}) {
       throw new Error(`E14 immediate relative Δv mismatch expected=${grant.grantedRelativeDeltaV} measured=${immediateMeasuredGrant}`);
     }
 
+    if (preparing) {
+      preparationRemaining -= 1;
+      if (preparationRemaining === 0) preparationAcceleration = 0;
+    }
+
     const supportPosition = vec3(b3.b3Body_GetPosition, support);
     const combinedMomentum = actualPlayerMass * playerFinal.vx + actualSupportMass * supportVFinal;
 
@@ -296,6 +336,9 @@ export async function createE14ContinuousSim(userConfig = {}) {
       policy,
       targetRelativeVelocity: targetRelV,
       desiredAcceleration: desiredAccel,
+      preparing,
+      preparationFramesConfigured: config.preparationFrames,
+      preparationFramesRemaining: preparationRemaining,
       playerVelocity: playerFinal.vx,
       supportVelocity: supportVFinal,
       relativeVelocity: playerFinal.vx - supportVFinal,
@@ -329,7 +372,10 @@ export async function createE14ContinuousSim(userConfig = {}) {
   if (!lastSupport.reactive) throw new Error('E14 continuous sim failed to establish platform support');
 
   function setInput(next) {
-    input = clamp(Number(next) || 0, -1, 1);
+    const normalized = clamp(Number(next) || 0, -1, 1);
+    if (normalized === input) return;
+    input = normalized;
+    beginPreparationFor(input);
   }
 
   function setPolicy(next) {
