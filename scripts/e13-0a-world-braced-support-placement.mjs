@@ -71,14 +71,17 @@ function makeDynamicPlatform(world) {
   return { body, shape, mass: b3.b3Body_GetMass(body) };
 }
 
-function makeRecoilWall(world, direction) {
+function makeRecoilWall(world, direction, settledPlatformZ) {
   const bd = b3.b3DefaultBodyDef();
-  // Default Box3D bodies are static. The wall face is exactly tangent to the
-  // platform end on the recoil side: no tuned gap and no compliance parameter.
+  // Default Box3D bodies are static. The first draft created this wall before
+  // the 90f settle and contaminated one mirror with ~0.8446Ns of pre-authority
+  // momentum. The corrected harness first qualifies the exact free settled
+  // player+support state, then places the wall exactly tangent to the *actual*
+  // settled platform COM. There is still no tuned gap or compliance parameter.
   bd.position = [
     0,
     WALL_Y,
-    -direction * (PLATFORM_HALF[2] + WALL_HALF[2]),
+    settledPlatformZ - direction * (PLATFORM_HALF[2] + WALL_HALF[2]),
   ];
   bd.enableSleep = false;
   const body = b3.b3CreateBody(world, bd);
@@ -207,10 +210,15 @@ function snapshot(organism, platform, supportReader, wallReader, direction) {
   };
 }
 
+function neutralStep(world, organism) {
+  organism.preStep(DT);
+  b3.b3World_Step(world, DT, SUBSTEPS);
+  organism.postStep();
+}
+
 function runCase({ direction, mode, worldCase }) {
   const world = makeWorld();
   const platform = makeDynamicPlatform(world);
-  const wall = worldCase === 'braced' ? makeRecoilWall(world, direction) : null;
   const organism = new SagittalBalanceOrganism(b3, world, {
     mode: 'finite',
     maxTorque: FINITE_TORQUE,
@@ -220,38 +228,49 @@ function runCase({ direction, mode, worldCase }) {
   // E12.2b already showed canonical 0.015 linear damping changes matched placement
   // relative velocity by only ~0.006% over one second. E13.0a deliberately uses
   // the qualified zero-damping diagnostic control so any horizontal system-
-  // momentum change during the single post-pulse solve must come from the wall.
+  // momentum change during the causal post-pulse solve must come from the wall.
   b3.b3Body_SetLinearDamping(organism.foot, 0);
   b3.b3Body_SetLinearDamping(organism.torso, 0);
 
   const supportReader = createSupportReader(organism, platform);
-  const wallReader = wall
-    ? createPairReader(platform.body, platform.shape, wall.shape, 2)
-    : null;
+  let wall = null;
+  let wallReader = null;
 
+  // Crucially, every specimen settles *without* the wall. This preserves the
+  // exact E12 free player+support representation before the new world reference
+  // is introduced.
   for (let i = 0; i < SETTLE_FRAMES; i++) {
-    organism.preStep(DT);
-    b3.b3World_Step(world, DT, SUBSTEPS);
-    organism.postStep();
+    neutralStep(world, organism);
   }
 
-  let settled = snapshot(organism, platform, supportReader, wallReader, direction);
-  if (!settled.support.reactive || settled.fall) {
-    throw new Error(`E13.0a failed to settle ${worldCase}/${mode}/dir=${direction}`);
+  const settledFree = snapshot(organism, platform, supportReader, null, direction);
+  if (!settledFree.support.reactive || settledFree.fall) {
+    throw new Error(`E13.0a failed free settle ${worldCase}/${mode}/dir=${direction}`);
   }
   if (Math.abs(playerState(organism).mass - PLAYER_MASS) > 1e-3 || Math.abs(platform.mass - SUPPORT_MASS) > 1e-3) {
     throw new Error(`E13.0a mass contract changed ${worldCase}/${mode}/dir=${direction}`);
   }
 
-  // One neutral physics-first frame measures the same traction-capacity
-  // entitlement as E12. Authority is applied only after this solve.
-  organism.preStep(DT);
-  b3.b3World_Step(world, DT, SUBSTEPS);
-  organism.postStep();
+  // The braced specimen receives its wall only after free settle. Its center is
+  // derived from the actual settled platform COM and exact box half-extents.
+  // Both free and braced cases then receive the same one neutral qualification
+  // step, so authority starts at the same history depth.
+  if (worldCase === 'braced') {
+    wall = makeRecoilWall(world, direction, bodyComZ(platform.body));
+    wallReader = createPairReader(platform.body, platform.shape, wall.shape, 2);
+  }
 
+  const preQualification = snapshot(organism, platform, supportReader, wallReader, direction);
+  neutralStep(world, organism);
   const beforeAuthority = snapshot(organism, platform, supportReader, wallReader, direction);
+  const qualificationMomentumDelta = beforeAuthority.combinedMomentum - preQualification.combinedMomentum;
+  const qualificationRelativeDelta = beforeAuthority.relativeV - preQualification.relativeV;
+
   if (!beforeAuthority.support.reactive || beforeAuthority.fall) {
-    throw new Error(`E13.0a lost support before authority ${worldCase}/${mode}/dir=${direction}`);
+    throw new Error(`E13.0a lost support during inactive qualification ${worldCase}/${mode}/dir=${direction}`);
+  }
+  if (worldCase === 'braced' && beforeAuthority.wall?.loaded > 0) {
+    throw new Error(`E13.0a recoil wall is preloaded before authority dir=${direction}`);
   }
 
   const q = clamp(
@@ -276,14 +295,13 @@ function runCase({ direction, mode, worldCase }) {
 
   const immediate = snapshot(organism, platform, supportReader, wallReader, direction);
   const immediateGrantedDeltaV = immediate.relativeV - beforeAuthority.relativeV;
+  const immediateMomentumDelta = immediate.combinedMomentum - beforeAuthority.combinedMomentum;
 
   // No more locomotion authority. This single solver step is the causal probe:
   // the free system has no external horizontal reaction, while the braced
-  // reciprocal support is already touching a static world reference on its
+  // reciprocal support is already tangent to a static world reference on its
   // recoil side.
-  organism.preStep(DT);
-  b3.b3World_Step(world, DT, SUBSTEPS);
-  organism.postStep();
+  neutralStep(world, organism);
 
   const afterSolve = snapshot(organism, platform, supportReader, wallReader, direction);
   const solverMomentumDelta = afterSolve.combinedMomentum - immediate.combinedMomentum;
@@ -296,10 +314,15 @@ function runCase({ direction, mode, worldCase }) {
     frameNormalImpulse: beforeAuthority.support.frameNormalImpulse,
     relativeDeltaV,
     appliedImpulse,
+    settledFree,
+    preQualification,
     beforeAuthority,
+    qualificationMomentumDelta,
+    qualificationRelativeDelta,
     immediate,
-    afterSolve,
     immediateGrantedDeltaV,
+    immediateMomentumDelta,
+    afterSolve,
     solverMomentumDelta,
   };
 
@@ -316,10 +339,12 @@ if (
   throw new Error('E13.0a expected canonical Donor-v1 current31 substrate');
 }
 
-console.log('E13.0a world-braced dynamic-support placement falsifier');
+console.log('E13.0a corrected world-braced dynamic-support placement falsifier');
+console.log('  first draft 8acf32df / workflow 33763112049 is preserved as a confounded harness failure: creating the wall before settle contaminated dir=- with ~0.8446Ns pre-authority momentum.');
 console.log(`  player=${PLAYER_MASS}kg support=${SUPPORT_MASS}kg; current31 relative pulse; dt=${DT.toFixed(6)}s substeps=${SUBSTEPS}`);
-console.log('  braced support is exactly tangent to a static wall on the recoil side: zero gap, zero restitution, no spring/motor/stiffness parameter.');
-console.log('  q is measured from the normal mu=.95 E5 load scale before authority; both placements receive the same q-entitled support-relative delta-v.');
+console.log('  corrected harness: all specimens free-settle first; only then is the recoil wall created exactly tangent to the actual settled platform COM, followed by one neutral inactive-qualification solve.');
+console.log('  wall has zero gap, zero restitution and no spring/motor/stiffness parameter; no epsilon offset is used to rescue contact.');
+console.log('  q is measured from the normal mu=.95 E5 load scale after inactive qualification; both placements receive the same q-entitled support-relative delta-v.');
 console.log('  zero player linear damping is the already-qualified E12.2b causal control, isolating external horizontal momentum exchange to the wall.');
 console.log('  after the pulse there is exactly one solver step and zero further translational authority.');
 
@@ -331,8 +356,9 @@ for (const direction of DIRECTIONS) {
       results.push(r);
       console.log(
         `  dir=${direction > 0 ? '+' : '-'} ${worldCase.padEnd(6)} ${mode.padEnd(14)} ` +
+        `qual dP=${r.qualificationMomentumDelta.toExponential(2)}Ns dVrel=${r.qualificationRelativeDelta.toExponential(2)} wallPre=${r.beforeAuthority.wall ? `${r.beforeAuthority.wall.loaded}pts` : 'none'} | ` +
         `q=${r.q.toFixed(4)} Jn~=${r.frameNormalImpulse.toFixed(4)}Ns ` +
-        `grant dVrel=${r.immediateGrantedDeltaV.toFixed(6)}/${r.relativeDeltaV.toFixed(6)}m/s ` +
+        `grant dVrel=${r.immediateGrantedDeltaV.toFixed(6)}/${r.relativeDeltaV.toFixed(6)}m/s dPgrant=${r.immediateMomentumDelta.toFixed(4)}Ns ` +
         `P immediate->post=${r.immediate.combinedMomentum.toFixed(4)}->${r.afterSolve.combinedMomentum.toFixed(4)}Ns ` +
         `dPsolve=${r.solverMomentumDelta.toFixed(4)}Ns ` +
         `vP/vS/rel post=${r.afterSolve.playerV.toFixed(5)}/${r.afterSolve.supportV.toFixed(5)}/${r.afterSolve.relativeV.toFixed(5)}m/s ` +
@@ -365,17 +391,36 @@ for (const direction of DIRECTIONS) {
     }
   }
 
-  if (Math.abs(freeExternal.immediate.combinedMomentum - freeExternal.appliedImpulse) > MOMENTUM_EPS) {
-    throw new Error(`E13.0a free external immediate momentum mismatch dir=${direction}`);
+  // Before authority, adding the zero-gap wall must be mechanically inert versus
+  // the matched free specimen. This is the representation-match-before-actuation
+  // gate that the first draft omitted.
+  for (const mode of MODES) {
+    const free = find(direction, 'free', mode);
+    const braced = find(direction, 'braced', mode);
+    if (Math.abs(braced.beforeAuthority.combinedMomentum - free.beforeAuthority.combinedMomentum) > MOMENTUM_EPS) {
+      throw new Error(`E13.0a inactive wall changed combined momentum ${mode}/dir=${direction}`);
+    }
+    if (Math.abs(braced.beforeAuthority.relativeV - free.beforeAuthority.relativeV) > RELATIVE_DV_EPS) {
+      throw new Error(`E13.0a inactive wall changed relative velocity ${mode}/dir=${direction}`);
+    }
+    if (Math.abs(braced.q - free.q) > RELATIVE_DV_EPS) {
+      throw new Error(`E13.0a inactive wall changed traction entitlement ${mode}/dir=${direction}`);
+    }
   }
-  if (Math.abs(bracedExternal.immediate.combinedMomentum - bracedExternal.appliedImpulse) > MOMENTUM_EPS) {
-    throw new Error(`E13.0a braced external immediate momentum mismatch dir=${direction}`);
+
+  // Authority bookkeeping is measured relative to each specimen's qualified
+  // pre-authority state, rather than assuming exact absolute zero momentum.
+  if (Math.abs(freeExternal.immediateMomentumDelta - freeExternal.appliedImpulse) > MOMENTUM_EPS) {
+    throw new Error(`E13.0a free external granted momentum mismatch dir=${direction}`);
   }
-  if (Math.abs(freeReciprocal.immediate.combinedMomentum) > MOMENTUM_EPS) {
-    throw new Error(`E13.0a free reciprocal immediate momentum mismatch dir=${direction}`);
+  if (Math.abs(bracedExternal.immediateMomentumDelta - bracedExternal.appliedImpulse) > MOMENTUM_EPS) {
+    throw new Error(`E13.0a braced external granted momentum mismatch dir=${direction}`);
   }
-  if (Math.abs(bracedReciprocal.immediate.combinedMomentum) > MOMENTUM_EPS) {
-    throw new Error(`E13.0a braced reciprocal immediate momentum mismatch dir=${direction}`);
+  if (Math.abs(freeReciprocal.immediateMomentumDelta) > MOMENTUM_EPS) {
+    throw new Error(`E13.0a free reciprocal granted net momentum dir=${direction}`);
+  }
+  if (Math.abs(bracedReciprocal.immediateMomentumDelta) > MOMENTUM_EPS) {
+    throw new Error(`E13.0a braced reciprocal granted net momentum dir=${direction}`);
   }
 
   // With zero damping and no world brace, player+support momentum must stay
@@ -396,7 +441,7 @@ for (const direction of DIRECTIONS) {
     throw new Error(`E13.0a braced external loaded recoil wall dir=${direction}`);
   }
 
-  // Reciprocal authority does push the support into the already-touching wall.
+  // Reciprocal authority does push the support into the already-tangent wall.
   // A loaded wall contact plus a solver-scale system momentum change proves that
   // the support reaction has propagated into a genuine external world reference.
   if (!bracedReciprocal.afterSolve.wall || bracedReciprocal.afterSolve.wall.loaded <= 0) {
@@ -440,5 +485,5 @@ for (const row of mirrorRows) {
 }
 
 console.log('E13.0a PASS');
-console.log('  a zero-gap world brace is causally inert for world-external placement but becomes a real reaction path for reciprocal placement.');
+console.log('  after an explicit inactive representation gate, a zero-gap world brace is causally inert for world-external placement but becomes a real reaction path for reciprocal placement.');
 console.log('  therefore support mobility / wider-world coupling is a substantive reciprocal-authority variable, not bookkeeping; placement is no longer Galilean-equivalent once the support reaction reaches the world.');
