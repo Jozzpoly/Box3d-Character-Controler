@@ -30,17 +30,18 @@ function finiteVector(vector) {
  * E15 disposable hybrid bridge.
  *
  * The accepted Donor v1 controller remains authoritative for traversal and intent.
- * A separate finite-mass Box3D upper-body mass is driven toward that carrier by
- * bounded linear impulses and bounded upright torque. Its uncommanded horizontal
- * physics response during the world step is fed back as a distinct external-velocity
- * consequence, so responsive Donor braking does not have to erase it immediately.
+ * A separate finite-mass Box3D upper-body mass is transported vertically with the
+ * Donor carrier, while horizontal following and upright rotation remain finite.
+ * Uncommanded horizontal body response during the world step is fed back as a
+ * distinct external-velocity consequence, so responsive Donor braking does not
+ * have to erase it immediately.
  *
- * Root dynamic-contact memory retains exact Donor v1 velocity-only semantics. The
- * physical-body feedback channel is intentionally separate and explicit.
+ * Vertical transport is explicit infrastructure, not a claim of physical vertical
+ * embodiment. It preserves Donor jump/traversal while this V0 isolates the harder
+ * question: can horizontal/rotational physical consequence coexist with accepted
+ * agency? Root dynamic-contact behavior otherwise retains Donor v1 semantics.
  *
- * This deliberately does NOT claim mass-equivalent whole-body physics. It asks a
- * narrower question: can accepted responsive agency coexist with a physical body
- * layer that can lag, rotate, collide, and causally disturb the player?
+ * This deliberately does NOT claim mass-equivalent whole-body physics.
  */
 export class E15HybridCharacter extends ConstraintVelocityCharacter {
   constructor(b3, world, options = {}) {
@@ -92,12 +93,16 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
     this._bodyContacts = b3.createContactsBuffer();
 
     this.lastFollowImpulse = 0;
+    this.lastHorizontalFollowImpulse = 0;
+    this.lastVerticalTransportImpulse = 0;
     this.lastUprightTorque = 0;
     this.lastBodyPhysicsImpulse = 0;
     this.lastBodyFeedbackImpulse = 0;
     this.lastBodyContacts = 0;
     this.lastFeedbackClipped = false;
     this.bodyOffsetDistance = 0;
+    this.bodyHorizontalOffset = 0;
+    this.bodyVerticalOffset = 0;
     this.bodyTilt = 0;
     this.peakBodyOffset = 0;
     this.peakBodyTilt = 0;
@@ -113,12 +118,16 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
     this.b3.b3Body_SetLinearVelocity(this.embodimentBody, [0, 0, 0]);
     this.b3.b3Body_SetAngularVelocity(this.embodimentBody, [0, 0, 0]);
     this.lastFollowImpulse = 0;
+    this.lastHorizontalFollowImpulse = 0;
+    this.lastVerticalTransportImpulse = 0;
     this.lastUprightTorque = 0;
     this.lastBodyPhysicsImpulse = 0;
     this.lastBodyFeedbackImpulse = 0;
     this.lastBodyContacts = 0;
     this.lastFeedbackClipped = false;
     this.bodyOffsetDistance = 0;
+    this.bodyHorizontalOffset = 0;
+    this.bodyVerticalOffset = 0;
     this.bodyTilt = 0;
     this.peakBodyOffset = 0;
     this.peakBodyTilt = 0;
@@ -138,26 +147,49 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
       this.bodyTarget[1] - this.bodyPosition[1],
       this.bodyTarget[2] - this.bodyPosition[2],
     ];
-    const desiredVelocity = [
+
+    // Horizontal embodiment remains finite. This is the physical lag channel that
+    // E15 is actually testing.
+    const desiredHorizontalVelocity = [
       this.velocity[0] + this.followRate * error[0],
-      this.velocity[1] + this.followRate * error[1],
+      0,
       this.velocity[2] + this.followRate * error[2],
     ];
-    const requestedDeltaV = [
-      desiredVelocity[0] - this.bodyVelocity[0],
-      desiredVelocity[1] - this.bodyVelocity[1],
-      desiredVelocity[2] - this.bodyVelocity[2],
+    const requestedHorizontalDeltaV = [
+      desiredHorizontalVelocity[0] - this.bodyVelocity[0],
+      0,
+      desiredHorizontalVelocity[2] - this.bodyVelocity[2],
     ];
-    const deltaV = clampMagnitude3(requestedDeltaV, this.maxFollowAcceleration * dt);
-    const followImpulse = [
-      this.bodyMass * deltaV[0],
-      this.bodyMass * deltaV[1],
-      this.bodyMass * deltaV[2],
+    const horizontalDeltaV = clampMagnitude3(
+      requestedHorizontalDeltaV,
+      this.maxFollowAcceleration * dt,
+    );
+    const horizontalImpulse = [
+      this.bodyMass * horizontalDeltaV[0],
+      0,
+      this.bodyMass * horizontalDeltaV[2],
     ];
-    this.lastFollowImpulse = Math.hypot(...followImpulse);
-    if (this.lastFollowImpulse > 1e-9) {
-      this.b3.b3Body_ApplyLinearImpulseToCenter(this.embodimentBody, followImpulse, true);
+    this.lastHorizontalFollowImpulse = Math.hypot(horizontalImpulse[0], horizontalImpulse[2]);
+    if (this.lastHorizontalFollowImpulse > 1e-9) {
+      this.b3.b3Body_ApplyLinearImpulseToCenter(this.embodimentBody, horizontalImpulse, true);
     }
+
+    // Vertical motion is carrier transport, not finite embodiment in E15 V0.
+    // Match the Donor's vertical traversal plus positional recentering without
+    // consuming the horizontal finite-authority budget. Contacts still solve after
+    // this command during the normal Box3D world step.
+    const desiredVerticalVelocity = this.velocity[1] + this.followRate * error[1];
+    const verticalDeltaV = desiredVerticalVelocity - this.bodyVelocity[1];
+    const verticalImpulse = [0, this.bodyMass * verticalDeltaV, 0];
+    this.lastVerticalTransportImpulse = Math.abs(verticalImpulse[1]);
+    if (this.lastVerticalTransportImpulse > 1e-9) {
+      this.b3.b3Body_ApplyLinearImpulseToCenter(this.embodimentBody, verticalImpulse, true);
+    }
+
+    this.lastFollowImpulse = Math.hypot(
+      this.lastHorizontalFollowImpulse,
+      this.lastVerticalTransportImpulse,
+    );
 
     const up = upFromQuat(this.bodyRotation);
     const correctionAxis = [-up[2], 0, up[0]];
@@ -222,9 +254,16 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
     this.externalVelocity[0] += feedback[0];
     this.externalVelocity[2] += feedback[2];
 
-    const dx = this.bodyTarget[0] - this.bodyPosition[0];
-    const dy = this.bodyTarget[1] - this.bodyPosition[1];
-    const dz = this.bodyTarget[2] - this.bodyPosition[2];
+    const currentTarget = [
+      this.position[0],
+      this.position[1] + this.bodyOffsetY,
+      this.position[2],
+    ];
+    const dx = currentTarget[0] - this.bodyPosition[0];
+    const dy = currentTarget[1] - this.bodyPosition[1];
+    const dz = currentTarget[2] - this.bodyPosition[2];
+    this.bodyHorizontalOffset = Math.hypot(dx, dz);
+    this.bodyVerticalOffset = dy;
     this.bodyOffsetDistance = Math.hypot(dx, dy, dz);
     const up = upFromQuat(this.bodyRotation);
     this.bodyTilt = Math.acos(Math.max(-1, Math.min(1, up[1])));
@@ -251,11 +290,15 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
       mode: 'e15-hybrid',
       bodyMass: this.bodyMass,
       bodyOffset: this.bodyOffsetDistance,
+      bodyHorizontalOffset: this.bodyHorizontalOffset,
+      bodyVerticalOffset: this.bodyVerticalOffset,
       bodyTilt: this.bodyTilt,
       peakBodyOffset: this.peakBodyOffset,
       peakBodyTilt: this.peakBodyTilt,
       bodyContacts: this.lastBodyContacts,
       bodyFollowImpulse: this.lastFollowImpulse,
+      bodyHorizontalFollowImpulse: this.lastHorizontalFollowImpulse,
+      bodyVerticalTransportImpulse: this.lastVerticalTransportImpulse,
       bodyUprightTorque: this.lastUprightTorque,
       bodyPhysicsImpulse: this.lastBodyPhysicsImpulse,
       bodyFeedbackImpulse: this.lastBodyFeedbackImpulse,
