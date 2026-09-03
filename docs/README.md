@@ -6,7 +6,7 @@ This directory contains both current authority and historical research evidence.
 
 1. [`PROJECT_STATE.md`](PROJECT_STATE.md) — compact canonical orientation;
 2. repository [`README.md`](../README.md) — public/current overview;
-3. newest relevant ledger — currently [`E11_PHYSICS_FIRST_RESIDUAL.md`](E11_PHYSICS_FIRST_RESIDUAL.md).
+3. newest relevant ledger — currently [`E12_GRADED_CAPACITY_ENTITLEMENT.md`](E12_GRADED_CAPACITY_ENTITLEMENT.md).
 
 `main` + exact SHA + CI are implementation truth. Branch names and historical handoffs are provenance/context only.
 
@@ -31,27 +31,33 @@ The normal public/default player remains **A‴ / Donor v1** unless `PROJECT_STA
 - [`E8_UNILATERAL_AXIAL_COMPLIANCE.md`](E8_UNILATERAL_AXIAL_COMPLIANCE.md) — viable axial-compliance primitives, failed mass/inertia-matched latent serial telescope;
 - [`E9_RIGID_STOW_SPLIT.md`](E9_RIGID_STOW_SPLIT.md) — weld primitive PASS, but even a no-prismatic rigid split fails strict inactive mechanical representation;
 - [`E10_ONE_PIECE_SUPPORT_BRACE.md`](E10_ONE_PIECE_SUPPORT_BRACE.md) — clean one-piece latch/acquisition transition, but load recruitment and demand-aligned support regulation fail;
-- [`E11_PHYSICS_FIRST_RESIDUAL.md`](E11_PHYSICS_FIRST_RESIDUAL.md) — physics-first world-external residual decomposition: fixed-deficit and binary-support safeguards rejected; absolute physical-share interpretation corrected.
+- [`E11_PHYSICS_FIRST_RESIDUAL.md`](E11_PHYSICS_FIRST_RESIDUAL.md) — physics-first world-external residual decomposition: fixed-deficit and binary-support safeguards rejected; absolute physical-share interpretation corrected;
+- [`E12_GRADED_CAPACITY_ENTITLEMENT.md`](E12_GRADED_CAPACITY_ENTITLEMENT.md) — graded traction-capacity entitlement survives canonical launch/braking; fair dynamic-support placement accounting reveals a world-reference boundary.
 
 These ledgers are research authority, not automatic runtime promotion.
 
-## Current E10 → E11 result
+## Current E11 → E12 result
 
-E10 closed the cheapest remaining physical support variant: the qualified one-piece E7 probe could be latched cleanly after real acquisition and moderated a fall, but did not establish stable/regulatable body-load sharing.
+E11 showed why a boolean physical gate is not enough: weak `μ=.20` traction could unlock accepted-looking current31 translation dominated by world-external authority even while the body physically fell.
 
-E11 therefore tested the assist side of the E5 fork without repeating E5.2's same-frame ordering ambiguity.
+E12 therefore replaced boolean eligibility with a physically derived graded capacity signal:
 
-The durable E11 boundary is three-part:
+`q = clamp( μ × J_n~ / (0.95 × 80 × 20 × 1/60), 0, 1 )`
 
-1. **Fixed physical-only deficit is not additive.** Physics-first ordering still leaves cross-frame interaction: earlier residual impulses alter later frictional demand.
-2. **Absolute physical impulse/share is not a universal honesty metric.** On normal support the assisted candidate produced less later `Jphys` mainly because relative slip fell about `43–45%`; calibrated normal load did not collapse.
-3. **Binary physical eligibility is insufficient.** At weak `μ=.20`, physical-only translation reached only `~1.98 m/s` and the body fell, yet a support+positive-impulse-gated residual produced accepted-looking `~5.28 m/s` ramp-end translation with about `73%` external authority. Posture still fell, so embodied failure remained visible even while traction loss was masked in translation.
+using the existing E5.0a pinned-substrate load estimate `J_n~ = 0.5 × totalNormalImpulse`.
+
+The durable E12 boundary is four-part:
+
+1. **Graded entitlement survives current31.** Normal `μ=.95` reaches `5.218/5.273 m/s` and recovers; weak `μ=.20` remains only `1.748/1.707 m/s` and falls; `μ=0` gets zero authority.
+2. **The same principle survives current36 braking.** After reproducing exact E4.6 brake-start history, normal support stops essentially at zero and recovers; weak/zero support remain materially unable to stop. The earlier direct-velocity setup is preserved as a confounded harness failure, not rewritten as physical evidence.
+3. **Dynamic placement can be compared fairly support-relative.** Reduced-mass scaling lets world-external and equal-and-opposite reciprocal placement grant the same `q`-scaled relative agency. World-external injects combined horizontal momentum; reciprocal placement preserves it through support recoil.
+4. **An isolated free player+support pair cannot meaningfully choose placement.** With player damping removed, the two placements are Galilean-equivalent in relative motion/contact/posture near machine precision. Canonical player damping `0.015` breaks this by only about `0.006%` of the granted pulse over one second.
 
 Therefore:
 
-> **If world-external residual authority remains a candidate, its entitlement must be graded by meaningful physical capability/quality or otherwise preserve material support-dependent consequences. Merely having contact and a nonzero physical impulse is not enough.**
+> **The next architecture discriminator must introduce a genuine external world reference. More isolated player+free-support tests are informationally exhausted.**
 
-Do not open a residual-ratio sweep by inertia.
+Do not open another `q`, friction, residual-ratio or support-mass sweep by inertia.
 
 ## Validation map
 
@@ -79,9 +85,13 @@ Durable positive smoke currently includes:
 - E9.0a weld binding calibration;
 - E10.0a isolated current-angle latch;
 - E10.0b real acquisition→brace transition continuity;
-- E11.1a residual/contact interaction decomposition.
+- E11.1a residual/contact interaction decomposition;
+- E12.0a current31 capacity-entitlement falsifier;
+- corrected E12.1a current36 braking falsifier;
+- E12.2a dynamic-support placement calibration;
+- E12.2b Galilean placement/world-damping decomposition.
 
-Negative provenance outside mandatory smoke includes:
+Negative/confounded provenance outside mandatory smoke includes:
 
 - E7.2 load-transfer falsifiers;
 - E8.1 embodied serial-telescope falsifiers/decomposition;
@@ -89,7 +99,8 @@ Negative provenance outside mandatory smoke includes:
 - E10.1a quiet braced load-transfer falsifier;
 - E10.1b demand-aligned brace-stability falsifier;
 - E11.0a fixed-deficit physics-first residual falsifier;
-- E11.2a weak-support masking/support-relevance falsifier.
+- E11.2a weak-support masking/support-relevance falsifier;
+- the first E12.1a direct-velocity braking initialization failure at `ff6c8bf5…` / workflow `33756365385`, superseded only as a harness protocol, not erased from history.
 
 Do not rewrite negative experiments into artificial PASSes merely to keep CI green.
 
@@ -97,14 +108,15 @@ Do not rewrite negative experiments into artificial PASSes merely to keep CI gre
 
 Highest-value question:
 
-> **What causal authority contract can supplement physically earned locomotion without making the world's traction capacity optional?**
+> **When a dynamically supported player is coupled to a genuine external world reference, what gameplay-relevant consequences distinguish nonreciprocal world-external authority from reciprocal support reaction, and which consequences do we want?**
 
-Before implementing another controller, compare two architecture classes:
+A useful next specimen must make that third reference causal while introducing as little arbitrary freedom as possible. Candidate families include:
 
-1. **graded support-earned world-external entitlement** — based on an explicit physical capability/quality measure, not merely `Jassist <= k × Jphys` chosen by sweep;
-2. **reciprocal support-mediated auxiliary authority** — equal-and-opposite authority tested where support momentum is observable, preferably with dynamic support.
+- world-anchored interaction;
+- delayed contact with another environmental body;
+- externally driven support.
 
-The smallest next experiment should distinguish these architectures, not tune them. It should include normal and materially weak support; reciprocal candidates need dynamic-support momentum accounting.
+Do not select a wall gap, spring stiffness, support mass or other free parameter merely to manufacture a difference. First derive the smallest scenario in which world-frame momentum placement has a consequence that matters to the project.
 
 A genuinely new physical support mechanism remains admissible if it introduces a capability E6–E10 did not already exercise. More anatomy is not the default.
 
