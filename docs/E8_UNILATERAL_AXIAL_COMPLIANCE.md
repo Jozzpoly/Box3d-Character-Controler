@@ -1,84 +1,43 @@
 # E8 — unilateral axial compliance
 
-Status: **E8.0a unilateral distance-spring primitive PASS; E8.0b telescopic guide + compliance composition PASS; embodied parallel-limb representation not yet qualified.**
+Status: **E8.0a–c substrate/composition PASS; E8.1 serial telescopic embodied representation FAIL. No runtime or Donor promotion.**
 
-This ledger records the E8 line after E7 closed the tested single-hinge parallel support probe. E8 remains research-only. No E8 mechanism belongs to the runtime or Donor.
+E8 follows E7's central negative result:
 
-## 1. Why E8 exists
+> **Contact acquisition is not support capacity. A useful support-set mechanism must prove a stable, regulatable compressive load path.**
 
-E7 established four facts that must remain separate:
+E8 investigated whether a parallel support branch could gain such a load path through finite, compression-only axial compliance without weakening accepted A‴ agency or inserting hidden world authority.
 
-1. a parallel support-capable branch can preserve the qualified primary E5 organism while inactive;
-2. finite internal actuation can place that branch into real probe↔platform contact in both sagittal directions;
-3. acquiring the second contact does not by itself make it carry meaningful body load in quiet upright settling;
-4. when demand shifts far enough toward the second contact, the primary foot can unload/lose support while the probe remains grounded, but the tested organism falls instead of establishing a stable dual-support HOLD.
+The stage produced useful positive substrate evidence, but the first embodied serial telescopic representation failed the predeclared inactive representation gate. That topology is closed against parameter/tolerance rescue.
 
-The fourth observation sharpens the diagnosis. The rigid E7 branch did not literally lack a reaction path: the revolute joint transmitted translational constraint reaction, and E7.2b demonstrated enough participation for the primary support to unload.
+## 1. Authority / pinned substrate
 
-The unresolved property is therefore:
+Canonical runtime remains A‴ / Donor v1. E8 is machine research only.
 
-> **Can a parallel physical support admit finite, gradual and regulatable load sharing instead of behaving like a rigid support-set transition / pivot takeover?**
+Pinned wrapper/source used for substrate interpretation:
 
-This does not rewrite E7 into success. Its single rigid torso-COM hinged probe failed the declared stable-load-bearing gate and remains closed against torque/angle/length/mass/timing sweeps.
+- `box3d.js@0.1.1` in the project;
+- wrapper source `isaac-mason/box3d.js@5d5a3af049cccd9948b2b55bac4342414af0ef64`;
+- Box3D submodule `erincatto/box3d@8441b4a06d6d09dcfb0b0f704df4d847d1437b92`.
 
-## 2. E8.0a — unilateral axial primitive
+Canonical experimental cadence remains:
 
-### Question
+- outer `dt = 1/60 s`;
+- `4` Box3D substeps.
 
-> **Does the exact pinned Box3D binding provide a mirrored spring-only axial constraint that materially transmits finite compression while providing effectively zero tensile restoring authority?**
+No E8 result changes Donor v1 constants or public runtime behavior.
 
-This is a primitive/binding question only.
+## 2. E8.0a — unilateral distance-spring primitive PASS
 
-### Source semantics
+Question:
 
-Pinned wrapper:
-
-`isaac-mason/box3d.js@5d5a3af049cccd9948b2b55bac4342414af0ef64`
-
-Pinned Box3D submodule:
-
-`erincatto/box3d@8441b4a06d6d09dcfb0b0f704df4d847d1437b92`
-
-The distance-joint API exposes:
-
-- `enableSpring`;
-- `lowerSpringForce`;
-- `upperSpringForce`;
-- `hertz`;
-- `dampingRatio`;
-- `b3DistanceJoint_SetSpringForceRange(...)`;
-- `b3Joint_GetConstraintForce(...)`.
-
-Upstream semantics identify the lower bound with tension capacity and the upper bound with compression capacity. The solver clamps the spring impulse to the configured force interval.
-
-Therefore:
-
-- `lowerSpringForce = 0 N`;
-- finite positive `upperSpringForce`;
-
-is a solver-native candidate for finite **compression-only** axial compliance.
-
-### Superseded first draft — not evidence
-
-Commit:
-
-`8495708db4a9adf98a9b7b62f3e08dfdd4e73c73`
-
-The first draft configured `enableSpring=false` while attempting to qualify limit/motor behavior. Review showed this was the wrong specimen for the E8 question. It was also absent from `scripts/smoke-suite.mjs`; workflow `33690555458` therefore did not execute E8.0a.
-
-Consequently:
-
-> **The original draft and its green workflow are not E8.0a research evidence.**
-
-The mistake remains in Git history as provenance.
-
-### Final E8.0a specimen
+> Can the pinned distance-joint spring transmit finite compression while providing effectively zero tensile restoring authority?
 
 Script:
 
 `scripts/e8-0a-distance-joint-axial-binding-calibration.mjs`
 
-Validated exact head:
+Final exact head:
 
 `043d994db9d37dba3d6723fa8424573c52154ef3`
 
@@ -86,193 +45,62 @@ Workflow:
 
 `33692228730` — **SUCCESS**.
 
-Substrate/configuration:
+Representative configuration:
 
-- outer `dt = 1/60 s`;
-- `4` Box3D substeps;
+- static anchor + `20 kg` dynamic body;
 - zero gravity, no contacts;
-- static anchor + `20 kg` dynamic axial body;
-- no distance limit or motor;
 - rest length `1.0 m`;
 - spring `8 Hz`, damping ratio `1`;
 - `lowerSpringForce = 0 N`;
 - `upperSpringForce = 200 N`;
-- four fresh cases: compression/tension × mirrored `±Z`.
+- no distance motor/limit.
 
-At `0.2 m` compression, the simple undamped linear scale is about `10106.5 N`, >`50×` the declared `200 N` cap. This was a pre-execution scale check, not post-failure tuning.
+Measured:
 
-Measured output:
+- mirrored compression `0.800000 → 0.852083 m`, peak axial force `200.000 N`;
+- mirrored tension `1.200000 → 1.200000 m`, peak axial force `0.000 N`;
+- no material transverse leak.
 
-- `+Z` compression: `0.800000 → 0.852083 m`, peak axial `200.000 N`;
-- `-Z` compression: `0.800000 → 0.852083 m`, peak axial `200.000 N`;
-- `+Z` tension: `1.200000 → 1.200000 m`, peak axial `0.000 N`;
-- `-Z` tension: `1.200000 → 1.200000 m`, peak axial `0.000 N`;
-- zero material transverse force/leak.
+Qualified claim:
 
-Qualified E8.0a claim:
+> **The pinned distance-joint binding can provide mirrored finite compression with effectively zero tensile spring authority in an isolated axial specimen.**
 
-> **On the pinned canonical substrate, a spring-only distance joint can provide mirrored finite compression while exerting effectively zero tensile restoring authority in the isolated axial specimen.**
+The original draft at `8495708db4a9adf98a9b7b62f3e08dfdd4e73c73` did not actually test this question (`enableSpring=false`) and was not executed by smoke. It remains non-evidence provenance.
 
-It does not qualify a leg, distal-body suspension, ground contact, load sharing, locomotion or gameplay constants.
+## 3. E8.0b — guide + unilateral compliance composition PASS
 
-## 3. Topology selection after E8.0a
+A lone compression-only distance spring cannot suspend a real distal body below its parent because gravity requires tension. The smallest selected composition therefore separated roles:
 
-E8.0a exposed a real representation problem: a lone compression-only distance spring cannot suspend a real distal body hanging below a parent, because gravity asks the connection for tension.
-
-A short topology audit compared the smallest families before another embodied write.
-
-### Rejected for the immediate question
-
-**Direct parent↔pad distance spring**
-
-- preserves unilateral compliance;
-- but only constrains radius;
-- leaves uncontrolled angular/orbital placement of the distal body;
-- therefore does not provide a clear support-placement channel.
-
-**Direct parent↔pad prismatic spring**
-
-- gives a clean one-dimensional guide;
-- but the pinned prismatic spring exposes no separate lower/upper spring-force bounds;
-- replacing the qualified distance spring with it would discard E8.0a's unilateral compression property.
-
-**Full two-link/knee limb**
-
-- physically interpretable;
-- but introduces more mass distribution, bodies, joints, DOFs and control policy than the current unknown requires;
-- rejected as premature, not as impossible.
-
-### Selected minimal family
-
-The selected candidate family is a **guided telescopic branch**:
-
-`parent / future placement body ↔ limit-only prismatic guide ↔ real distal pad`
-
-with a coaxial:
-
-`parent / guide ↔ distal pad compression-only distance spring`.
-
-Role separation:
-
-- prismatic joint: remove five unwanted relative DOFs and provide finite travel stops;
-- distance spring: act softly on the remaining axial DOF with E8.0a unilateral compliance;
-- future revolute/placement DOF: orient the telescopic branch without asking the axial constraint to solve placement.
-
-The prismatic spring and motor are not part of the E8.0b mechanism.
-
-This is smaller than a humanoid leg while explicitly separating:
-
-> **where support is placed** from **how much axial compression it can carry**.
-
-## 4. E8.0b — composite telescopic semantics
-
-### Question
-
-Before embedding this family in the `80 kg` organism:
-
-> **Can a limit-only prismatic guide and the qualified compression-only distance spring coexist on the same remaining axial DOF such that the guide can physically suspend a real distal mass at an extension stop, while inside travel the stop disengages and the distance spring alone supplies material compression?**
-
-This is still a binding/composition gate, not an embodied-support gate.
-
-### Specimen
+- limit-only prismatic guide: remove unwanted DOFs + provide travel stops;
+- coaxial distance spring: finite unilateral axial compression;
+- future separate placement DOF: orientation, not axial authority.
 
 Script:
 
 `scripts/e8-0b-telescopic-guide-compliance-binding.mjs`
 
-Representative values:
+### First run — reader confound retained
 
-- real dynamic pad `1 kg`;
-- gravity `20 m/s²` for suspension case;
-- prismatic travel `0.70..1.00 m`;
-- prismatic spring OFF;
-- prismatic motor OFF;
-- distance rest length `1.00 m`;
-- distance spring `8 Hz`, damping ratio `1`;
-- distance force range `0..200 N`;
-- no collisions.
-
-Two fresh rigs separate the roles.
-
-**A — suspension at full extension**
-
-- starts at `1.00 m` under gravity;
-- upper prismatic stop may carry the pad's own `20 N` weight;
-- compression-only distance spring must remain effectively tension-free.
-
-**B — compression while interior to travel**
-
-- starts at `0.80 m` in zero gravity;
-- must remain clear of the extension stop;
-- guide must carry no material constraint load;
-- distance spring must provide material bounded compression and push the pad outward.
-
-## 5. First E8.0b execution — confounded failure retained
-
-Initial exact head after adding E8.0b to research smoke:
+Head:
 
 `9547c06b4ded38570618fae3403d0dd3d7112dd0`
 
 Workflow:
 
-`33693405335` — **FAIL at E8.0b**.
+`33693405335` — **FAIL**.
 
-Observed before failure:
+The physical specimen behaved coherently, but the reader incorrectly treated generic prismatic constraint-force vector direction as the physical slide axis. Pinned source inspection showed a substrate-specific telemetry mismatch: prismatic translation/solver axis are defined from the joint local X axis, while the generic reported force packs accumulated axial impulse into a different local component before world rotation.
 
-- suspension translation stayed at about `1.000141 m`;
-- distance stayed about `1.000141 m`;
-- distance-spring tension was `0 N`;
-- compression moved `0.800000 → 0.833125 m`;
-- distance spring produced about `103.832 N` in the compression case;
-- old reader interpreted the prismatic reaction as transverse and failed the gate.
+The correction changed observation semantics, not mechanism parameters:
 
-This failure was not immediately tuned away. Exact pinned source was inspected first.
+- prismatic translation/geometry defines physical guide-axis truth;
+- generic prismatic constraint-force **magnitude** is used only for material load presence.
 
-## 6. Pinned prismatic-force telemetry mismatch
+A second methodological correction removed an invalid expectation that the lightweight `1 kg` implicit spring specimen must equal naive classical `k*x`; E8.0a had already independently qualified the `200 N` cap.
 
-Source inspection found that on the exact pinned Box3D substrate:
+### Corrected result
 
-- prismatic translation and the solver axis are built from local-frame **X**;
-- `b3GetPrismaticJointForce(...)` constructs the reported local force vector with the axial accumulated impulse in the **Z** component before rotating to world space.
-
-Therefore the generic `b3Joint_GetConstraintForce(...)` vector direction for this prismatic joint is not aligned with the actual physical slide axis represented by `b3PrismaticJoint_GetTranslation(...)`.
-
-This exactly explained the apparent first-run contradiction:
-
-- the pad remained physically at its extension stop under gravity;
-- generic guide-force projection onto the real slide axis read approximately zero;
-- the same reported force appeared in another component with magnitude `20 N`.
-
-Consequently the first E8.0b run falsified the **reader assumption**, not the telescopic mechanics.
-
-For the prismatic guide only, corrected E8.0b uses:
-
-- joint translation / geometry as authority for the physical guide axis;
-- generic constraint-force **magnitude** only to detect whether the guide is materially carrying load.
-
-Distance-joint force direction remains physically usable and is projected normally.
-
-This substrate-specific telemetry caveat must not silently become a universal Box3D rule.
-
-## 7. Second methodological correction — implicit spring response
-
-The first draft also assumed the lightweight `1 kg` compression specimen should necessarily hit the already-qualified `200 N` cap because naive `k*x` gives about `505.3 N` at `8 Hz` and `0.2 m` compression.
-
-Pinned solver inspection showed the distance spring is implemented as an implicit soft constraint using bias/mass/impulse scaling. A complete outer-step constraint-force result is therefore not simply classical `k*x`.
-
-E8.0a already proves that the configured `200 N` upper bound is real and saturates under a deliberately strong `20 kg` specimen.
-
-E8.0b's independent purpose is **composition and role separation**, so the corrected gate requires the lightweight spring reaction to be:
-
-- material relative to the `1 kg` pad-weight scale (`>20 N`);
-- bounded by the already-qualified `200 N` cap;
-- while the prismatic guide is interior to its stop and carries no material reported constraint load.
-
-No mechanism parameter changed during these corrections.
-
-## 8. Corrected E8.0b exact result
-
-Corrected exact head:
+Exact head:
 
 `b035fccac26bb730316adc39b5f881cfe9b93117`
 
@@ -280,118 +108,332 @@ Workflow:
 
 `33693885658` — **SUCCESS**.
 
-Measured output:
+Suspension at extension stop:
 
-### Suspension
+- `1 kg` pad under `20 m/s²` gravity;
+- prismatic translation `1.000141 m`;
+- mean guide reaction magnitude `20.000 N`;
+- distance-spring reaction `0.000 N`.
 
-- pad mass: `1.0 kg`;
-- derived pad weight: `20.0 N`;
-- prismatic translation: `1.000141 m`;
-- sample range: `1.000141..1.000141 m`;
-- distance: `1.000141 m`;
-- mean reported prismatic reaction magnitude: `20.000 N`;
-- raw guide force: `[0.000, -0.000, 20.000] N`;
-- projection of that raw vector onto the physical slide axis: `0.000 N` — retained as evidence of the telemetry mismatch;
-- mean distance-spring axial reaction: `0.000 N`.
+Compression inside guide travel:
 
-### Compression while interior to travel
+- length `0.800000 → 0.833125 m`;
+- guide remained interior at `0.833125 m`;
+- guide reaction magnitude `0.000 N`;
+- distance-spring axial reaction `103.832 N`.
 
-- length: `0.800000 → 0.833125 m`;
-- prismatic translation: `0.833125 m`, safely interior to the `1.00 m` extension stop;
-- peak reported guide reaction magnitude: `0.000 N`;
-- distance-spring axial reaction: `103.832 N`;
-- spring raw force: `[0.000, -103.832, 0.000] N`.
+Qualified claim:
 
-Whole exact-head validation:
+> **A limit-only guide can suspend a real distal mass at its extension stop while the unilateral distance spring remains tension-free; inside guide travel the stop disengages and the spring alone supplies material finite compression.**
 
-- research smoke: **67 scripts PASS**;
-- Donor smoke: **4 scripts PASS**;
-- production build: **PASS**;
-- Pages configure/upload/deploy: correctly skipped on the experiment branch.
+This is composition evidence only, not an embodied leg/support.
 
-## 9. Qualified E8.0b claim
+## 4. E8.0c — internal latch/release cache boundary PASS
 
-E8.0b supports this claim and no stronger one:
+E8.0b exposed a stow problem. An upward neutral stow is mirror-symmetric and ground-clear, but gravity preloads a free telescope in compression. A temporary exact prismatic lock can act as an internal latch, provided its release does not inject a solver-cache kick.
 
-> **On the pinned substrate, a limit-only prismatic guide can physically suspend a real distal mass at an internal extension stop while the E8.0a distance spring remains effectively tension-free; inside guide travel, the stop disengages and the finite compression-only distance spring supplies material axial reaction without material constraint-load assistance from the prismatic guide.**
+Script:
 
-This makes the guided-telescopic family a justified candidate for the next embodied representation test.
+`scripts/e8-0c-latch-release-cache-boundary.mjs`
 
-It does not prove:
+Pinned-source inspection predicted a relevant distinction:
 
-- that a guide body + distal pad can be added to the E5 organism without perturbing it;
-- a fair inactive/stowed geometry;
-- a placement actuator or latch;
-- ground contact;
-- stable load sharing;
-- translational agency;
-- gait or gameplay feel.
+- `b3PrismaticJoint_SetLimits(...)` changes limits but does not itself clear retained limit impulses;
+- toggling `b3PrismaticJoint_EnableLimit(...)` clears lower/upper limit impulse state when the limit state changes.
 
-## 10. New highest-value unknown: stow/deployment
+Three-way crucible:
 
-E8.0b removes the basic constraint-composition uncertainty. The next problem is no longer whether the telescopic primitive can exist.
+1. fresh-open reference;
+2. exact-lock → direct `SetLimits(open)`;
+3. exact-lock → `EnableLimit(false) → SetLimits(open) → EnableLimit(true)`.
 
-A real branch in the `80 kg` organism must be simultaneously:
+First measurement assumption expected the source-scale warm-start impulse to remain visible as the full outer-frame terminal `Δv`. That was falsified: later substep solves correct much of the first-substep difference. The gate was corrected before the second run to compare direct/reset release **relationally against fresh-open** instead of demanding the invalid terminal magnitude.
 
-1. internally physical;
-2. ground-clear while inactive;
-3. not materially preloading the compression spring while inactive;
-4. free from world locks/kinematic holds;
-5. capable of later reaching support;
-6. representation-neutral before any active support claim.
+Final exact head:
 
-This creates a mounting/deployment choice that must not be smuggled in as an implementation detail.
+`2988e886204b5683fb82a3972a39976565e5e13c`
 
-For example:
+Workflow:
 
-- stowing the branch upward is ground-clear, but gravity tends to compress a free telescope;
-- pointing it downward at full extension risks immediate ground contact;
-- holding it retracted with a motor introduces bilateral active axial authority unless carefully bounded and released;
-- mechanically locking full extension and later releasing the compression travel behaves like an internal latch, but the lock/release transition itself needs qualification.
+`33695014480` — **SUCCESS**.
 
-A promising next candidate is therefore a **finite internal latch / deployment transition**, not a hidden world reaction. It remains provisional until tested.
+Key first-open-frame measurements:
 
-## 11. Required embodied gate after deployment semantics are resolved
+- fresh: `v=-0.118907 m/s`, `t=0.998269 m`, spring `17.578 N`;
+- direct SetLimits: `v=-0.108815 m/s`, `t=0.998780 m`, spring `15.167 N`;
+- direct errors vs fresh: `1.01e-2 m/s`, `5.11e-4 m`, `2.41 N`;
+- cache-reset release: errors vs fresh `6.41e-7 m/s`, `0 m`, `6.87e-5 N`;
+- zero-g neutral reset drift `0`, max speed `2.71e-6 m/s`;
+- loaded released pad settled inside guide travel with guide reaction `0 N` and spring reaction `20 N`.
 
-Only after the stow/deployment mechanism is itself qualified should E8 embed the branch into the exact E5/current31 organism.
+Qualified claim:
 
-The inactive representation gate should preserve:
+> **The internal latch can be released without a material cache artifact by clearing the prismatic limit state around the limit change; direct SetLimits-only release is measurably different from a fresh-open rig.**
 
-- exact primary `10 kg foot ↔ spherical ankle ↔ torso` path;
-- total organism mass `80 kg`;
-- real dynamic auxiliary bodies;
-- zero initial distal-ground contact;
-- no world/kinematic hold;
-- no material unintended spring preload;
-- reference and candidate RECOVER in both directions;
-- zero ramp primary-support loss;
-- whole-body ramp impulse fraction within `0.05` of reference;
-- ramp-end speed within `0.25 m/s`;
-- peak torso tilt within `4°`;
-- candidate mirrored speed gap ≤ `0.15 m/s`;
-- candidate mirrored impulse-fraction gap ≤ `0.035`.
+This qualifies a substrate procedure, not an embodied limb or deployment policy.
 
-These preserve the E6/E7 rule:
+## 5. E8.1 — mass/inertia-matched embodied serial telescope
+
+After E8.0c, the first embodied question returned to the E6/E7 rule:
 
 > **Representation match before actuation.**
 
-## 12. Natural boundary after E8.0b
+The candidate deliberately preserved the already-qualified E7 branch mass properties as closely as possible.
 
-E8.0a and E8.0b are complete at binding/composition level.
+E7 probe:
 
-The selected direction is now narrower:
+- `1 kg` uniform body;
+- length `0.9 m`;
+- COM `0.45 m` from torso pivot;
+- sagittal pivot inertia `0.2712 kg·m²`.
 
-> **guided telescopic parallel support with a separate placement channel and finite compression-only axial compliance.**
+E8.1 split:
 
-But the architecture is not yet promoted. The next smallest causal gate is:
+- proximal `0.5 kg × 0.45 m`;
+- distal `0.5 kg × 0.45 m`;
+- contiguous neutral geometry;
+- total branch mass `1 kg`;
+- COM exactly `0.45 m` from torso pivot;
+- parallel-axis calculation gives the same `0.2712 kg·m²` sagittal pivot inertia.
 
-> **Can the branch be physically stowed and released/deployed without world authority, unintended preload, or an impulsive representation change?**
+Candidate organism:
 
-Do not yet:
+- exact primary `10 kg foot ↔ spherical ankle ↔ 69 kg torso`;
+- `torso ↔ exact-zero revolute ↔ proximal`;
+- `proximal ↔ exact-locked prismatic ↔ distal`;
+- coaxial compression-only distance spring;
+- total organism mass `80 kg`;
+- no motors, no latch release, no auxiliary actuation;
+- current31 / lead8 E5 stimulus.
 
-- choose gameplay spring constants from `200 N` / `8 Hz`;
-- add a permanent bilateral axial motor;
-- run ground load-sharing or current31 translational-agency A/B;
-- tune the branch against desired recover/fall outcomes;
-- promote E8 into `src/` or Donor;
-- build a full humanoid by default.
+Declared representation envelope was not relaxed:
+
+- reference and candidate RECOVER both directions;
+- zero primary ramp-support loss;
+- zero auxiliary contacts;
+- ramp impulse fraction within `0.05`;
+- ramp-end speed within `0.25 m/s`;
+- peak torso tilt within `4°`;
+- candidate mirror speed gap ≤ `0.15 m/s`;
+- candidate mirror impulse gap ≤ `0.035`;
+- placement hinge lock error ≤ `0.25°`;
+- prismatic lock error ≤ `0.005 m`;
+- segment alignment error ≤ `0.25°`;
+- settled spring preload ≤ `0.5 N`.
+
+## 6. E8.1a first run — self-contact confound
+
+Script:
+
+`scripts/e8-1a-inactive-telescopic-support-representation.mjs`
+
+The first split introduced one new auxiliary contact and large mechanical distortion. A dedicated identity diagnostic proved the pair was **distal↔torso**.
+
+Geometric cause:
+
+- torso half-height `0.55 m`;
+- distal segment begins about `0.45 m` above torso COM;
+- nominal overlap is about `0.10 m`.
+
+The one-piece E7 probe could not self-collide with torso through its direct joint connection; after the split, the distal body no longer had that implicit collision suppression.
+
+One causal representation correction was made:
+
+- common negative collision group for `torso + proximal + distal`;
+- external/world collision rules preserved;
+- no geometry, mass, joint, spring or threshold changes.
+
+The confounded failure remains provenance; it is not used as the final E8.1 verdict.
+
+## 7. E8.1a corrected representation — FAIL
+
+Final corrected exact head:
+
+`09ad152406298b495b1f0067a918ae586bee5ba8`
+
+Workflow:
+
+`33696051005` — **FAIL at the intended E8.1a gate**.
+
+After self-contact removal, almost the entire macro representation envelope passed:
+
+### direction −
+
+- ref/candidate: RECOVER / RECOVER;
+- ramp impulse fraction `0.671 → 0.654`;
+- ramp-end speed `4.204 → 4.127 m/s`;
+- peak torso tilt `14.08 → 13.38°`;
+- foot-relative travel `0.128 → 0.125 m`;
+- auxiliary contacts `0`;
+- primary ramp support loss `0`;
+- prismatic error `5.91e-4 m`;
+- segment alignment error `0.0906°`;
+- spring settled/max `0.175 / 1.155 N`;
+- **hinge lock error `0.296716°` > declared `0.250000°`.**
+
+### direction +
+
+- ref/candidate: RECOVER / RECOVER;
+- ramp impulse fraction `0.646 → 0.642`;
+- ramp-end speed `4.216 → 4.179 m/s`;
+- peak torso tilt `14.98 → 14.36°`;
+- foot-relative travel `0.144 → 0.140 m`;
+- auxiliary contacts `0`;
+- primary ramp support loss `0`;
+- prismatic error `5.91e-4 m`;
+- segment alignment error `0.0801°`;
+- spring settled/max `0.175 / 1.155 N`;
+- **hinge lock error about `0.2945°` > declared `0.250000°`.**
+
+The threshold was not changed to `0.30°` after seeing the result.
+
+This is a small absolute mismatch but a real failure of the predeclared inactive-mechanical-equivalence contract.
+
+## 8. E8.1b — distance-spring causal decomposition
+
+A disposable branch was created from exact `09ad1524…` so the causal decomposition would not contaminate the live E8 line before interpretation.
+
+Question:
+
+> Is the hinge drift caused by the compression-only distance spring sharing the same axial DOF as the exact prismatic lock, or by the serial split topology itself?
+
+Only one mechanical difference was introduced:
+
+- full arm: locked prismatic + distance spring;
+- control arm: identical locked prismatic, **no distance spring**.
+
+Mass, COM/inertia, geometry, filters, revolute/prismatic frames, locks, solver cadence, current31/lead8 stimulus and all thresholds were held.
+
+Two early executions stopped before physics because of harness-wrapper bugs; they are explicitly **not evidence**.
+
+First valid physics decomposition:
+
+- temp head `2ebd04f1647ff02a1bedc3eb3a63eac9ae295fac`;
+- workflow `33697836866` — expected **FAIL** at the negative conclusion.
+
+Result:
+
+- full hinge drift: about `0.2967° / 0.2945°`;
+- no-spring hinge drift: about `0.2965° / 0.2942°`;
+- macro representation envelope remained good in both arms;
+- axial/alignment errors were nearly unchanged;
+- no-spring arm correctly reported zero spring force.
+
+Therefore:
+
+> **Removing the distance spring does not restore the declared inactive mechanical envelope. The distance spring is not the material cause of E8.1a's hinge-drift failure.**
+
+Executable provenance is retained outside mandatory smoke:
+
+- `scripts/e8-1b-constraint-topology-decomposition.mjs`;
+- `scripts/e8-1b-constraint-topology-decomposition-source.mjs`.
+
+## 9. E8.1c — native hinge-coordinate hardening
+
+One final possible confound remained: E8.1a/b measured hinge lock error as the difference between world sagittal body tilts, whereas the actual locked revolute coordinate is available directly through `b3RevoluteJoint_GetAngle(...)`.
+
+E8.1c changed **observation only**, not mechanics.
+
+Script:
+
+`scripts/e8-1c-hinge-coordinate-observation.mjs`
+
+Final temp head:
+
+`596e2138fc830f858613927fd2ffcbb9935d90d1`
+
+Workflow:
+
+`33698276340` — expected **FAIL** at the hardened negative conclusion.
+
+Measured maximum:
+
+- historical world-angle metric: `0.296716°`;
+- native `b3RevoluteJoint_GetAngle`: `0.296716°`;
+- declared limit: `0.250000°`.
+
+The native coordinate reproduced the same violation.
+
+Therefore:
+
+> **E8.1a/b is not a world-angle measurement artifact. The exact locked revolute itself exceeds the declared inactive representation envelope in the tested serial split topology.**
+
+## 10. Cumulative E8 verdict
+
+E8 separates four claims:
+
+1. finite mirrored compression-only distance primitive — **PASS**;
+2. limit-guide + unilateral-compliance composition — **PASS**;
+3. cache-safe internal prismatic latch release — **PASS**;
+4. first embodied serial telescopic split preserving E7 mass/COM/inertia — **FAIL** inactive mechanical representation.
+
+The final negative survives the meaningful confound checks:
+
+- self-contact identified and removed causally;
+- distance spring removed without changing the failure;
+- native revolute coordinate confirms the world-angle metric;
+- no representation threshold was relaxed;
+- no mass, geometry, solver or spring sweep was used to search for a pass.
+
+Central retained result:
+
+> **A useful axial-compliance primitive can exist on the substrate without making this particular latent serial telescopic representation acceptable when inactive.**
+
+More specifically:
+
+> **Do not advance `torso → locked revolute → proximal → locked prismatic → distal` into placement, ground load-sharing or current31/current36 agency tests merely because its macro response looks close. It failed the declared inactive mechanical-equivalence gate.**
+
+This is not evidence that all telescopic/compliant support mechanisms are impossible.
+
+## 11. Smoke / provenance policy
+
+Mandatory positive E8 smoke contains only qualified substrate/composition results:
+
+- `e8-0a-distance-joint-axial-binding-calibration.mjs`;
+- `e8-0b-telescopic-guide-compliance-binding.mjs`;
+- `e8-0c-latch-release-cache-boundary.mjs`.
+
+Negative embodied representation probes remain executable provenance outside mandatory green smoke:
+
+- `e8-1a-inactive-telescopic-support-representation.mjs`;
+- `e8-1b-constraint-topology-decomposition.mjs` + source;
+- `e8-1c-hinge-coordinate-observation.mjs`.
+
+A negative experiment is not rewritten into a PASS merely to keep CI green.
+
+## 12. New research boundary
+
+E8.1 changes the next question.
+
+The problem is no longer simply “qualify latch release, then embed the prismatic telescope.” E8.0c already qualified release semantics; the latent serial prismatic representation itself failed before release.
+
+The next family should therefore minimize or eliminate the **inactive latent serial DOF topology** rather than tuning it.
+
+One physically interpretable candidate exposed by the pinned binding is a **rigid stow / mechanical clutch transition**:
+
+- preserve the same split branch mass/COM/inertia;
+- while inactive, make proximal+distal mechanically rigid rather than carrying a latent prismatic DOF;
+- only at an explicitly qualified transition replace/release that rigid connection into the axial guide/compliance mechanism;
+- require continuity of pose/velocity/momentum and no material energy/impulse kick at the transition before embedding it into E5.
+
+The pinned binding exposes a native weld joint, so this is substrate-plausible. It is **not selected architecture yet**.
+
+The smallest next causal question is:
+
+> **Can a split auxiliary branch made rigid while inactive reproduce the already-qualified one-piece E7 probe inside the same representation envelope?**
+
+Only if that passes should a weld/rigid-stow → prismatic/compliance clutch transition be separately qualified.
+
+Alternative mechanism families remain live, including a different minimal articulated support or explicit bounded gameplay authority from the E5 fork.
+
+Do not by inertia:
+
+- relax the `0.25°` E8.1 hinge gate to fit the observed `~0.295°`;
+- sweep spring, mass, segment length, hinge/prismatic tolerances or solver substeps;
+- activate E8.1 and test ground contact/load sharing anyway;
+- interpret the `200 N / 8 Hz` substrate values as gameplay constants;
+- weaken A‴ `31/36 m/s²` agency;
+- build a full humanoid by default;
+- promote E8 mechanics into `src/` or Donor.
+
+E8 closes with positive axial-compliance substrate evidence and a negative embodied serial-representation boundary.
