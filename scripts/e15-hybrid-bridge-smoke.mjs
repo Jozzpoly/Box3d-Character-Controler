@@ -13,7 +13,6 @@ function makeWorld() {
   const def = b3.b3DefaultWorldDef();
   def.gravity = [0, -20, 0];
   const world = b3.b3CreateWorld(def);
-
   const bodyDef = b3.b3DefaultBodyDef();
   bodyDef.type = b3.b3BodyType.b3_staticBody;
   bodyDef.position = [0, -0.5, 0];
@@ -63,6 +62,10 @@ function assertFinite(values, label) {
   if (!values.every(Number.isFinite)) throw new Error(`${label} contains non-finite values: ${values}`);
 }
 
+function roundVector(vector) {
+  return vector.map((value) => Number(value.toFixed(6)));
+}
+
 function runNeutralEquivalence() {
   const donorWorld = makeWorld();
   const hybridWorld = makeWorld();
@@ -78,6 +81,16 @@ function runNeutralEquivalence() {
   let maxBodyTilt = 0;
   let maxNeutralFeedback = 0;
   let frame = 0;
+  let phase = 'settle';
+  let phaseFrame = 0;
+  let peakOffsetEvent = null;
+  const phaseMaxima = {};
+
+  const setPhase = (name) => {
+    phase = name;
+    phaseFrame = 0;
+    phaseMaxima[name] = { offset: 0, tilt: 0, feedbackImpulse: 0 };
+  };
 
   const stepBoth = (control) => {
     tick(donorWorld, donor, control);
@@ -87,6 +100,35 @@ function runNeutralEquivalence() {
     maxBodyOffset = Math.max(maxBodyOffset, hybrid.bodyOffsetDistance);
     maxBodyTilt = Math.max(maxBodyTilt, hybrid.bodyTilt);
     maxNeutralFeedback = Math.max(maxNeutralFeedback, hybrid.lastBodyFeedbackImpulse);
+    phaseMaxima[phase].offset = Math.max(phaseMaxima[phase].offset, hybrid.bodyOffsetDistance);
+    phaseMaxima[phase].tilt = Math.max(phaseMaxima[phase].tilt, hybrid.bodyTilt);
+    phaseMaxima[phase].feedbackImpulse = Math.max(phaseMaxima[phase].feedbackImpulse, hybrid.lastBodyFeedbackImpulse);
+
+    if (!peakOffsetEvent || hybrid.bodyOffsetDistance > peakOffsetEvent.offset) {
+      const targetNow = [hybrid.position[0], hybrid.position[1] + hybrid.bodyOffsetY, hybrid.position[2]];
+      peakOffsetEvent = {
+        phase,
+        phaseFrame,
+        frame,
+        offset: hybrid.bodyOffsetDistance,
+        measuredTarget: roundVector(hybrid.bodyTarget),
+        currentRootTarget: roundVector(targetNow),
+        rootPosition: roundVector(hybrid.position),
+        rootVelocity: roundVector(hybrid.velocity),
+        bodyPosition: roundVector(hybrid.bodyPosition),
+        bodyVelocity: roundVector(hybrid.bodyVelocity),
+        bodyTargetErrorCurrent: roundVector([
+          targetNow[0] - hybrid.bodyPosition[0],
+          targetNow[1] - hybrid.bodyPosition[1],
+          targetNow[2] - hybrid.bodyPosition[2],
+        ]),
+        bodyContacts: hybrid.lastBodyContacts,
+        followImpulse: hybrid.lastFollowImpulse,
+        feedbackImpulse: hybrid.lastBodyFeedbackImpulse,
+        uprightTorque: hybrid.lastUprightTorque,
+      };
+    }
+
     assertFinite(rootSignature(hybrid), `neutral frame ${frame} root`);
     assertFinite([
       hybrid.bodyOffsetDistance,
@@ -96,33 +138,53 @@ function runNeutralEquivalence() {
       hybrid.lastUprightTorque,
     ], `neutral frame ${frame} body telemetry`);
     frame += 1;
+    phaseFrame += 1;
   };
 
+  setPhase('settle');
   for (let i = 0; i < 45; i++) stepBoth(intent());
+  setPhase('forward-sprint');
   for (let i = 0; i < 75; i++) stepBoth(intent({ moveForward: 1, sprint: i > 35 }));
+  setPhase('diagonal');
   for (let i = 0; i < 30; i++) stepBoth(intent({ moveRight: 0.65, moveForward: 0.35 }));
+  setPhase('pre-jump-neutral');
   for (let i = 0; i < 8; i++) stepBoth(intent());
+  setPhase('jump');
   for (let i = 0; i < 80; i++) {
     stepBoth(intent({ jump: i === 0, jumpHeld: i < 12, moveForward: i < 42 ? 0.55 : 0 }));
   }
+  setPhase('post-jump-neutral');
   for (let i = 0; i < 60; i++) stepBoth(intent());
 
+  const report = {
+    worstRootDelta,
+    maxBodyOffset,
+    maxBodyTilt,
+    maxNeutralFeedback,
+    phaseMaxima,
+    peakOffsetEvent,
+  };
+
+  if (outPath) {
+    fs.writeFileSync(outPath, `${JSON.stringify({ schema: 'e15-neutral-diagnostic-v1', neutral: report }, null, 2)}\n`);
+  }
+
   if (worstRootDelta > EPS) {
-    throw new Error(`E15 inactive body layer changed Donor root trajectory: max delta ${worstRootDelta}`);
+    throw new Error(`E15 inactive body layer changed Donor root trajectory: max delta ${worstRootDelta}; peak=${JSON.stringify(peakOffsetEvent)}`);
   }
   if (maxNeutralFeedback > 1e-7) {
-    throw new Error(`E15 neutral body produced horizontal consequence feedback: ${maxNeutralFeedback} N·s`);
+    throw new Error(`E15 neutral body produced horizontal consequence feedback: ${maxNeutralFeedback} N·s; peak=${JSON.stringify(peakOffsetEvent)}`);
   }
   if (maxBodyOffset > 0.5) {
-    throw new Error(`E15 body bridge ran away during neutral Donor episode: offset ${maxBodyOffset} m`);
+    throw new Error(`E15 body bridge ran away during neutral Donor episode: offset ${maxBodyOffset} m; phaseMaxima=${JSON.stringify(phaseMaxima)}; peak=${JSON.stringify(peakOffsetEvent)}`);
   }
   if (maxBodyTilt > 0.35) {
-    throw new Error(`E15 body bridge accumulated unexplained neutral tilt: ${maxBodyTilt} rad`);
+    throw new Error(`E15 body bridge accumulated unexplained neutral tilt: ${maxBodyTilt} rad; peak=${JSON.stringify(peakOffsetEvent)}`);
   }
 
   b3.b3DestroyWorld(donorWorld);
   b3.b3DestroyWorld(hybridWorld);
-  return { worstRootDelta, maxBodyOffset, maxBodyTilt, maxNeutralFeedback };
+  return report;
 }
 
 function createHybridPair() {
@@ -220,9 +282,10 @@ function runRotationalResponse() {
   return { earlyTilt, peakTilt, finalTilt, peakTorque };
 }
 
+const neutral = runNeutralEquivalence();
 const report = {
   schema: 'e15-donor-physical-body-bridge-v0',
-  neutral: runNeutralEquivalence(),
+  neutral,
   bodyImpulse: runBodyImpulseCausality(),
   rotation: runRotationalResponse(),
 };
