@@ -14,7 +14,7 @@ Working model:
 
 Implementation/probes may be disposable; accepted observations are not.
 
-For a fresh takeover or long-gap return, start with [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md), then [`docs/README.md`](docs/README.md) and the newest stage ledger, currently [`docs/E11_PHYSICS_FIRST_RESIDUAL.md`](docs/E11_PHYSICS_FIRST_RESIDUAL.md).
+For a fresh takeover or long-gap return, start with [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md), then [`docs/README.md`](docs/README.md) and the newest stage ledger, currently [`docs/E12_GRADED_CAPACITY_ENTITLEMENT.md`](docs/E12_GRADED_CAPACITY_ENTITLEMENT.md).
 
 ## Current accepted player — Donor v1 / A‴
 
@@ -53,65 +53,71 @@ With ordinary `μ=.95` support and recovered lead8 posture, real contact supplie
 
 Do not recurse into more serial anatomy or retune evidence thresholds by inertia.
 
-### E11 — physics-first residual narrows the hybrid problem
+### E11 — binary physical eligibility rejected
 
-E11 revisited the bounded-assist side of E5 while forcing every frame to execute:
+E11 forced every residual frame to be physics-first. It established two durable corrections:
 
-`posture → Box3D/contact solve → measure physical whole-body ΔP → optional world-external residual`
-
-#### Fixed physical-only deficit budget — FAIL
-
-A residual budget frozen from a separate physical-only control did not reproduce full accepted current31 once earlier residual impulses changed later frictional demand. Same-frame solver priority therefore does not make the channels independently additive.
-
-#### Interaction decomposition — important correction
-
-The assisted normal-support candidate produced less later physical horizontal impulse mainly because earlier assist reduced **relative slip by about 43–45%**. Calibrated normal-load sum did not collapse; it increased slightly.
-
-Therefore:
-
-> **Lower absolute physical impulse is not automatically evidence of masking when another authority channel reduces the same motion error.**
-
-The old idea of preserving a fixed physical impulse percentage is not promoted as a universal hybrid criterion.
-
-#### Weak-support counterfactual — FAIL of binary eligibility
-
-A simple adaptive physics-first residual required support before+after solve plus positive same-frame physical horizontal impulse.
-
-On normal `μ=.95` support it reproduced accepted current31 translation (`~5.22–5.27 m/s`) and the body recovered.
-
-On weak `μ=.20` support:
-
-- physical-only body **fell** and reached only `~1.98 m/s`;
-- physical traction supplied only `~28–29%` of required ramp authority;
-- the binary-gated residual still produced `~5.28 m/s` ramp-end translation using `~73%` external authority;
-- the body still fell, so posture remained an honest failure signal even while translational traction loss was masked.
-
-At zero friction the gate did not sustain assist after an initial transient.
-
-Therefore:
-
-> **"Support exists + some positive physical impulse" is too weak an anti-masking contract. Materially weak traction can become only a key that unlocks dominant nonreciprocal translation.**
+- lower later physical horizontal impulse is not automatically masking when earlier assist reduced relative slip and therefore reduced frictional demand;
+- a boolean rule such as “support exists + some positive physical impulse” is still too weak: at `μ=.20`, severe traction loss could coexist with accepted-looking `~5.28 m/s` translation dominated by external authority while posture still fell.
 
 Ledger: [`docs/E11_PHYSICS_FIRST_RESIDUAL.md`](docs/E11_PHYSICS_FIRST_RESIDUAL.md).
 
+### E12 — graded capacity survives; placement moves to a world-reference question
+
+E12 replaced binary eligibility with a capability-derived entitlement on the pinned E5 load scale:
+
+`q = clamp( μ × J_n~ / (0.95 × 80 × 20 × 1/60), 0, 1 )`
+
+where `J_n~ = 0.5 × totalNormalImpulse` is the existing E5.0a pinned-substrate load estimate.
+
+#### Canonical current31 launch — PASS
+
+Normal `μ=.95` support retained accepted-looking translation and recovery:
+
+- `5.218 / 5.273 m/s`;
+- mean `q ≈ .965/.970`.
+
+Weak `μ=.20` stayed materially weak and fell:
+
+- only `1.748 / 1.707 m/s` with entitlement;
+- mean `q ≈ .126/.115`.
+
+At `μ=0`, `q=0` and assist is exactly zero.
+
+#### Canonical current36 braking — PASS after harness correction
+
+The first direct-velocity initialization was correctly classified as a confounded harness failure because it did not reproduce the qualified E4.6 brake-start state.
+
+After restoring exact E4.6 history — physical cruise setup → 120f neutral cruise → lead8 — normal support stopped essentially at zero and recovered, while weak `μ=.20` still ended around `3.22–3.39 m/s` and fell; zero friction received no assist.
+
+#### Dynamic-support placement — accounting PASS, no winner
+
+On a real `800 kg` dynamic support, E12 compared world-external and equal-and-opposite reciprocal placement using **support-relative reduced-mass scaling**, so the same `q` grants the same relative agency rather than the same arbitrary impulse.
+
+- world-external placement injects player+support horizontal momentum;
+- reciprocal placement produces equal-and-opposite support recoil and keeps combined horizontal momentum near zero.
+
+But after an identical granted relative pulse, an isolated free player+support pair is almost exactly **Galilean-equivalent** in relative motion, contact load and posture. With diagnostic zero player damping the match is near machine precision. With canonical player linear damping `0.015`, the maximum placement-induced relative-velocity divergence over one second is only about **0.006% of the granted pulse**.
+
+Therefore:
+
+> **More isolated player+free-support tests cannot meaningfully choose world-external versus reciprocal placement. Their substantive difference is whole-system motion/momentum relative to the external world.**
+
+Ledger: [`docs/E12_GRADED_CAPACITY_ENTITLEMENT.md`](docs/E12_GRADED_CAPACITY_ENTITLEMENT.md).
+
 ## Current research direction
 
-The project is now at an **authority-architecture boundary**, not a parameter-tuning stage.
+The project is no longer at “find an anti-masking gain” and no longer needs another `q`, friction, residual-ratio or support-mass sweep.
 
 Highest-value question:
 
-> **What causal contract, if any, can supplement physically earned locomotion authority without making the physical world's traction capacity optional?**
+> **When a dynamically supported player is coupled to a genuine external world reference, what gameplay-relevant consequences distinguish nonreciprocal world-external authority from reciprocal support reaction, and which consequences do we actually want?**
 
-Two distinct candidates deserve a small architecture-selection experiment:
+The next experiment should introduce that external reference with the smallest causal blast radius — for example a world-anchored interaction, third-body/environment contact, or externally driven support — but should **not** choose a wall gap, spring stiffness, support mass or other free parameter merely to force a difference.
 
-1. **graded support-earned world-external entitlement** — residual authority scales with a meaningful physical capability/quality signal rather than a boolean contact flag;
-2. **reciprocal support-mediated auxiliary authority** — equal-and-opposite authority whose dependence on dynamic support and system momentum can be observed directly.
+A genuinely new physical support mechanism remains admissible if it introduces a capability E6–E10 did not already exercise, but more anatomy is not the default.
 
-Do not immediately sweep `Jassist/Jphys` ratios. E11.1a shows measured physical impulse itself changes when assist reduces slip. First define a causal measure that distinguishes "less impulse because less was needed" from "the world is physically weak".
-
-A genuinely new physical support mechanism remains admissible if it introduces a capability not already exercised by E6–E10, but more anatomy is not the default.
-
-The goal is a controllable physical player with causally meaningful embodiment — not maximal mechanical purity or maximal body-part count.
+The goal remains a controllable physical player with causally meaningful embodiment — not maximal mechanical purity or maximal body-part count.
 
 ## Public build
 
@@ -123,7 +129,7 @@ Experimental E3 balance playground:
 
 `https://jozzpoly.github.io/Box3d-Character-Controler/?mode=balance`
 
-E3.2–E11 are machine research only.
+E3.2–E12 are machine research only.
 
 ## Normal controls
 
