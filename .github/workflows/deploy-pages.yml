@@ -27,15 +27,19 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Smoke embodied-player mechanics
         run: npm run smoke
-      - name: Capture E14 continuous diagnostics
+      - name: Capture E14 diagnostics
         if: github.ref != 'refs/heads/main'
-        run: node scripts/e14-1d-continuous-diagnostics.mjs e14-1d-diagnostics.json
-      - name: Upload E14 continuous diagnostics
+        run: |
+          node scripts/e14-1d-continuous-diagnostics.mjs e14-1d-diagnostics.json
+          node scripts/e14-1e-preparation-coupling-crucible.mjs e14-1e-preparation-crucible.json
+      - name: Upload E14 diagnostics
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: e14-continuous-diagnostics
-          path: e14-1d-diagnostics.json
+          path: |
+            e14-1d-diagnostics.json
+            e14-1e-preparation-crucible.json
           if-no-files-found: error
       - name: Build playground
         run: npm run build
