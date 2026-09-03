@@ -1,6 +1,6 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-03, after E10 one-piece support-brace boundary**
+Grounded: **2026-09-03, after E11 physics-first residual / support-relevance boundary**
 
 This is the compact canonical orientation layer. Detailed experiment history belongs in stage ledgers. Before any future write, re-fetch live `main` and its exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
 
@@ -24,7 +24,7 @@ Method:
 
 > **Controlled enough to explain, open enough to play.**
 
-Mechanics must pay rent. More bodies, joints and constraints are not progress by themselves; they must earn useful physical agency, embodiment or explanatory value.
+Mechanics and controller complexity must pay rent in useful agency, embodiment, gameplay value or explanatory power. Physical purity is not a goal by itself.
 
 ## 2. Authority hierarchy
 
@@ -63,7 +63,9 @@ Representation fact:
 
 > **A‴ is a controller-owned mover. Its accepted translation is not articulated rigid-body propulsion.**
 
-Research E3+ asks which parts of accepted agency can be physically earned without destroying control/feel. None of E3–E10 has promoted new mechanics into Donor/runtime.
+Research E3+ asks which parts of accepted agency can be physically earned or honestly supplemented without destroying control/feel. None of E3–E11 has promoted new locomotion mechanics into Donor/runtime.
+
+Do not silently weaken accepted `31/36 m/s²` agency merely to make embodiment easier.
 
 ## 4. Durable research lineage
 
@@ -83,14 +85,14 @@ Current-strength `31 m/s²` launch and `36 m/s²` braking can coexist with finit
 
 With ordinary `μ=.95` support and recovered lead8 posture, real contact supplied about **64.6–71.0%** of full `80 kg × 5.2 m/s` ramp impulse; body speed reached about `4.20–4.42 m/s` while support reached `5.2 m/s`.
 
-World-external residual authority can close the gap but changes reciprocity and can mask physical insufficiency.
+E5 also established the causal distinction between:
 
-Retained fork:
+- **world-external authority** — can preserve translation without reciprocal support momentum, including without support;
+- **support-mediated authority** — exists through support and can preserve equal-and-opposite momentum accounting.
 
-- earn more authority physically; or
-- grant an honest bounded nonreciprocal assist and account it separately.
+A naive world-external residual can close response gaps but can displace contact contribution and mask physical insufficiency.
 
-E5 selects neither.
+E5 deliberately left the physical-vs-bounded-assist fork open.
 
 ### E6 — primary-path latent translation rejected
 
@@ -100,215 +102,198 @@ Hard rule:
 
 Adding latent translation into the qualified primary ankle changed mechanics while inactive. Do not continue primary-ankle latent-DOF variants.
 
-### E7 — parallel one-piece support
+### E7 — real second contact, no stable load regulation
 
-Qualified representation:
+A representation-neutral `1 kg × 0.9 m` one-piece parallel probe passed inactive matching. Finite `18 Nm` internal placement acquired real persistent probe↔ground contact in both directions while primary support remained intact.
 
-- exact primary `10 kg foot ↔ spherical ankle ↔ torso`;
-- separate `1 kg × 0.9 m` one-piece probe;
-- total `80 kg`;
-- probe attached by its own sagittal revolute.
-
-E7.0: inactive/contact-reachable representation **PASS**.
-
-E7.1: finite `18 Nm` equal-and-opposite internal placement acquired real persistent probe↔ground support in both directions at frame ~25 while primary support remained intact — **PASS**.
-
-E7.2: quiet settling transferred almost no meaningful body load to the probe; demand-aligned COM shift caused primary support unload/fall while probe stayed grounded — **FAIL**.
-
-Central result:
+Quiet settling transferred almost no meaningful body load to the probe. Demand-aligned COM shift caused primary support unload/fall while probe stayed grounded.
 
 > **Contact acquisition is not support capacity. A useful support mechanism must prove stable, regulatable load sharing.**
 
-### E8 — axial-compliance substrate / latent telescope rejected
+### E8/E9 — serial support representation rejected
 
-Positive substrate evidence:
+E8 qualified useful local primitives — unilateral axial compression, guided compliance and cache-safe latch release — but an embodied mass/COM/inertia-matched split telescope failed inactive representation (`~0.295° > 0.25°` placement-hinge drift).
 
-- finite mirrored compression-only distance-joint behavior — PASS;
-- limit-only prismatic guide + unilateral compliance role separation — PASS;
-- cache-safe exact-lock release using limit-state clear/re-enable — PASS.
+E9 removed the prismatic and spring entirely. Even a rigidly welded split preserving branch mass, COM and sagittal pivot inertia failed the strict internal representation gate (`~0.292–0.294°` placement hinge; `~0.323–0.328°` weld alignment).
 
-Embodied mass/COM/inertia-matched two-segment telescope nevertheless failed inactive representation at the placement hinge (`~0.295° > 0.25°`). Removing the distance spring did not repair the gate.
+> **On the current substrate/contract, another serial constrained body is not a free route to better support mechanics.**
 
-Conclusion:
+### E10 — one-piece brace transitions cleanly, but does not regulate load
 
-> **The axial-compliance primitives are real, but the tested latent serial telescope is not qualified for actuation/load-sharing.**
+E10 returned to the already-qualified one-piece E7 probe and changed only its existing revolute after real ground acquisition.
 
-Ledger: `docs/E8_UNILATERAL_AXIAL_COMPLIANCE.md`.
+Positive:
 
-### E9 — rigid split rejected
+- isolated current-angle latch **PASS**;
+- acquisition→brace transition **PASS**;
+- matched first-frame momentum difference `0.0424 / 0.0445 N·s` versus existing `0.8 N·s` band;
+- low-demand lock drift `0.0095° / 0.0180°` versus `0.25°`.
 
-A pinned zero-Hz weld primitive first passed isolated finite disturbances. E9 then removed the prismatic and distance spring entirely and split the qualified E7 branch into two rigidly welded `0.5 kg × 0.45 m` bodies while preserving branch mass, COM and sagittal pivot inertia exactly.
+Negative:
 
-Macro current31/lead8 response remained essentially identical, but internal representation still failed:
+- quiet bracing did not meaningfully recruit body load;
+- exact E7.2b/current31 demand remained unable to reach HOLD;
+- brace reduced peak fall from about `99.6°` to `33–34°`, proving a real stabilizing effect, but primary/probe support continuity still failed;
+- brace drift under demand reached `5.79° / 5.63°`, far outside its qualified envelope.
 
-- placement revolute `~0.292–0.294° > 0.25°`;
-- weld relative alignment `~0.323–0.328° > 0.25°`.
-
-Conclusion:
-
-> **On the current substrate/contract, adding another serial constrained body to the qualified support branch is itself mechanically consequential before useful actuation.**
-
-Do not continue the rigid-stow → clutch family or tune weld/geometry/substeps to manufacture a pass.
-
-Ledger: `docs/E9_RIGID_STOW_SPLIT.md`.
-
-### E10 — one-piece acquired support brace rejected as load-regulation mechanism
-
-E10 deliberately avoided another body. It reused the qualified one-piece E7 probe and changed only the existing probe↔torso revolute **after** real support acquisition.
-
-E10.0a isolated current-angle latch — **PASS**:
-
-- wide-limit controls drifted about `8.449°` under the finite challenge;
-- braced specimens drifted about `0.01098°`;
-- neutral latch kick was only order `1e-6` linear/angular speed.
-
-E10.0b real acquisition→brace transition — **PASS**:
-
-- acquisition frame `25` both mirrors;
-- first-frame matched whole-body impulse difference only `0.0424 / 0.0445 N·s` versus the existing `0.8 N·s` E5 band;
-- brace drift `0.0095° / 0.0180°`;
-- both supports stayed clean and continuous.
-
-Transition cleanliness therefore ceased to be the limiting unknown.
-
-E10.1a quiet settled load recruitment — **FAIL**:
-
-- unlatched control reproduced E7.2a;
-- brace preserved total `80 kg` support accounting but probe load remained only about `0.181–0.182 N·s`, far below the unchanged meaningful `>1.1333 N·s` gate;
-- primary foot unloaded by only `0.0107 / 0.0030 N·s`, not `>0.8`.
-
-One final orthogonal E10.1b reused the exact E7.2b current31 demand rather than tuning a new stimulus.
-
-E10.1b demand-aligned brace stability — **FAIL both mirrors**:
-
-- unlatched controls correctly reproduced `FALL/FALL` with peaks near `99.6°`;
-- brace materially reduced peak tilt to `33.44° / 33.84°`, so it had a real stabilizing effect;
-- nevertheless neither mirror reached the existing E4.3 HOLD;
-- best target error remained `23.73° / 23.33°`;
-- primary support was absent for `100 / 73` target-phase frames;
-- probe support was absent for `4 / 6` frames;
-- the exact-angle brace drifted `5.78656° / 5.63471°`, far beyond the qualified `0.25°` envelope.
-
-Canonical E10 boundary:
-
-> **A one-piece acquired parallel probe can be latched cleanly at low demand, but current-angle revolute bracing neither recruits meaningful static body load nor produces stable, regulatable dual-support load sharing under the previously failing current31 demand.**
-
-Retained invariant:
-
-> **Contact acquisition + a rigid brace is still not sufficient support capacity/regulation.**
-
-Do not rescue E10 by brace-angle, torque, length, mass, latch-timing, limit-stiffness, substep or threshold sweeps.
+> **Contact acquisition + a rigid brace is still insufficient stable/regulatable support capacity.**
 
 Ledger: `docs/E10_ONE_PIECE_SUPPORT_BRACE.md`.
 
-## 5. Current runtime / smoke consequence
+### E11 — physics-first residual reveals the real anti-masking problem
+
+E11 returned to the bounded-assist side of E5, but required contact physics to act **before** any world-external residual in every frame.
+
+#### E11.0a — fixed physical-only deficit budget: FAIL
+
+Each direction first measured its physical-only current31 deficit. The candidate then received at most that frozen total external budget, never enlarged when earlier residual impulses changed later contact response.
+
+Physical-only:
+
+- `J_phys = 279.33 / 268.80 N·s`;
+- ramp-end speed `4.204 / 4.216 m/s`.
+
+Physics-first candidate consumed exactly the frozen `79.68 / 78.71 N·s` residual budgets, stayed supported and `RECOVER`, but reached only `4.849 / 4.885 m/s`. Absolute physical share fell by `0.0782 / 0.0724`, beyond the predeclared `0.05` gate.
+
+Conclusion:
+
+> **Same-frame physics priority does not make external residual independently additive. Earlier external impulses change subsequent frictional demand/contact response.**
+
+#### E11.1a — interaction decomposition: PASS / interpretation correction
+
+Matched traces showed that the lower later physical impulse was **not** caused by normal-load collapse:
+
+- positive relative-slip area fell about `43–45%`;
+- calibrated normal-load sum increased about `1–4%`;
+- divergence appeared only after the first residual impulse.
+
+Therefore:
+
+> **Preserving an unchanged absolute physical impulse/share is not a universal anti-masking criterion when another authority channel reduces the same relative-motion error. Less physical impulse can mean less friction was needed, not that physical capacity disappeared.**
+
+E11.0a remains a valid negative result against its declared gate; E11.1a corrects the architectural interpretation of that gate.
+
+#### E11.2a — support-relevance counterfactual: FAIL
+
+A simple adaptive policy kept strict sequencing and required support before+after solve plus positive same-frame physical horizontal impulse. When eligible, it closed only the current post-solve speed shortfall, capped by accepted current31 per-frame authority.
+
+Normal `μ=.95` support:
+
+- adaptive ramp reached `5.218 / 5.273 m/s`;
+- remained `RECOVER` with no support loss;
+- external share about `38–40%`.
+
+Weak `μ=.20` support:
+
+- physical-only organism **FALL**, reaching only `1.972 / 1.980 m/s` with physical fraction about `28–29%`;
+- adaptive organism still **FALL**, but translational ramp reached `5.283 / 5.280 m/s` — inside the existing accepted near-match window;
+- external share rose to about `72.6–73.5%` while weak physical impulse remained essentially unchanged.
+
+Zero friction did not unlock sustained residual authority; after one transient eligible frame the positive-physical gate blocked it.
+
+Decisive conclusion:
+
+> **Binary physical eligibility is too weak. A materially weak but nonzero traction channel can become only a key that unlocks dominant world-external translation, making severe traction loss nearly invisible in the translational response even while posture still honestly fails.**
+
+Ledger: `docs/E11_PHYSICS_FIRST_RESIDUAL.md`.
+
+## 5. Runtime / smoke consequence
 
 Runtime remains unchanged:
 
 - normal URL: A‴ / Donor v1;
 - Donor v0/A″ frozen;
 - E3.1 public balance surface isolated;
-- E3.2–E10 machine research only.
+- E3.2–E11 machine research only.
 
 Durable positive research smoke retains:
 
 - E6 binding calibrations;
 - E7 inactive representation + real ground acquisition/contact identity;
 - E8 axial-compliance/latch substrate calibrations;
-- E9.0a weld binding calibration;
-- E10.0a isolated latch transition;
-- E10.0b real acquisition→brace transition continuity.
+- E9 weld binding calibration;
+- E10 isolated latch + real acquisition→brace transition;
+- E11.1a residual/contact interaction decomposition.
 
-Negative E7.2, E8.1, E9.0b and E10.1a/b remain executable provenance outside mandatory green smoke.
+Negative E7.2, E8.1, E9.0b, E10.1a/b, E11.0a and E11.2a remain executable provenance outside mandatory green smoke.
 
 ## 6. Durable invariants
 
 Preserve unless new evidence explicitly overturns them:
 
-- A‴ numeric feel is accepted; do not silently retune `31/36 m/s²` agency to make embodiment easier.
 - Owner judgement and machine evidence are different evidence classes.
+- A‴ numeric feel is accepted; do not silently weaken `31/36` to make embodiment easier.
 - Internal actuation must not receive hidden world reaction merely to stabilize behavior.
-- Support relocation/contact acquisition is not automatically stepping/gait.
-- A local effect at one solver resolution is not robust capability evidence.
 - Contact-earned and world-external authority must be accounted separately.
 - A new mechanical representation must pass inactive matching before active causal claims.
-- Macro translation matching is insufficient if internal posture/contact mechanics change materially.
-- Do not keep replacing the primary ankle with latent DOFs.
-- Do not equate second contact with stable body-load support.
-- Stable/regulatable load transfer must precede claims that a mechanism earns more locomotion authority.
-- After E8/E9, do not recursively add serial bodies merely to obtain an axial mechanism when representation cost is already failing.
-- After E10, do not treat partial reduction of a fall as proof that a support mechanism deserves tuning; the project-relevant support prerequisite still failed.
+- Contact acquisition is not stable load capacity.
+- Do not keep replacing the primary ankle or recursively add serial bodies after E6–E9.
+- E10 partial fall reduction is not enough to justify support-mechanism tuning.
+- A local effect at one solver resolution is not robust capability evidence.
+- **Absolute physical impulse preservation is not automatically proof of honest embodiment, and lower physical impulse is not automatically masking. Relative demand matters.**
+- **Binary contact / positive-impulse gating is not sufficient anti-masking for world-external residual authority.**
+- If external authority exists, the physical world's capability must remain materially relevant to the resulting behavior or its nonreciprocal contribution must be explicitly understood as overriding that limitation.
+- Physical purity is not the goal; causal honesty and gameplay value are.
 - Complexity must earn information or gameplay value.
-- Physical purity is not the goal. An explicit bounded assist remains an admissible design class if its contribution is honest and measurable.
 
 ## 7. Current highest-value unknown
 
-E10 closes the last cheap variant that reused the qualified E7 one-piece support without adding another body.
+The project no longer needs another residual-cap sweep.
 
-The next question is therefore **not another joint parameter**:
+The highest-value authority question is now:
 
-> **Which remaining design class has the best information/gameplay economics: a genuinely new minimal physical support capability, or an explicitly bounded residual authority layered on top of physically earned contact contribution?**
+> **What causal contract, if any, can supplement physically earned locomotion authority without making the physical world's traction capacity optional?**
 
-This returns the project deliberately to the E5 fork.
+Two distinct candidate classes deserve comparison:
 
-Important cumulative evidence:
+### A. graded support-earned entitlement for world-external residual
 
-- E6: primary serial DOF failed representation;
-- E7: one-piece support passed representation/contact acquisition but failed stable load regulation;
-- E8/E9: split support primitives worked locally but embodied serial representation failed;
-- E10: one-piece brace transitioned cleanly and moderated demand dynamics, but still failed stable/regulatable load sharing.
+Residual entitlement would scale with a meaningful physical capability/quality signal rather than a boolean contact flag.
 
-That is enough negative evidence to make **more anatomy by inertia** a poor default.
+Do **not** jump to `J_assist <= k × J_phys` and sweep `k`. E11.1a shows that measured `J_phys` itself changes when assist reduces slip. A useful entitlement must distinguish:
 
-## 8. Near-term decision stage
+- less physical impulse because less was needed;
+- less physical capability because the world/support is genuinely weak.
 
-Before implementing E11 mechanics, perform a bounded decision/decomposition stage.
+A high-information test should derive the entitlement from an explicit physical quantity or counterfactual before tuning.
 
-Compare two classes explicitly:
+### B. reciprocal/support-mediated auxiliary authority
 
-### A. genuinely different minimal physical mechanism
+E5.0b already proved the primitive distinction: equal-and-opposite support-mediated authority can preserve player+support momentum and disappears without support.
 
-Only continue physically if the candidate introduces a causal capability not already exercised by E6–E10 — for example true support-point relocation/regulation rather than another way of locking the same fixed-length branch.
+A meaningful new experiment must make reciprocity observable — preferably with dynamic support — rather than merely relabeling authority on a kinematic platform.
 
-Reject candidates that merely:
+This is a genuinely different architecture from world-external residual.
 
-- add another serial body;
-- add another stiffness/limit variant;
-- repeat the same fixed support geometry with a new joint type;
-- require weakening the accepted A‴ `31/36` demand to look viable.
+A genuinely new physical support mechanism remains admissible if it introduces a causal capability E6–E10 did not already exercise, but more anatomy is not the default.
 
-### B. honest bounded residual gameplay authority
+## 8. Near-term decision chain
 
-A residual path is admissible only if:
+Before implementing another authority controller:
 
-- physical contact/support remains first-class and measurable;
-- nonreciprocal contribution is separately accounted;
-- it does not become an airborne right without justified support semantics;
-- it cannot silently mask complete loss of physical support;
-- it preserves disturbance reactivity/readability rather than turning the body into decoration;
-- accepted A‴ agency is preserved unless Owner evidence later justifies changing it.
+1. compare graded world-external entitlement against reciprocal support-mediated authority by **information gain**, not ideology;
+2. identify the smallest specimen in which their causal difference is observable;
+3. predeclare what counts as "physical world remains materially relevant" before tuning any gain/ratio;
+4. include a normal-support control and at least one materially weak-support counterfactual so accepted-looking translation cannot hide lost capacity;
+5. if using reciprocal authority, include dynamic-support momentum accounting;
+6. preserve accepted current31/current36 targets as evidence references rather than weaken them;
+7. stop after architecture discrimination; do not immediately tune a gameplay controller.
 
-E5.2 already proves that naive residual authority can displace contact contribution, so the next hybrid experiment must be **contact-prioritized/accounting-first**, not a sweep of assist caps.
+Only after an authority class survives this boundary should the project test launch/braking robustness, disturbances, moving support, support loss, solver resolution and finally a faithful Owner play surface.
 
-## 9. Farther work
+## 9. Strategic interpretation
 
-If a new physical mechanism wins the decision stage:
+E6–E10 show that low-complexity purely physical support mechanisms have not yet paid for their representation/control cost.
 
-- require representation match before actuation;
-- prove real support acquisition/placement if relevant;
-- prove stable/regulatable load sharing before current31/current36 agency;
-- re-check solver-resolution robustness before calling it durable;
-- only then build a faithful play surface for Owner feel judgement.
+E11 shows that nonreciprocal residual authority is viable enough to preserve accepted translation, but naive safeguards can make traction capacity causally optional.
 
-If bounded residual authority wins:
+Therefore the project is **not** at "physics failed, use assist" and not at "assist failed, build legs".
 
-- prove support gating / no-airborne-right semantics;
-- separately measure contact-earned vs granted momentum every relevant phase;
-- test launch and braking, external disturbances, moving support and support loss;
-- predeclare a minimum meaningful physical contribution or other anti-masking invariant before tuning;
-- expose the candidate to Owner only after machine evidence says its accounting is honest.
+It is at a narrower authority-design boundary:
 
-Do not build a humanoid simply because the physics problem is difficult. The target is a compelling physically embodied player, not mechanical purity.
+> **Find the smallest authority architecture in which the body/world remains causally meaningful while accepted player agency remains attainable.**
+
+That may eventually be physical, reciprocal, graded-hybrid, or another mechanism. Evidence has not selected one yet.
 
 ## 10. Execution loop
 
