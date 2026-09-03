@@ -14,5 +14,15 @@ assert.match(lab, /Acceleration/);
 assert.match(lab, /Braking/);
 assert.match(lab, /Balance torque/);
 assert.match(lab, /Single step/);
+assert.match(lab, /immediate A\/D/i, 'Owner Lab must disclose immediate-input temporal contract');
+assert.match(lab, /system pZ/, 'HUD must report momentum on the sagittal experiment axis');
+assert.match(lab, /sample\.signedLean/, 'HUD must read current sagittal lean telemetry');
+assert.doesNotMatch(lab, /signedLeanX/, 'stale browser-X lean telemetry must not return');
+assert.match(lab, /world Z=0|experiment axis is world Z/i, 'fixed visual references must disclose the experiment axis');
 
-console.log(JSON.stringify({ status: 'PASS', surface: 'E14.1B thin Owner Lab contract' }, null, 2));
+console.log(JSON.stringify({
+  status: 'PASS',
+  surface: 'E14.1B thin Owner Lab contract',
+  axis: 'z',
+  temporalContract: 'immediate-input / no hidden anticipation',
+}, null, 2));
