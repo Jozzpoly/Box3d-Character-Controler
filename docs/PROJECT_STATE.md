@@ -1,39 +1,37 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-03, after E14.1C public qualification / STOP FOR OWNER**
+Grounded: **2026-09-03, after Owner-selected E14 pin qualification and bounded braking-ablation evidence**
 
-This is the compact canonical orientation layer. Detailed experiment history belongs in stage ledgers. Before any future write, re-fetch live `main` and exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
+This is the compact canonical orientation layer. Detailed stage provenance remains in the E14 ledger and the post-PIN checkpoint. Before any future write, re-fetch live `main` and exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
 
 ## 0. Current snapshot
 
 - Accepted public/default player remains **A‴ / Donor v1**.
 - Accepted reference ground agency remains `31 m/s²` acceleration / `36 m/s²` braking.
 - E14 does **not** promote new mechanics into Donor/default runtime.
-- Public experimental routes:
+- Public experimental routes remain:
   - `?mode=e14` / `?mode=reaction` — E14.0 reaction-placement surface;
-  - `?mode=e14lab` / `?mode=contextual` — E14.1C Pinned Boundary Skill Probe Owner instrument.
-- E14.1B Owner play produced the first meaningful evidence that the current mechanism can become a primitive physical toy, but not evidence of a good character controller.
-- E14.1C is now **public and mechanically/instrumentally qualified**.
-- No Owner specimen has yet been selected.
-- Current action is **Owner DISCOVERY → PIN → LOCK → PLAY → recording**. Machine must not choose the specimen.
+  - `?mode=e14lab` / `?mode=contextual` — E14.1C pinned-boundary Owner instrument.
+- E14.1C runtime/publication gates remain PASS.
+- Owner has now selected a concrete E14 specimen during public play.
+- Exact generic machine qualification of that specimen passed without tuning.
+- A one-variable `braking 36 → 3` causal ablation shows that the Owner pin's braking asymmetry materially changes deterministic Natural-only posture/contact trajectories.
+- This does **not** yet establish boundary skill, a production controller or a preferred braking value.
+- Current action is **Owner A/B play: exact pin vs symmetric-braking ablation**.
 
-Publication evidence for the E14.1C runtime:
+Current post-PIN checkpoint:
 
-- PR #29 — merged;
-- runtime/main merge commit `b6589decb120567aa16deb0bb90d78a05d2328ec`;
-- exact-main workflow `33811769614` — completed / SUCCESS;
-- mechanics smoke — SUCCESS;
-- build — SUCCESS;
-- Pages configure/upload/deploy — SUCCESS;
-- main diagnostic capture/upload — skipped by workflow design, not a diagnostic verdict.
+[`E14_OWNER_PIN_CAUSAL_CHECKPOINT_2026-09-03.md`](E14_OWNER_PIN_CAUSAL_CHECKPOINT_2026-09-03.md)
 
-Current E14 stage document:
+Earlier detailed E14 stage ledger:
 
 [`E14_CONTEXTUAL_AUTHORITY_LAB.md`](E14_CONTEXTUAL_AUTHORITY_LAB.md)
 
+Its final pre-PIN `STOP FOR OWNER / no specimen selected` statement is historical after this checkpoint and must not override the newer current state.
+
 Current hard stop:
 
-> **E14.1C Owner instrument is public and qualified; STOP FOR OWNER. Do not select, tune or qualify a concrete pinned specimen until Owner chooses one during public DISCOVERY.**
+> **Owner pin selected and exact-qualified; braking asymmetry is a proven deterministic causal lever in this specimen, but its gameplay meaning remains unresolved. STOP FOR OWNER A/B.**
 
 Do not automatically proceed to World Transfer, Strategy Repertoire, replay infrastructure, recovery controller or Donor promotion.
 
@@ -73,7 +71,7 @@ Machine PASS does not prove feel. Owner fun does not prove a causal claim. Negat
 
 Normal public/default runtime remains **A‴ / Donor v1**.
 
-Key accepted/reference values relevant to E14:
+Relevant reference values:
 
 - player interaction mass `80 kg`;
 - max speed `5.2 m/s`;
@@ -87,7 +85,7 @@ Key accepted/reference values relevant to E14:
 - support mass reference `800 kg`;
 - E14 Owner Lab `preparationFrames=0`.
 
-Do not silently weaken accepted `31/36` to make embodiment easier.
+Do not silently weaken accepted `31/36` to make embodiment easier. The Owner-selected E14 specimen's `a=3` is an experimental lab configuration, not a Donor/reference change.
 
 E12 research entitlement remains:
 
@@ -109,168 +107,177 @@ E11/E12/E14 causal order remains physics-first:
 
 ### E3 — finite posture
 
-Finite support-mediated posture established a real embodied struggle. `FALL` remains valid historical failure of the E3/E4 balance objective. For future player gameplay, loss of upright posture need not necessarily mean permanent loss of agency, but that is not an E14.1C implementation change.
+Finite support-mediated posture established a real embodied struggle. `FALL` remains valid historical failure of the E3/E4 balance objective. For future player gameplay, loss of upright posture need not necessarily mean permanent loss of agency.
 
 ### E4 — locomotion/posture compatibility
 
-Preparation can physically help finite posture coexist with current-strength launch/braking. `lead8` is a foresight oracle, not a gameplay timing contract. Preparation-only testing later showed that hidden target freezing can oppose translation already generated by the body.
+Preparation can physically help finite posture coexist with current-strength launch/braking. Historical `lead8` is a foresight oracle, not a gameplay timing contract. Preparation-only testing later showed that hidden target freezing can oppose translation already generated by the body.
 
 ### E5–E12 — authority accounting and graded entitlement
 
 Research separated physical/contact contribution from supplemental authority, rejected weak binary eligibility, qualified graded capacity entitlement in bounded cases, and separated **support-relative agency** from **reaction placement**.
 
-On an isolated free player+support pair, fair External vs Reciprocal placement is nearly Galilean-equivalent in local relative/contact/posture behavior; that isolated pair cannot choose placement on its own.
-
 ### E13 — wider-world coupling
-
-Genuine external world coupling can make reaction placement materially observable. However, quiet engagement being neutral does not imply active-state engagement is neutral.
 
 Durable rule:
 
 > **Do not create an external reaction path at authority time and then call it causally neutral plumbing.**
 
-If the wider world carries reaction, the physical/gameplay coupling must already arise naturally from the situation and retain its history/consequences.
+If the wider world carries reaction, that physical/gameplay coupling must already arise naturally from the situation and retain its history/consequences.
 
 ### E14.0 — Owner-readable placement
 
-Owner could distinguish world-external wind-like acceleration from reciprocal support recoil. This rejected global scenario-named reaction modes as a long-term controller architecture, but selected no production policy.
+Owner distinguished world-external wind-like acceleration from reciprocal support recoil. This rejected global scenario-named reaction modes as a long-term controller architecture, but selected no production policy.
 
 ### E14.1B — continuous lab + Owner play
 
 Corrected E14.1 uses the exact sagittal E4/E12 representation: motion world `Z`, ankle/balance world `X`, qualified `0.34 m` sagittal foot half-length.
 
-At reference no-lead settings:
+At reference no-lead settings Natural strongly under-delivers accepted agency; External and Reciprocal recover nearly identical local support-relative agency; finite-body specimens can still fall. The immediate tension remained **agency demand ↔ finite embodied capacity**.
 
-- Natural strongly under-delivers accepted agency and remains a useful physical-truth probe;
-- External and Reciprocal recover nearly identical local support-relative agency;
-- both finite-body specimens can still fall;
-- the main immediate tension is **agency demand ↔ finite embodied capacity**, not External vs Reciprocal.
+Owner's spontaneous mobile play then became unscripted tuning/exploration, producing the first meaningful evidence that E14 can behave like a primitive physical toy. Competing explanations remained boundary/competence play, tuning/experimentation, slapstick/novelty, world/affordance proxy and missing strategy repertoire.
 
-Owner's ~`142.6 s` spontaneous mobile session moved from comparison into unscripted tuning/play. The strongest signal is that E14 began acting like a **primitive physical toy**. Competing sources remain open: boundary/competence play, tuning/experimentation, slapstick/novelty, world/affordance proxy and missing strategy repertoire.
+### E14.1C — pinned-boundary instrument
 
-## 5. E14.1C — current Owner boundary
+E14.1C added versioned specimen serialization/identity, PIN / clean RESTORE / LOCK, URL-shareable configs, finite telemetry contracts and a generic exact-specimen qualifier. Runtime was published through PR #29 at `b6589decb120567aa16deb0bb90d78a05d2328ec`; exact-main workflow `33811769614` passed build and Pages deployment. Docs closure PR #30 produced pre-PIN canonical state `a92690e0eaa6a6f8597eed65f94b8a3b2fc7ca08`.
 
-Central question:
+E14.1C did not change the authority kernel, continuous physics sim, balance organism or Donor/default mechanics.
 
-> **Can one unchanged current-E14 configuration support enough causal repeatability, sensitivity, flexibility and persistence that Owner can learn to predict/correct it without further parameter tuning?**
+## 5. Owner-selected specimen — current frontier
 
-This is deliberately not a test of which policy is best or how to build the final player.
+Owner-selected canonical config:
 
-A locked-play negative has three possible interpretations, not two:
+`e14c1|s1|m=1180|f=0.65|a=3|b=36|t=1000|p=natural-only`
 
-- H1 boundary/competence play weakens;
-- tuning/experimentation may be the main value;
-- **ACTION SPACE / INSTRUMENT INSUFFICIENT TO TEST H1** — current one-strategy organism may simply offer too few meaningful alternatives.
+ID:
 
-Machine does not decide fun/skill.
+`E14C1-261a1519`
 
-## 6. E14.1C instrument truth
+Owner judgement after play: still far from a player, but slow progress is perceptible and there may be a small promising signal. This is value/feel evidence only.
 
-The public instrument introduces:
+Important semantics:
 
-- versioned pure specimen configuration contract;
-- deterministic canonical serialization and stable specimen ID;
-- URL-shareable/reloadable pinned specimens on existing `?mode=e14lab` route;
-- PIN / clean RESTORE / LOCK semantics;
-- locked-play UI that removes discovery sliders/policy/pause/step/shoves from the primary interaction surface;
-- clean restore with neutral input `0`, cleared stale held state, declared running state and fresh settle;
-- generic later specimen qualifier for no-input sanity, reset determinism, repeated trace determinism, finite telemetry and qualitative input differentiation;
-- explicit mandatory finite telemetry contract;
-- abstract floor/grid world-axis guides instead of false-affordance non-collidable vertical posts.
+- support mass `1180 kg`;
+- friction `.65`;
+- acceleration `3`;
+- braking `36`;
+- max balance torque `1000 Nm`;
+- policy `natural-only`.
 
-PIN stores configuration, **not** Box2D bodies/contacts/solver caches/runtime snapshot.
+Machine did not choose or optimize this config.
 
-Format v1 reference specimen:
+## 6. Exact specimen qualification — PASS within machine scope
 
-`e14c1|s1|m=800|f=0.95|a=31|b=36|t=320|p=entitled-reciprocal`
+Evidence branch:
 
-Reference ID:
+`experiment/e14-owner-pin-1180-065-3-36-1000`
 
-`E14C1-befd707b`
+Qualification commit:
 
-## 7. Instrumentation provenance correction
+`e231be4a02de1e57ee2ea99da09aeb1c89979737`
 
-Historical exact-head E14 diagnostic artifact:
+Workflow `33813566783` — SUCCESS.
 
-- workflow `33802322554`;
-- artifact `9911568231`;
-- head `b858bf48e300b8c9297cd22ac86357f658fedccc`.
+Artifact `9915719258`.
 
-Its E14.1d body-lean phase summaries were invalid because the consumer still read `signedLeanX` while the corrected sagittal sim emitted `signedLean`. This is an observation/tooling defect, not a physics negative. Do not rewrite the historical artifact as corrected.
+Verdict:
 
-Corrected evidence from the first E14.1C implementation commit:
+- no-input: `SANE`;
+- reset determinism: PASS / delta `0`;
+- repeated trace determinism: PASS / delta `0`;
+- input differentiation: `INPUT_DIFFERENTIATED`, all `6/6` declared pairs differentiated;
+- finite/current telemetry passed.
 
-- commit `4b70cbf6e37566c357c84eed87a67ce9b2310d01`;
-- workflow `33811359560`;
-- artifact `9914925276`;
-- schema `e14-1d-corrected-sagittal-telemetry-v2`;
-- body/target lean extrema finite across all diagnostic scenario phases.
+This rejects easy numerical-chaos/non-repeatability explanations under the declared apparatus. It cannot emit FUN/SKILL PASS.
 
-Mandatory instrumentation now fails on missing required fields, `NaN`, infinities, stale `signedLeanX` and wrong sagittal axis semantics.
+## 7. Braking-asymmetry causal probe — PASS as sensitivity evidence
 
-## 8. Validation model and current verdicts
+Source semantics matter: with `natural-only`, supplemental translational authority grant is zero, but target-relative-velocity logic still produces `desiredAcceleration`; posture maps that to `targetLean = atan2(desiredAcceleration, gravity)`.
 
-### MECHANICS GATE — PASS
+For the Owner pin:
 
-Existing research + Donor regressions remain green. E14.1C did not modify the authority kernel, continuous physics sim, balance organism or Donor/default runtime.
+- `a=3` → target lean about `8.53°`;
+- `b=36` release/reversal phase → target lean up to about `60.95°`;
+- with `kp=1600` and `t=1000`, the strong braking transient can saturate the balance actuator.
 
-### INSTRUMENTATION GATE — PASS
+Bounded ablation changed only `b=36 → b=3`.
 
-Required finite telemetry, versioned specimen roundtrip/validation/ID, clean restore, lock mutation boundary, query share/reload, generic qualifier and browser axis/temporal/UI contract pass mandatory validation.
+Ablation canonical config:
 
-Key instrumentation contracts are part of mandatory smoke through `scripts/e14-1c-browser-contract.mjs`; diagnostic artifact upload is supplementary provenance rather than the only qualification path.
+`e14c1|s1|m=1180|f=0.65|a=3|b=3|t=1000|p=natural-only`
 
-### PUBLICATION GATE — PASS
+ID:
 
-Runtime publication at `b6589decb120567aa16deb0bb90d78a05d2328ec` passed exact-main workflow `33811769614`, including build and Pages deployment. Main diagnostic capture/upload remained skipped by workflow design.
+`E14C1-6d63bdef`
 
-## 9. Files intentionally outside E14.1C mechanics blast radius
+Final evidence head `d5a6fcaed7b5c07d9947388316b8252cbb830e95`; workflow `33813784471` SUCCESS; artifact `9915781223`.
 
-E14.1C did not change:
+All four tap/hold × release/reversal trajectories differentiated, while repeated runs of both variants remained deterministic with worst sample delta `0`.
 
-- `src/e14-authority-kernel.js`;
-- `src/e14-continuous-sim.js`;
-- `src/e3-balance-organism.js`;
-- Donor files/default runtime;
-- dependencies;
-- routing semantics in `src/bootstrap.js`.
+Representative longer evidence:
 
-A future need to change those for PIN/LOCK would be a scope alarm requiring causal justification.
+- hold→release max abs relative velocity: pinned `~1.184 m/s`, symmetric brake `~0.621 m/s`;
+- hold→reversal: pinned `~1.409 m/s`, symmetric brake `~0.621 m/s`;
+- pinned had brief support-loss frames in these longer traces (`2` / `3`), symmetric brake had `0`;
+- max torso lean remained similar rather than simply increasing (`~15.28°` pinned vs `~15.79°` symmetric in hold→release).
 
-## 10. Owner protocol — next action
+Therefore braking asymmetry is a real deterministic causal lever in command timing, torque saturation, support/contact response and trajectory. This does **not** establish whether that lever is desirable embodied control or an accidental posture kick.
 
-> **DISCOVERY → find something interesting → PIN → LOCK → play → record.**
+## 8. Current hypothesis boundary
 
-Owner selects the specimen. Machine must not optimize/select one beforehand.
+Current best model:
 
-Locked play preserves A/D, camera and clean pinned reset. Do not give a scripted ideal solution or target success rate.
+> **Mild `a=3` builds motion/posture; release/reversal under `b=36` produces a much stronger counter-posture transient; with `t=1000` this can become a physically mediated catch/counter action.**
 
-Analyse the recording and spontaneous feedback first, then ask questions if needed.
+Because the specimen is `natural-only`, observed support/player translation in this probe is not produced by supplemental authority grant.
 
-After Owner supplies the pinned representation, run the exact config through the generic qualifier without parameter tuning.
+Two live interpretations remain:
 
-## 11. Outcome boundary
+1. a useful state-dependent physical action and seed of boundary/competence play;
+2. an interesting but synthetic posture kick created by the velocity-target braking contract.
 
-Possible post-Owner outcomes:
+Owner hands-on A/B is required to separate them.
 
-- **Boundary skill supported** → smallest next candidate is one-property World Transfer (mass **or** friction), but not inside E14.1C.
-- **Locked play flat with real action-space** → H1 weakens; build/tune/test sandbox value may strengthen.
-- **Action-space/instrument insufficient** → do not falsify H1; next frontier becomes Strategy Repertoire, without assuming a second leg.
-- **Numerical/solver chaos** → stop and decompose.
-- **Mostly slapstick/spectacle** → secondary value only unless it also helps the central player-intent/physical-consequence problem.
+## 9. Instrumentation provenance correction remains binding
 
-## 12. Hard stop / next action
+Historical workflow `33802322554`, artifact `9911568231`, head `b858bf48e300b8c9297cd22ac86357f658fedccc` has invalid E14.1d body-lean phase summaries because its consumer read stale `signedLeanX` while the corrected sagittal sim emitted `signedLean`. This is an observation/tooling defect, not a physics negative.
+
+Corrected evidence began at commit `4b70cbf6e37566c357c84eed87a67ce9b2310d01`, workflow `33811359560`, artifact `9914925276`, schema `e14-1d-corrected-sagittal-telemetry-v2`.
+
+Do not rewrite historical evidence classes.
+
+## 10. Current Owner protocol
+
+Exact A/B only; no parameter sweep:
+
+- **A — Owner pin:** `m=1180, f=.65, a=3, b=36, t=1000, natural-only`;
+- **B — symmetric-braking ablation:** identical except `b=3`.
+
+Owner should play both spontaneously rather than follow an ideal timing script or target success rate.
+
+Primary questions:
+
+- does the interesting catch/counter feel weaken or disappear in B?;
+- is A used through state-reading/correction or mostly through a reusable release/reversal kick?;
+- does B retain an interesting action-space?
+- after returning to A, is the difference legible and intentionally usable?
+
+Analyse recording and spontaneous feedback before selecting any next mechanics experiment.
+
+## 11. Hard stop / next action
 
 Current execution has reached:
 
-> **E14.1C Owner instrument is public and mechanically/instrumentally qualified; no Owner specimen has yet been selected.**
+> **Owner pin selected and exact-qualified; braking asymmetry is causally active, gameplay meaning unresolved.**
 
-**STOP FOR OWNER.**
+**STOP FOR OWNER A/B.**
 
-Before any future continuation:
+Do not yet:
 
-1. verify live `main` exact SHA and CI/Pages;
-2. read this file;
-3. read [`E14_CONTEXTUAL_AUTHORITY_LAB.md`](E14_CONTEXTUAL_AUTHORITY_LAB.md);
-4. preserve the historical E13/E14 evidence classes;
-5. do not choose or tune the pinned specimen for Owner.
+- tune braking or torque toward a preferred value;
+- automatically run a torque ablation;
+- start World Transfer;
+- start Strategy Repertoire;
+- change or promote Donor/default runtime;
+- promote Natural-only;
+- claim H1 boundary skill as established.
