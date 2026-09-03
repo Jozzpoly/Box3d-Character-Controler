@@ -9,12 +9,12 @@ function runFrames(sim, frames, input) {
   return trace;
 }
 
-async function runPolicy(policy, friction = 0.95) {
-  const sim = await createE14ContinuousSim({ policy, friction });
+async function runPolicy(policy, friction = 0.95, preparationFrames = 0) {
+  const sim = await createE14ContinuousSim({ policy, friction, preparationFrames });
   try {
-    const launch = runFrames(sim, 18, 1);
-    const release = runFrames(sim, 12, 0);
-    const reverse = runFrames(sim, 18, -1);
+    const launch = runFrames(sim, 18 + preparationFrames, 1);
+    const release = runFrames(sim, 12 + preparationFrames, 0);
+    const reverse = runFrames(sim, 18 + preparationFrames, -1);
     return { launch, release, reverse, last: sim.snapshot() };
   } finally {
     sim.destroy();
@@ -34,10 +34,18 @@ for (const sample of reciprocal.launch) {
   assert.ok(Math.abs(sample.playerImpulse + sample.supportImpulse) < 1e-8, 'reciprocal authority momentum must cancel');
 }
 
+const prep8 = await runPolicy(E14_AUTHORITY_POLICIES.ENTITLED_RECIPROCAL, 0.95, 8);
+const prepLaunchLead = prep8.launch.slice(0, 8);
+assert.ok(prepLaunchLead.every((s) => s.preparing), 'prep8 must expose exactly the declared launch lead frames');
+assert.ok(prepLaunchLead.every((s) => Math.abs(s.targetRelativeVelocity) < 1e-12), 'prep lead must not advance translational target');
+assert.ok(prepLaunchLead.every((s) => Math.abs(s.playerImpulse) < 1e-12 && Math.abs(s.supportImpulse) < 1e-12), 'prep lead must contain zero supplemental translation');
+assert.ok(!prep8.launch[8].preparing, 'first post-lead frame must release translational authority');
+assert.ok(prep8.launch[8].targetRelativeVelocity > 0, 'first post-lead frame must advance the requested target');
+
 const zeroFriction = await runPolicy(E14_AUTHORITY_POLICIES.ENTITLED_EXTERNAL, 0);
 assert.ok(zeroFriction.launch.every((s) => Math.abs(s.playerImpulse) < 1e-9), 'zero friction must not unlock supplemental authority');
 
-for (const result of [natural, external, reciprocal, zeroFriction]) {
+for (const result of [natural, external, reciprocal, prep8, zeroFriction]) {
   const all = [...result.launch, ...result.release, ...result.reverse];
   assert.ok(all.every((s) => Number.isFinite(s.relativeVelocity)), 'relative velocity must remain finite');
   assert.ok(all.every((s) => Number.isFinite(s.torsoTilt)), 'posture must remain finite');
@@ -48,5 +56,6 @@ console.log(JSON.stringify({
   natural: natural.last,
   external: external.last,
   reciprocal: reciprocal.last,
+  prep8: prep8.last,
   zeroFriction: zeroFriction.last,
 }, null, 2));
