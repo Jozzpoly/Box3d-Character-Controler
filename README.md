@@ -14,7 +14,7 @@ Working model:
 
 Implementation/probes may be disposable; accepted observations are not.
 
-For a fresh takeover or long-gap return, start with [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md), then [`docs/README.md`](docs/README.md) and the newest stage ledger, currently [`docs/E12_GRADED_CAPACITY_ENTITLEMENT.md`](docs/E12_GRADED_CAPACITY_ENTITLEMENT.md).
+For a fresh takeover or long-gap return, start with [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md), then [`docs/README.md`](docs/README.md) and the newest stage ledger, currently [`docs/E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](docs/E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md).
 
 ## Current accepted player — Donor v1 / A‴
 
@@ -62,7 +62,7 @@ E11 forced every residual frame to be physics-first. It established two durable 
 
 Ledger: [`docs/E11_PHYSICS_FIRST_RESIDUAL.md`](docs/E11_PHYSICS_FIRST_RESIDUAL.md).
 
-### E12 — graded capacity survives; placement moves to a world-reference question
+### E12 — graded capacity survives; placement becomes a world-reference question
 
 E12 replaced binary eligibility with a capability-derived entitlement on the pinned E5 load scale:
 
@@ -70,50 +70,74 @@ E12 replaced binary eligibility with a capability-derived entitlement on the pin
 
 where `J_n~ = 0.5 × totalNormalImpulse` is the existing E5.0a pinned-substrate load estimate.
 
-#### Canonical current31 launch — PASS
+On canonical current31/current36 specimens, normal `μ=.95` retained accepted agency while weak/zero traction remained materially weak. This qualifies graded capacity as a **research principle**, not a production formula.
 
-Normal `μ=.95` support retained accepted-looking translation and recovery:
+On a real `800 kg` dynamic support, fair comparison requires the same support-relative granted `Δv`:
 
-- `5.218 / 5.273 m/s`;
-- mean `q ≈ .965/.970`.
+- world-external placement injects combined player+support momentum;
+- reciprocal placement uses reduced-mass equal-and-opposite exchange.
 
-Weak `μ=.20` stayed materially weak and fell:
-
-- only `1.748 / 1.707 m/s` with entitlement;
-- mean `q ≈ .126/.115`.
-
-At `μ=0`, `q=0` and assist is exactly zero.
-
-#### Canonical current36 braking — PASS after harness correction
-
-The first direct-velocity initialization was correctly classified as a confounded harness failure because it did not reproduce the qualified E4.6 brake-start state.
-
-After restoring exact E4.6 history — physical cruise setup → 120f neutral cruise → lead8 — normal support stopped essentially at zero and recovered, while weak `μ=.20` still ended around `3.22–3.39 m/s` and fell; zero friction received no assist.
-
-#### Dynamic-support placement — accounting PASS, no winner
-
-On a real `800 kg` dynamic support, E12 compared world-external and equal-and-opposite reciprocal placement using **support-relative reduced-mass scaling**, so the same `q` grants the same relative agency rather than the same arbitrary impulse.
-
-- world-external placement injects player+support horizontal momentum;
-- reciprocal placement produces equal-and-opposite support recoil and keeps combined horizontal momentum near zero.
-
-But after an identical granted relative pulse, an isolated free player+support pair is almost exactly **Galilean-equivalent** in relative motion, contact load and posture. With diagnostic zero player damping the match is near machine precision. With canonical player linear damping `0.015`, the maximum placement-induced relative-velocity divergence over one second is only about **0.006% of the granted pulse**.
-
-Therefore:
-
-> **More isolated player+free-support tests cannot meaningfully choose world-external versus reciprocal placement. Their substantive difference is whole-system motion/momentum relative to the external world.**
+But on an isolated free player+support pair those placements are almost exactly Galilean-equivalent in relative motion/contact/posture. With canonical damping, maximum relative-velocity divergence over one second was only about **0.006% of the granted pulse**.
 
 Ledger: [`docs/E12_GRADED_CAPACITY_ENTITLEMENT.md`](docs/E12_GRADED_CAPACITY_ENTITLEMENT.md).
 
+### E13 — genuine world coupling matters; manufactured late reaction is not neutral
+
+E13 introduced a genuine external world reference with the smallest qualified representation found in this stage: a mirrored unilateral prismatic world stop.
+
+After correcting a source-backed `fixedRotation` harness conflict:
+
+- the isolated stop binding passed;
+- the free-prismatic `800 kg` support preserved embodied passive representation;
+- zero-gap stop engagement at the **quiet settled state** was passive-neutral.
+
+Then E13.1a compared `{world-external, reciprocal} × {stop OFF, ON}` under the same E12 support-relative one-step grant.
+
+Stop-isolated wider-world effect:
+
+- world-external: approximately `0 N·s`;
+- reciprocal: **`33.177096 / 33.177056 N·s`**.
+
+So:
+
+> **A real external reaction path ends the isolated Galilean ambiguity. Reaction placement becomes physically observable.**
+
+But longer observation exposed a more important boundary. During a fixed lead8/current31 trajectory, stop ON already generated about `56.8 / 68.6 N·s` ON−OFF world effect during posture preparation **before translational authority began**.
+
+E13.2b isolated that issue. Two identical free-prismatic systems performed exact lead8 with no translational authority. At the actual prepared translation both received identical limit geometry; only the candidate enabled the stop. The API transition itself was state-neutral, but one subsequent identical posture solve produced differential world impulses of:
+
+- **`80.793918 N·s`**;
+- **`72.348356 N·s`**.
+
+Therefore:
+
+> **Quiet-state neutrality does not imply active-state neutrality. Once the support has world-relative state, creating the external reaction path is itself a physical event.**
+
+And the architectural correction is:
+
+> **Do not manufacture a world reaction path when authority needs somewhere to react and then call it neutral controller plumbing. If the external world carries reaction, that coupling must already exist as part of the physical/gameplay situation, with its history and consequences visible.**
+
+This does **not** reject reciprocal mechanics and does not select world-external authority for production.
+
+Ledger: [`docs/E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](docs/E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md).
+
 ## Current research direction
 
-The project is no longer at “find an anti-masking gain” and no longer needs another `q`, friction, residual-ratio or support-mass sweep.
+The project no longer needs another isolated placement pulse, unilateral-stop tuning pass, `q` sweep, friction sweep, residual-ratio sweep or support-mass sweep.
 
 Highest-value question:
 
-> **When a dynamically supported player is coupled to a genuine external world reference, what gameplay-relevant consequences distinguish nonreciprocal world-external authority from reciprocal support reaction, and which consequences do we actually want?**
+> **Which naturally present environmental relationships should legitimately carry player-authority reaction, and when should accepted agency remain explicitly controller/world-external instead?**
 
-The next experiment should introduce that external reference with the smallest causal blast radius — for example a world-anchored interaction, third-body/environment contact, or externally driven support — but should **not** choose a wall gap, spring stiffness, support mass or other free parameter merely to force a difference.
+The next useful specimen should make external coupling **ecological rather than manufactured**. Candidate families include:
+
+- a support already anchored/braced by level geometry before player intent;
+- an externally driven support;
+- a third-body/environment contact with a genuine pre-existing causal history.
+
+Do not place a stop at the current support position merely to harvest reaction, and do not choose wall gaps, spring stiffnesses, support masses or clutch timings to force a preferred architecture.
+
+The purpose is **contextual reaction ownership / environmental causality**: discover when reaction is causally honest, mechanically legible and potentially valuable to gameplay.
 
 A genuinely new physical support mechanism remains admissible if it introduces a capability E6–E10 did not already exercise, but more anatomy is not the default.
 
@@ -129,7 +153,7 @@ Experimental E3 balance playground:
 
 `https://jozzpoly.github.io/Box3d-Character-Controler/?mode=balance`
 
-E3.2–E12 are machine research only.
+E3.2–E13 are machine research only.
 
 ## Normal controls
 
