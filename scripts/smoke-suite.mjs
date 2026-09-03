@@ -129,6 +129,12 @@ const SUITES = {
         'scripts/e8-0c-latch-release-cache-boundary.mjs',
       ],
     },
+    {
+      name: 'E9 rigid-stow split representation',
+      scripts: [
+        'scripts/e9-0a-weld-binding-calibration.mjs',
+      ],
+    },
   ],
   donor: [
     {
