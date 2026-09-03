@@ -9,14 +9,17 @@ const G = DONOR_PROFILE_V1.gravity;
 const BRAKE_ACCEL = DONOR_PROFILE_V1.groundDeceleration;
 const CRUISE_SPEED = DONOR_PROFILE_V1.maxSpeed;
 const TOTAL_MASS = DONOR_PROFILE_V1.virtualMass;
+const SAFE_SETUP_ACCEL = 4;
 const FINITE_TORQUE = 320;
 const DIRECTIONS = [-1, 1];
 const LEAD_FRAMES = 8;
 const SETTLE_FRAMES = 90;
+const CRUISE_SETTLE_FRAMES = 120;
 const HOLD_FRAMES = 180;
 const RECOVER_STREAK = 30;
 const LOAD_EPS = 1e-6;
 const NUMERIC_EPS = 1e-6;
+const PRESTATE_EPS = 1e-6;
 const HALF = [2, 0.25, 30];
 const PLATFORM_Y = -HALF[1];
 const IDENTITY = [0, 0, 0, 1];
@@ -26,7 +29,6 @@ const NOMINAL_TRACTION_CAPACITY = REFERENCE_MU * STATIC_FRAME_LOAD;
 const ACCEPTED_BRAKE_FRAME_IMPULSE = TOTAL_MASS * BRAKE_ACCEL * DT;
 const NEAR_MATCH_SPEED_ERROR = 0.10;
 const ACCOUNTING_EPS = 1e-4;
-const INITIAL_SPEED_EPS = 1e-6;
 
 const FRICTION_CASES = [
   { name: 'normal', mu: 0.95 },
@@ -49,17 +51,17 @@ function makeWorld() {
   return b3.b3CreateWorld(wd);
 }
 
-function makePlatform(world, friction) {
+function makePlatform(world) {
   const bd = b3.b3DefaultBodyDef();
   bd.type = b3.b3BodyType.b3_kinematicBody;
   bd.position = [0, PLATFORM_Y, 0];
   bd.enableSleep = false;
   const body = b3.b3CreateBody(world, bd);
   const sd = b3.b3DefaultShapeDef();
-  sd.baseMaterial.friction = friction;
+  sd.baseMaterial.friction = REFERENCE_MU;
   sd.baseMaterial.restitution = 0;
-  b3.b3CreateBoxShape(body, sd, ...HALF);
-  return body;
+  const shape = b3.b3CreateBoxShape(body, sd, ...HALF);
+  return { body, shape };
 }
 
 function createSupportReader(organism) {
@@ -120,16 +122,6 @@ function bodyVelocity(body) {
   return v;
 }
 
-function setBodyZVelocity(body, z) {
-  const v = bodyVelocity(body);
-  b3.b3Body_SetLinearVelocity(body, [v[0], v[1], z]);
-}
-
-function setWholeBodyZVelocity(organism, z) {
-  setBodyZVelocity(organism.foot, z);
-  setBodyZVelocity(organism.torso, z);
-}
-
 function wholeBodyState(organism) {
   organism._sync();
   const footV = bodyVelocity(organism.foot);
@@ -155,11 +147,11 @@ function applyMassProportionalResidual(organism, signedImpulse) {
 
 function runCase({ direction, friction, assistMode }) {
   const world = makeWorld();
-  const platform = makePlatform(world, friction);
+  const platform = makePlatform(world);
   const organism = new SagittalBalanceOrganism(b3, world, {
     mode: 'finite',
     maxTorque: FINITE_TORQUE,
-    footFriction: friction,
+    footFriction: REFERENCE_MU,
   });
   const reader = createSupportReader(organism);
   let support = reader.read();
@@ -179,22 +171,17 @@ function runCase({ direction, friction, assistMode }) {
   let sumEntitlement = 0;
   let entitlementSamples = 0;
   let fellBeforeBrake = false;
-  let tiltAtBrake = 0;
-  let omegaAtBrake = 0;
-  let footTiltAtBrake = 0;
   let peakBrakeTilt = 0;
   const cruise = direction * CRUISE_SPEED;
   const anticipatedBrakeTilt = -direction * Math.atan2(BRAKE_ACCEL, G);
 
-  function step({ movePlatform = false, targetTilt = 0, brake = false } = {}) {
+  function step({ targetSpeed = platformSpeed, accelLimit = 0, targetTilt = 0, brake = false } = {}) {
     const platformSpeedBefore = platformSpeed;
-    if (movePlatform) {
-      platformSpeed = moveToward(platformSpeed, 0, BRAKE_ACCEL * DT);
-    }
+    platformSpeed = moveToward(platformSpeed, targetSpeed, accelLimit * DT);
     const actualPlatformAccel = (platformSpeed - platformSpeedBefore) / DT;
     platformZ += platformSpeed * DT;
     b3.b3Body_SetTargetTransform(
-      platform,
+      platform.body,
       { position: [0, PLATFORM_Y, platformZ], quaternion: IDENTITY },
       DT,
       true,
@@ -202,7 +189,7 @@ function runCase({ direction, friction, assistMode }) {
 
     const supportBefore = support.reactive;
     const beforePhysics = wholeBodyState(organism);
-    const commandedTilt = brake
+    const commandedTilt = targetTilt === 'effective-up'
       ? Math.atan2(actualPlatformAccel, G)
       : targetTilt;
     targetedPreStep(
@@ -266,17 +253,30 @@ function runCase({ direction, friction, assistMode }) {
     if (stableFrames >= RECOVER_STREAK) recovered = true;
   }
 
-  for (let i = 0; i < SETTLE_FRAMES; i++) step();
-  if (!support.reactive) throw new Error(`E12.1a failed to establish support mu=${friction} dir=${direction}`);
+  // Reproduce the qualified E4.6 brake-start history exactly. Every case is a
+  // normal mu=.95 world through safe physical cruise, 120f neutral cruise, and
+  // lead8. The friction counterfactual is introduced only after this state has
+  // been established, immediately before the first braking physics solve.
+  for (let i = 0; i < SETTLE_FRAMES; i++) step({ targetSpeed: 0, accelLimit: 0, targetTilt: 0 });
+  if (!support.reactive) throw new Error(`E12.1a failed to establish initial support dir=${direction}`);
   const settled = wholeBodyState(organism);
   if (Math.abs(settled.mass - TOTAL_MASS) > 1e-3) {
     throw new Error(`E12.1a organism mass ${settled.mass} != ${TOTAL_MASS}kg`);
   }
 
-  // Matched controlled initial condition. We are testing braking authority, not
-  // whether each friction case can first accelerate itself to cruise.
-  platformSpeed = cruise;
-  setWholeBodyZVelocity(organism, cruise);
+  const setupFrames = Math.ceil(CRUISE_SPEED / SAFE_SETUP_ACCEL / DT) + 3;
+  for (let i = 0; i < setupFrames && Math.abs(platformSpeed - cruise) > 1e-9; i++) {
+    step({ targetSpeed: cruise, accelLimit: SAFE_SETUP_ACCEL, targetTilt: 0 });
+  }
+  if (Math.abs(platformSpeed - cruise) > 1e-9 || organism.fallObserved) {
+    throw new Error(`E12.1a safe E4.6 cruise setup failed dir=${direction}`);
+  }
+  for (let i = 0; i < CRUISE_SETTLE_FRAMES; i++) {
+    step({ targetSpeed: cruise, accelLimit: 0, targetTilt: 0 });
+  }
+  if (!organism.isRecovered() || !support.reactive || organism.fallObserved) {
+    throw new Error(`E12.1a failed to establish qualified neutral cruise dir=${direction}`);
+  }
 
   supportLossFrames = 0;
   brakeSupportLossFrames = 0;
@@ -295,33 +295,49 @@ function runCase({ direction, friction, assistMode }) {
   peakBrakeTilt = 0;
 
   for (let i = 0; i < LEAD_FRAMES; i++) {
-    step({ targetTilt: anticipatedBrakeTilt });
+    step({ targetSpeed: cruise, accelLimit: 0, targetTilt: anticipatedBrakeTilt });
     if (organism.fallObserved) fellBeforeBrake = true;
   }
 
-  // Remove setup-only horizontal drift so every brake starts with exactly the
-  // same accepted cruise momentum. No physics step occurs between this matched
-  // initial-condition normalization and brake accounting.
-  setWholeBodyZVelocity(organism, cruise);
   organism._sync();
-  tiltAtBrake = organism.torsoTilt;
-  omegaAtBrake = organism.torsoAngularVelocity[0];
-  footTiltAtBrake = organism.footTilt;
   const brakeStart = wholeBodyState(organism);
-  if (Math.abs(direction * brakeStart.vel[2] - CRUISE_SPEED) > INITIAL_SPEED_EPS) {
-    throw new Error(`E12.1a matched cruise initialization drift mu=${friction} dir=${direction}`);
+  const preState = {
+    speed: direction * brakeStart.vel[2],
+    tiltDeg: organism.torsoTilt * 180 / Math.PI,
+    omega: organism.torsoAngularVelocity[0],
+    footTiltDeg: organism.footTilt * 180 / Math.PI,
+  };
+  if (preState.speed <= 0 || fellBeforeBrake || !support.reactive || organism.fallObserved) {
+    throw new Error(`E12.1a qualified pre-brake state failed dir=${direction}`);
+  }
+
+  if (Math.abs(friction - REFERENCE_MU) > NUMERIC_EPS) {
+    b3.b3Shape_SetFriction(platform.shape, friction);
+    b3.b3Shape_SetFriction(organism.footShape, friction);
+  }
+  const platformFriction = b3.b3Shape_GetFriction(platform.shape);
+  const footFriction = b3.b3Shape_GetFriction(organism.footShape);
+  if (
+    Math.abs(platformFriction - friction) > NUMERIC_EPS ||
+    Math.abs(footFriction - friction) > NUMERIC_EPS
+  ) {
+    throw new Error(`E12.1a brake-time friction switch failed mu=${friction} dir=${direction}`);
   }
 
   const maxBrakeFrames = Math.ceil(CRUISE_SPEED / BRAKE_ACCEL / DT) + 3;
   for (let i = 0; i < maxBrakeFrames && Math.abs(platformSpeed) > 1e-9; i++) {
-    step({ movePlatform: true, brake: true });
+    step({ targetSpeed: 0, accelLimit: BRAKE_ACCEL, targetTilt: 'effective-up', brake: true });
   }
-  if (Math.abs(platformSpeed) > 1e-9) throw new Error(`E12.1a platform failed to stop mu=${friction} dir=${direction}`);
+  if (Math.abs(platformSpeed) > 1e-9) {
+    throw new Error(`E12.1a platform failed to stop mu=${friction} dir=${direction}`);
+  }
   const brakeEnd = wholeBodyState(organism);
 
-  for (let i = 0; i < HOLD_FRAMES; i++) step();
+  for (let i = 0; i < HOLD_FRAMES; i++) {
+    step({ targetSpeed: 0, accelLimit: 0, targetTilt: 0 });
+  }
   const telemetry = organism.telemetry();
-  const requiredFromBrakeStart = TOTAL_MASS * CRUISE_SPEED;
+  const requiredFromBrakeStart = direction * TOTAL_MASS * brakeStart.vel[2];
   const totalProgressImpulse = -direction * TOTAL_MASS * (
     brakeEnd.vel[2] - brakeStart.vel[2]
   );
@@ -335,9 +351,7 @@ function runCase({ direction, friction, assistMode }) {
     outcome: telemetry.fallObserved ? 'FALL' : recovered ? 'RECOVER' : 'UNRESOLVED',
     fall: telemetry.fallObserved,
     fellBeforeBrake,
-    tiltAtBrakeDeg: tiltAtBrake * 180 / Math.PI,
-    omegaAtBrake,
-    footTiltAtBrakeDeg: footTiltAtBrake * 180 / Math.PI,
+    preState,
     peakBrakeTiltDeg: peakBrakeTilt * 180 / Math.PI,
     speedAtBrakeEnd,
     nearMatch: Math.abs(speedAtBrakeEnd) <= NEAR_MATCH_SPEED_ERROR,
@@ -356,6 +370,8 @@ function runCase({ direction, friction, assistMode }) {
     meanEntitlement: entitlementSamples > 0 ? sumEntitlement / entitlementSamples : 0,
     maxEntitlement,
     accountingError,
+    platformFriction,
+    footFriction,
   };
 
   reader.destroy();
@@ -370,12 +386,13 @@ if (
   throw new Error('E12.1a expected canonical Donor-v1/E4.6 current36 substrate');
 }
 
-console.log('E12.1a capacity-entitled physics-first braking falsifier');
-console.log('  exact current36 magnitude and lead8 posture preparation from E4.6; all friction cases start from a matched ±5.2m/s cruise initial condition');
+console.log('E12.1a corrected capacity-entitled physics-first braking falsifier');
+console.log('  confounded direct-velocity initialization is preserved in git history only; it is not evidence against entitlement.');
+console.log('  every specimen now reproduces exact E4.6 history: settle -> physical 4m/s^2 cruise setup -> 120f neutral cruise -> lead8 at mu=.95.');
+console.log('  only after qualified lead8 state, with no intervening physics step, foot+platform friction switches to .95/.20/0 for the brake counterfactual.');
 console.log(`  E5 nominal ordinary traction capacity = .95 * m*g*dt = ${NOMINAL_TRACTION_CAPACITY.toFixed(4)}Ns/frame`);
 console.log(`  after each brake solve: q=clamp(mu*Jn~/${NOMINAL_TRACTION_CAPACITY.toFixed(4)},0,1); external brake-frame cap=q*${ACCEPTED_BRAKE_FRAME_IMPULSE.toFixed(4)}Ns`);
-console.log('  residual still requires support before+after solve and positive same-frame whole-body physical braking impulse');
-console.log('  no fitted gain, deficit oracle or ratio sweep; braking accounting starts only after matched cruise initialization.');
+console.log('  residual still requires support before+after solve and positive same-frame whole-body physical braking impulse; final partial brake frame uses actual platform deceleration for posture.');
 console.log(`  gate: normal support must stop inside ±${NEAR_MATCH_SPEED_ERROR.toFixed(2)}m/s and RECOVER; weak and zero support must remain outside accepted-looking braking.`);
 
 const results = new Map();
@@ -390,13 +407,15 @@ for (const frictionCase of FRICTION_CASES) {
 
     console.log(
       `  ${frictionCase.name.padEnd(6)} mu=${frictionCase.mu.toFixed(2)} dir=${direction > 0 ? '+' : '-'} ` +
+      `start=${assisted.preState.speed.toFixed(3)} tilt=${assisted.preState.tiltDeg.toFixed(2)}deg/${assisted.preState.omega.toFixed(2)}radps ` +
+      `foot=${assisted.preState.footTiltDeg.toFixed(2)}deg | ` +
       `PHYS ${physical.outcome.padEnd(7)} vEnd=${physical.speedAtBrakeEnd.toFixed(3)} J=${physical.physicalImpulse.toFixed(2)}(${physical.physicalFraction.toFixed(3)}) | ` +
       `ENT ${assisted.outcome.padEnd(7)} vEnd=${assisted.speedAtBrakeEnd.toFixed(3)} near=${assisted.nearMatch} ` +
       `Jphys=${assisted.physicalImpulse.toFixed(2)}(${assisted.physicalFraction.toFixed(3)}) ` +
       `Jassist=${assisted.assistImpulse.toFixed(2)}(${assisted.assistFraction.toFixed(3)}) ` +
       `qMean/max=${assisted.meanEntitlement.toFixed(3)}/${assisted.maxEntitlement.toFixed(3)} ` +
-      `preFall=${assisted.fellBeforeBrake} peak=${assisted.peakBrakeTiltDeg.toFixed(2)}deg ` +
-      `frames=${assisted.assistFrames} blocked=${assisted.blockedNoSupport}/${assisted.blockedNoPhysical} loss=${assisted.brakeSupportLossFrames}`,
+      `peak=${assisted.peakBrakeTiltDeg.toFixed(2)}deg frames=${assisted.assistFrames} ` +
+      `blocked=${assisted.blockedNoSupport}/${assisted.blockedNoPhysical} loss=${assisted.brakeSupportLossFrames}`,
     );
 
     if (physical.accountingError > ACCOUNTING_EPS || assisted.accountingError > ACCOUNTING_EPS) {
@@ -411,37 +430,50 @@ for (const frictionCase of FRICTION_CASES) {
 const failures = [];
 for (const direction of DIRECTIONS) {
   const normalPhysical = results.get(key('normal', direction, false));
-  const weakPhysical = results.get(key('weak', direction, false));
-  const zeroPhysical = results.get(key('zero', direction, false));
   const normalAssist = results.get(key('normal', direction, true));
+  const weakPhysical = results.get(key('weak', direction, false));
   const weakAssist = results.get(key('weak', direction, true));
+  const zeroPhysical = results.get(key('zero', direction, false));
   const zeroAssist = results.get(key('zero', direction, true));
+  const all = [normalPhysical, normalAssist, weakPhysical, weakAssist, zeroPhysical, zeroAssist];
+
+  for (const r of all) {
+    if (
+      Math.abs(r.preState.speed - normalPhysical.preState.speed) > PRESTATE_EPS ||
+      Math.abs(r.preState.tiltDeg - normalPhysical.preState.tiltDeg) > PRESTATE_EPS ||
+      Math.abs(r.preState.omega - normalPhysical.preState.omega) > PRESTATE_EPS ||
+      Math.abs(r.preState.footTiltDeg - normalPhysical.preState.footTiltDeg) > PRESTATE_EPS
+    ) {
+      failures.push(`brake counterfactuals did not share identical qualified pre-state dir=${direction}`);
+      break;
+    }
+  }
 
   if (normalPhysical.outcome !== 'RECOVER' || normalPhysical.brakeSupportLossFrames !== 0 || normalPhysical.fellBeforeBrake) {
-    failures.push(`normal physical-only control no longer reproduces qualified current36/lead8 survivor dir=${direction}`);
+    failures.push(`normal physical-only control failed exact E4.6 current36/lead8 reproduction dir=${direction}`);
   }
   if (!(weakPhysical.physicalImpulse < normalPhysical.physicalImpulse)) {
-    failures.push(`weak physical counterfactual did not reduce braking authority dir=${direction}`);
+    failures.push(`weak brake-time friction counterfactual did not reduce physical braking authority dir=${direction}`);
   }
   if (!(zeroPhysical.physicalImpulse <= weakPhysical.physicalImpulse + ACCOUNTING_EPS)) {
-    failures.push(`zero-friction physical counterfactual was not weaker than weak braking support dir=${direction}`);
+    failures.push(`zero-friction brake-time counterfactual was not weaker than weak support dir=${direction}`);
   }
 
   if (normalAssist.outcome !== 'RECOVER' || normalAssist.brakeSupportLossFrames !== 0 || normalAssist.fellBeforeBrake || !normalAssist.nearMatch) {
     failures.push(`normal capacity-entitled residual failed accepted current36 braking dir=${direction}`);
   }
   if (weakAssist.nearMatch) {
-    failures.push(`weak mu=.20 support still unlocked accepted-looking braking dir=${direction}`);
+    failures.push(`weak mu=.20 brake-time support still unlocked accepted-looking braking dir=${direction}`);
   }
   if (zeroAssist.nearMatch || zeroAssist.assistImpulse > ACCOUNTING_EPS) {
-    failures.push(`zero-friction support received material capacity-entitled braking authority dir=${direction}`);
+    failures.push(`zero-friction brake-time support received material capacity-entitled braking authority dir=${direction}`);
   }
 }
 
 if (failures.length > 0) {
   console.error(`E12.1a FAIL (${failures.length} braking-capacity violations):`);
   for (const failure of failures) console.error(`  - ${failure}`);
-  throw new Error('E12.1a capacity-entitled braking failed its predeclared normal-vs-weak support discrimination gate');
+  throw new Error('E12.1a corrected capacity-entitled braking failed its predeclared normal-vs-weak support discrimination gate');
 }
 
-console.log('E12.1a PASS: the same E12.0a graded traction-capacity entitlement principle extends to the accepted current36 braking direction when starting from a matched neutral 5.2m/s cruise state: normal support preserves near-matched stopping and the qualified lead8 posture survivor, while weak and zero-friction worlds remain translationally distinguishable. This still qualifies only kinematic-support entitlement semantics. It does not select production assist magnitude, prove reciprocity/dynamic-support placement, disturbances, moving-support interaction, solver-resolution robustness, or Owner feel.');
+console.log('E12.1a PASS: from the exact qualified E4.6 current36/lead8 brake-start state, changing only brake-time traction capacity leaves normal mu=.95 able to preserve near-matched stopping and RECOVER under the same E12 graded capacity entitlement, while weak mu=.20 and zero-friction counterfactuals remain translationally distinguishable. The earlier direct-velocity initialization failure is therefore a harness failure, not negative entitlement evidence. This still qualifies only kinematic-support capacity semantics. It does not select production assist magnitude, prove reciprocity/dynamic-support placement, disturbances, steady weak-surface entry, solver-resolution robustness, or Owner feel.');
