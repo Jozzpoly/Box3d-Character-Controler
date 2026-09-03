@@ -371,6 +371,7 @@ if (referenceMirrorGap > MAX_MIRROR_SUPPORT_FRACTION_GAP) {
 }
 
 const candidates = new Map();
+const failures = [];
 for (const direction of DIRECTIONS) {
   const reference = references.get(direction);
   const deficitBudget = Math.max(0, reference.requiredFromLaunch - reference.physicalImpulse);
@@ -392,31 +393,31 @@ for (const direction of DIRECTIONS) {
   );
 
   if (launchMismatch > MATCH_EPS) {
-    throw new Error(`E11.0a matched candidate launch diverged dir=${direction}: ${launchMismatch}`);
+    failures.push(`matched candidate launch diverged dir=${direction}: ${launchMismatch}`);
   }
   if (candidate.outcome !== 'RECOVER' || candidate.fall) {
-    throw new Error(`E11.0a candidate did not remain recovered dir=${direction}`);
+    failures.push(`candidate did not remain recovered dir=${direction}`);
   }
   if (!candidate.nearMatch) {
-    throw new Error(`E11.0a candidate missed accepted ramp response dir=${direction}: ${candidate.speedAtRampEnd}m/s`);
+    failures.push(`candidate missed accepted ramp response dir=${direction}: ${candidate.speedAtRampEnd}m/s`);
   }
   if (candidate.rampSupportLossFrames !== 0 || candidate.supportLossFrames !== 0) {
-    throw new Error(`E11.0a candidate lost physical support dir=${direction}`);
+    failures.push(`candidate lost physical support dir=${direction}`);
   }
   if (candidate.assistUnsupportedFrames !== 0 || candidate.assistAfterNonpositivePhysicalFrames !== 0) {
-    throw new Error(`E11.0a residual violated contact-priority eligibility dir=${direction}`);
+    failures.push(`residual violated contact-priority eligibility dir=${direction}`);
   }
   if (budgetOverrun > NUMERIC_EPS || candidate.remainingBudget < -NUMERIC_EPS) {
-    throw new Error(`E11.0a candidate exceeded locked physical-deficit budget dir=${direction}`);
+    failures.push(`candidate exceeded locked physical-deficit budget dir=${direction}`);
   }
   if (candidate.maxAssistImpulse > ACCEPTED_FRAME_IMPULSE + NUMERIC_EPS) {
-    throw new Error(`E11.0a candidate exceeded accepted per-frame current31 impulse dir=${direction}`);
+    failures.push(`candidate exceeded accepted per-frame current31 impulse dir=${direction}`);
   }
   if (supportFractionDrop > MAX_SUPPORT_FRACTION_DROP) {
-    throw new Error(`E11.0a residual materially displaced physical support dir=${direction}: drop=${supportFractionDrop}`);
+    failures.push(`residual materially displaced physical support dir=${direction}: drop=${supportFractionDrop}`);
   }
   if (candidate.accountingError > NUMERIC_EPS) {
-    throw new Error(`E11.0a candidate momentum accounting error dir=${direction}: ${candidate.accountingError}`);
+    failures.push(`candidate momentum accounting error dir=${direction}: ${candidate.accountingError}`);
   }
 }
 
@@ -427,10 +428,16 @@ const mirrorPhysicalGap = Math.abs(
   candidates.get(-1).physicalFraction - candidates.get(1).physicalFraction
 );
 if (mirrorSpeedGap > MAX_MIRROR_SPEED_GAP) {
-  throw new Error(`E11.0a candidate mirror speed gap ${mirrorSpeedGap}m/s exceeds E6 envelope`);
+  failures.push(`candidate mirror speed gap ${mirrorSpeedGap}m/s exceeds E6 envelope`);
 }
 if (mirrorPhysicalGap > MAX_MIRROR_SUPPORT_FRACTION_GAP) {
-  throw new Error(`E11.0a candidate mirror physical-share gap ${mirrorPhysicalGap} exceeds E6 envelope`);
+  failures.push(`candidate mirror physical-share gap ${mirrorPhysicalGap} exceeds E6 envelope`);
+}
+
+if (failures.length > 0) {
+  console.error(`E11.0a FAIL (${failures.length} gate violations):`);
+  for (const failure of failures) console.error(`  - ${failure}`);
+  throw new Error('E11.0a physics-first locked-deficit residual failed its predeclared gate; both mirrors were collected before failure reporting');
 }
 
 console.log('E11.0a PASS: at canonical current31/lead8, giving the Box3D contact solve strict first priority and locking the nonreciprocal residual to the deficit measured in a separate physical-only control can reproduce the accepted ramp in both mirrors without expanding the external budget when candidate contact dynamics change. Residual impulses occur only after frames that retain support before+after solve and deliver positive intent-aligned physical momentum; the physical support share remains inside the existing E6 0.05 representation envelope of the matched physical-only reference, support never drops, and total momentum accounting closes. This would qualify only a contact-prioritized residual-authority sequencing/accounting mechanism for current31 launch at canonical substeps. It would not select gameplay tuning, prove current36 braking, solver-resolution robustness, disturbance semantics, moving-support behavior, or Owner feel.');
