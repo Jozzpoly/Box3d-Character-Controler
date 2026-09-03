@@ -187,9 +187,11 @@ function runCase({ direction, friction, assistMode }) {
   const anticipatedBrakeTilt = -direction * Math.atan2(BRAKE_ACCEL, G);
 
   function step({ movePlatform = false, targetTilt = 0, brake = false } = {}) {
+    const platformSpeedBefore = platformSpeed;
     if (movePlatform) {
       platformSpeed = moveToward(platformSpeed, 0, BRAKE_ACCEL * DT);
     }
+    const actualPlatformAccel = (platformSpeed - platformSpeedBefore) / DT;
     platformZ += platformSpeed * DT;
     b3.b3Body_SetTargetTransform(
       platform,
@@ -200,7 +202,6 @@ function runCase({ direction, friction, assistMode }) {
 
     const supportBefore = support.reactive;
     const beforePhysics = wholeBodyState(organism);
-    const actualPlatformAccel = brake ? -direction * BRAKE_ACCEL : 0;
     const commandedTilt = brake
       ? Math.atan2(actualPlatformAccel, G)
       : targetTilt;
@@ -226,7 +227,6 @@ function runCase({ direction, friction, assistMode }) {
     );
     if (brake) totalPhysicalImpulse += signedPhysicalImpulse;
 
-    let assistMagnitude = 0;
     if (brake && assistMode) {
       const bodyDirectionalSpeed = direction * afterPhysics.vel[2];
       const platformDirectionalSpeed = direction * platformSpeed;
@@ -249,7 +249,7 @@ function runCase({ direction, friction, assistMode }) {
 
       if (wantsAssist && supportQualified && physicalQualified && entitlement > NUMERIC_EPS) {
         const capacityEntitledFrameCap = ACCEPTED_BRAKE_FRAME_IMPULSE * entitlement;
-        assistMagnitude = Math.min(
+        const assistMagnitude = Math.min(
           TOTAL_MASS * excessSpeed,
           capacityEntitledFrameCap,
         );
@@ -340,7 +340,6 @@ function runCase({ direction, friction, assistMode }) {
     footTiltAtBrakeDeg: footTiltAtBrake * 180 / Math.PI,
     peakBrakeTiltDeg: peakBrakeTilt * 180 / Math.PI,
     speedAtBrakeEnd,
-    speedError: speedAtBrakeEnd,
     nearMatch: Math.abs(speedAtBrakeEnd) <= NEAR_MATCH_SPEED_ERROR,
     requiredFromBrakeStart,
     physicalImpulse: totalPhysicalImpulse,
