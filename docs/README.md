@@ -31,19 +31,19 @@ The normal public/default player remains **A‴ / Donor v1** unless `PROJECT_STA
 - [`E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — bounded internal angular momentum and solver-resolution robustness failure;
 - [`E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](E4_LOCOMOTION_POSTURE_COMPATIBILITY.md) — accepted translational demand vs finite posture;
 - [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — authority placement, physical contact contribution and residual-authority accounting;
-- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — rejection of two latent-translation representations in the primary ankle path before actuation;
+- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — rejection of latent translation in the primary ankle path before actuation;
 - [`E7_PARALLEL_SUPPORT_SET.md`](E7_PARALLEL_SUPPORT_SET.md) — parallel support representation, real finite ground acquisition, and failure of the tested single-hinge strut to establish stable body-load sharing;
-- [`E8_UNILATERAL_AXIAL_COMPLIANCE.md`](E8_UNILATERAL_AXIAL_COMPLIANCE.md) — finite compression-only distance primitive plus qualified limit-guide/compliance composition for a minimal guided-telescopic candidate family.
+- [`E8_UNILATERAL_AXIAL_COMPLIANCE.md`](E8_UNILATERAL_AXIAL_COMPLIANCE.md) — compression-only axial substrate, guided-telescopic composition, cache-safe latch release, and failure of the first mass/inertia-matched embodied serial telescope at inactive representation matching.
 
 These are research ledgers. They do not automatically promote mechanics into the player runtime.
 
 ## Current E7 → E8 result in one paragraph
 
-E7 preserved the qualified primary E5 foot↔torso path and added a separate physical support branch. A `1 kg`, `0.9 m` probe passed inactive representation matching and finite internal actuation acquired real mirrored ground contact. Quiet settling still left almost all load on the primary foot; a stronger demand shift then unloaded/lost the primary support while the probe remained grounded, but the organism fell instead of establishing stable dual-support HOLD. Thus E7 had a real reaction path but not stable/regulatable load sharing. E8.0a qualified a solver-native distance spring with finite compression and effectively zero tension. E8.0b then qualified a minimal composition: a **limit-only prismatic guide** can physically suspend a real `1 kg` distal pad at an extension stop while the distance spring remains tension-free, and inside guide travel the stop disengages while the distance spring alone supplies material compression. Therefore:
+E7 proved that a representation-neutral parallel body can be internally placed into real second ground contact, but not that the tested rigid probe can establish stable/regulatable body-load sharing. E8 then qualified a finite compression-only distance spring, a limit-guide/compliance composition, and a cache-safe internal prismatic latch release. The first embodied E8 telescope deliberately split the qualified `1 kg × 0.9 m` E7 probe into two `0.5 kg × 0.45 m` segments while analytically preserving total mass, COM and sagittal pivot inertia. After removing a proven split-induced distal↔torso self-contact, the candidate remained macroscopically very close to the E5 current31/lead8 reference, but its exact locked placement hinge drifted about `0.295°`, above the predeclared `0.25°` inactive gate. Removing the distance spring did not change the defect, and native revolute-joint angle telemetry reproduced the same `0.296716°` maximum. Therefore:
 
-> **The current candidate direction is a guided telescopic parallel support that separates placement from finite axial load sharing; the next unresolved boundary is physically honest stow/release/deployment before any embodied representation or ground-load claim.**
+> **The axial-compliance substrate is real, but the tested latent serial telescopic representation is not qualified to advance into placement, load-sharing or locomotion tests.**
 
-Do not rescue the E7 strut through parameter sweeps, and do not treat E8.0a/b as an already qualified leg.
+Do not relax the gate or tune the failed topology into a pass.
 
 ## Historical E1/E2 evidence
 
@@ -51,16 +51,16 @@ Do not rescue the E7 strut through parameter sweeps, and do not treat E8.0a/b as
 
 Focused E2 ledgers remain useful only when a live question touches their exact causal boundary:
 
-- [`E2_1_LOCALIZATION.md`](E2_1_LOCALIZATION.md) — terrain/support localization;
-- [`E2_2_RECIPROCITY.md`](E2_2_RECIPROCITY.md) — causal-component reciprocity;
-- [`E2_2B_MOMENTUM_PERSISTENCE.md`](E2_2B_MOMENTUM_PERSISTENCE.md) — persistence after dynamic consequence;
-- [`E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md`](E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md) — bounded reproduction gate;
-- [`E2_2C1_OWNER_FREEPLAY_CAPTURE.md`](E2_2C1_OWNER_FREEPLAY_CAPTURE.md) — Owner-marked capture instrumentation;
-- [`E2_2C2_MOMENTUM_SEMANTICS.md`](E2_2C2_MOMENTUM_SEMANTICS.md) — A″ velocity-only contact consequence;
-- [`E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md`](E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md) — Box3D plane-push binding boundary;
-- [`E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md`](E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md) — gameplay relevance of blocked velocity debt;
-- [`E2_3C_CONSTRAINT_VELOCITY_POLICY.md`](E2_3C_CONSTRAINT_VELOCITY_POLICY.md) — intent-capped relative constraint-velocity research;
-- [`E2_3D_PRODUCTION_SPECIMEN.md`](E2_3D_PRODUCTION_SPECIMEN.md) — real A‴ production-path qualification.
+- [`E2_1_LOCALIZATION.md`](E2_1_LOCALIZATION.md);
+- [`E2_2_RECIPROCITY.md`](E2_2_RECIPROCITY.md);
+- [`E2_2B_MOMENTUM_PERSISTENCE.md`](E2_2B_MOMENTUM_PERSISTENCE.md);
+- [`E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md`](E2_2C0_RESIDUAL_SLIDE_REPRODUCTION_GATE.md);
+- [`E2_2C1_OWNER_FREEPLAY_CAPTURE.md`](E2_2C1_OWNER_FREEPLAY_CAPTURE.md);
+- [`E2_2C2_MOMENTUM_SEMANTICS.md`](E2_2C2_MOMENTUM_SEMANTICS.md);
+- [`E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md`](E2_3_MOMENTUM_PRESERVATION_BOUNDARY.md);
+- [`E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md`](E2_3B_CONSTRAINT_RELEASE_RELEVANCE.md);
+- [`E2_3C_CONSTRAINT_VELOCITY_POLICY.md`](E2_3C_CONSTRAINT_VELOCITY_POLICY.md);
+- [`E2_3D_PRODUCTION_SPECIMEN.md`](E2_3D_PRODUCTION_SPECIMEN.md).
 
 Do not reopen these by default merely because they exist.
 
@@ -100,12 +100,19 @@ Negative E7 load-bearing falsifiers remain executable provenance outside mandato
 - `e7-2a-settled-support-load-transfer.mjs`;
 - `e7-2b-demand-aligned-load-transfer.mjs`.
 
-Current positive E8 binding/composition smoke:
+Durable positive E8 smoke:
 
 - `e8-0a-distance-joint-axial-binding-calibration.mjs` — finite mirrored compression-only axial compliance;
-- `e8-0b-telescopic-guide-compliance-binding.mjs` — limit-only guide suspension + interior unilateral-compliance role separation.
+- `e8-0b-telescopic-guide-compliance-binding.mjs` — limit-guide suspension + interior unilateral-compliance role separation;
+- `e8-0c-latch-release-cache-boundary.mjs` — cache-safe internal exact-lock release procedure.
 
-The first E8.0b run at head `9547c06b4ded38570618fae3403d0dd3d7112dd0` is retained as a confounded failure: pinned prismatic generic force telemetry reports the accumulated axial impulse in a vector component inconsistent with the actual local-X slide axis. The corrected gate uses prismatic translation/geometry for axis truth and generic guide-force magnitude only for load presence.
+Negative E8 embodied-representation provenance remains outside mandatory green smoke:
+
+- `e8-1a-inactive-telescopic-support-representation.mjs`;
+- `e8-1b-constraint-topology-decomposition.mjs` plus its retained source;
+- `e8-1c-hinge-coordinate-observation.mjs`.
+
+E8.0b's first run at `9547c06b4ded38570618fae3403d0dd3d7112dd0` remains a confounded reader failure. E8.1a's first split-induced self-contact is also retained as a confounded failure rather than rewritten as architecture evidence.
 
 Removing a probe from mandatory smoke must be an evidence decision, not cleanup by age. A negative experiment must not be rewritten into an artificial PASS merely to make CI green.
 
@@ -113,25 +120,17 @@ The GitHub Actions workflow remains deliberately simple: every push runs full sm
 
 ## Current physical-research boundary
 
-Do not run current31 translational-agency A/B on the failed E7 single-hinge strut. It did not pass stable-load-sharing qualification.
+The failed E8.1 serial topology must not be activated merely because its macro E5 response looked close.
 
-E8.0a answered the primitive question; E8.0b answered the immediate composition question. The guided-telescopic family is now justified enough to continue, but it has **not** passed embodied representation matching.
+The next high-information question should remove the failed property from the inactive representation rather than tune it:
 
-The next physical question is:
+> **Can a mass/COM/inertia-matched split auxiliary branch be mechanically rigid while inactive and still reproduce the already-qualified one-piece E7 probe inside the same strict representation envelope?**
 
-> **Can a real telescopic parallel branch be stowed and released/deployed internally — ground-clear, without unintended spring preload, world locks, kinematic holds or an impulsive mode change — before it is embedded into the exact E5 current31/lead8 representation gate?**
+A native weld joint makes a rigid-stow specimen substrate-plausible, but this is only a candidate family. First qualify inactive rigid split. Only on PASS should a separate rigid-stow → prismatic/compliance clutch transition be designed and tested for state continuity and absence of material impulse/energy injection.
 
-A finite internal latch/release mechanism is a promising candidate because a permanent bilateral axial motor would introduce a different authority class. It remains provisional until separately qualified.
-
-Only after deployment semantics are resolved should the branch be added to the `80 kg` organism. That first embodied gate must preserve the exact primary ankle path, total mass, zero initial auxiliary-ground contact and the established E6/E7 representation-match envelope before any active support/load-sharing test.
-
-External bounded gameplay authority remains a live alternative branch of the E5 fork; E7/E8 neither select nor reject it.
+A minimal articulated support and explicit bounded gameplay authority remain live alternatives.
 
 ## Branch / provenance hygiene
-
-The repository intentionally contains historical foundation/research branches. Many correspond to merged PRs and preserve useful provenance.
-
-Rules:
 
 - `main` is canonical;
 - active unmerged branch is provisional evidence only;
@@ -139,8 +138,6 @@ Rules:
 - `experiment/*`, `research/*`, `foundation/*`, `stabilize/*` names are provenance labels, not architecture commitments;
 - temporary/stale branches are never authority merely because they exist;
 - do not mass-delete historical branches solely for aesthetics if they carry unique provenance.
-
-If branch count becomes operationally expensive, prune only after checking what merged PR/exact-commit provenance remains.
 
 ## Repository hygiene boundary
 
