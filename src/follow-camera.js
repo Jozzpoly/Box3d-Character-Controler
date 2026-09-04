@@ -6,9 +6,11 @@ function damp(current, target, rate, dt) {
 }
 
 export class FollowCamera {
-  constructor(camera, canvas) {
+  constructor(camera, canvas, options = {}) {
     this.camera = camera;
     this.canvas = canvas;
+    this.dragButtons = new Set(options.dragButtons ?? [0, 2]);
+    this.allowWheelZoom = options.allowWheelZoom ?? (() => true);
     this.desiredYaw = 0;
     this.desiredPitch = 0.31;
     this.desiredDistance = 6.0;
@@ -25,7 +27,7 @@ export class FollowCamera {
 
     canvas.addEventListener('contextmenu', (event) => event.preventDefault());
     canvas.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0 && event.button !== 2) return;
+      if (!this.dragButtons.has(event.button)) return;
       if (this.dragPointerId !== null) return;
       this.dragPointerId = event.pointerId;
       this.lastX = event.clientX;
@@ -54,6 +56,7 @@ export class FollowCamera {
       if (event.pointerId === this.dragPointerId) this.dragPointerId = null;
     });
     canvas.addEventListener('wheel', (event) => {
+      if (!this.allowWheelZoom(event)) return;
       event.preventDefault();
       this.desiredDistance = clamp(this.desiredDistance * Math.exp(event.deltaY * 0.0008), 4.0, 10.5);
     }, { passive: false });
