@@ -1,0 +1,35 @@
+name: Dependency lock probe
+
+on:
+  push:
+    branches:
+      - maintenance/dependency-lock-probe
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - name: Generate lockfile only
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Record toolchain
+        run: |
+          node --version > dependency-toolchain.txt
+          npm --version >> dependency-toolchain.txt
+      - name: Upload lock evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-lock-probe
+          path: |
+            package-lock.json
+            dependency-toolchain.txt
+          if-no-files-found: error
