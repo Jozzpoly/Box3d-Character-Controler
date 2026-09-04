@@ -72,6 +72,9 @@ jobs:
             e15-contact-semantic-smoke.json
             e15-affordance-smoke.json
           if-no-files-found: error
+      - name: Diagnose E16 solver-caused feasibility residual
+        if: github.ref == 'refs/heads/experiment/e16-body-owned-feasibility'
+        run: node scripts/e16-solver-residual-diagnostic.mjs --out=e16-solver-residual-diagnostic.json
       - name: Run E16 body-owned feasibility crucible
         if: github.ref == 'refs/heads/experiment/e16-body-owned-feasibility'
         run: node scripts/e16-body-feasibility-crucible.mjs --out=e16-body-feasibility-crucible.json
@@ -80,7 +83,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e16-body-feasibility
-          path: e16-body-feasibility-crucible.json
+          path: |
+            e16-solver-residual-diagnostic.json
+            e16-body-feasibility-crucible.json
           if-no-files-found: error
       - name: Build playground
         run: npm run build
