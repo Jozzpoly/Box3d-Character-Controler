@@ -101,6 +101,16 @@ jobs:
           name: e16-direct-control
           path: e16-direct-control-smoke.json
           if-no-files-found: error
+      - name: Qualify E17 intent-first physical manipulator
+        if: github.ref == 'refs/heads/experiment/e17-intent-first-manipulator' || github.ref == 'refs/heads/main'
+        run: node scripts/e17-intent-manipulator-smoke.mjs --out=e17-intent-manipulator-smoke.json
+      - name: Upload E17 intent-first evidence
+        if: always() && (github.ref == 'refs/heads/experiment/e17-intent-first-manipulator' || github.ref == 'refs/heads/main')
+        uses: actions/upload-artifact@v4
+        with:
+          name: e17-intent-first-manipulator
+          path: e17-intent-manipulator-smoke.json
+          if-no-files-found: error
       - name: Build playground
         run: npm run build
       - name: Configure Pages
