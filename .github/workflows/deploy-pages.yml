@@ -91,6 +91,16 @@ jobs:
             e16-capability-interaction-smoke.json
             e16-capability-yard-smoke.json
           if-no-files-found: error
+      - name: Qualify E16 direct task-space mapping
+        if: github.ref == 'refs/heads/experiment/e16-direct-task-space-control' || github.ref == 'refs/heads/main'
+        run: node scripts/e16-direct-control-smoke.mjs --out=e16-direct-control-smoke.json
+      - name: Upload E16 direct-control evidence
+        if: always() && (github.ref == 'refs/heads/experiment/e16-direct-task-space-control' || github.ref == 'refs/heads/main')
+        uses: actions/upload-artifact@v4
+        with:
+          name: e16-direct-control
+          path: e16-direct-control-smoke.json
+          if-no-files-found: error
       - name: Build playground
         run: npm run build
       - name: Configure Pages

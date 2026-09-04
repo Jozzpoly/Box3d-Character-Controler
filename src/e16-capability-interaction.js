@@ -24,8 +24,35 @@ export function horizontalOrganTargetOffset(forward, reach) {
 }
 
 /**
+ * Map a directly indicated world-space point into the same bounded horizontal
+ * task-space used by the physical organ. Direction and reach are therefore one
+ * direct command instead of separate camera-forward + wheel channels.
+ *
+ * The pointer/ray projection itself remains a browser concern. This function is
+ * deliberately pure so the interaction contract can be qualified without WebGL.
+ */
+export function horizontalPointTargetOffset(
+  pointWorld,
+  originWorld,
+  fallbackDirection = [0, 0, -1],
+  limits = E16_CAPABILITY_LIMITS,
+) {
+  const dx = (pointWorld?.[0] ?? originWorld?.[0] ?? 0) - (originWorld?.[0] ?? 0);
+  const dz = (pointWorld?.[2] ?? originWorld?.[2] ?? 0) - (originWorld?.[2] ?? 0);
+  const distance = Math.hypot(dx, dz);
+
+  if (distance < 1e-9) {
+    return horizontalOrganTargetOffset(fallbackDirection, limits.minReach);
+  }
+
+  const reach = clamp(distance, limits.minReach, limits.maxReach);
+  return [reach * dx / distance, 0, reach * dz / distance];
+}
+
+/**
  * While capability input is held, wheel-up retracts and wheel-down extends.
  * The value is a desired internal reach, not a direct displacement or joint motor.
+ * Retained for the E16.2a legacy A/B control path.
  */
 export function updateCapabilityReach(currentReach, wheelDeltaY, limits = E16_CAPABILITY_LIMITS) {
   return clamp(
