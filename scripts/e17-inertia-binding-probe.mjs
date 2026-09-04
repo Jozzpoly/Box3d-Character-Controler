@@ -23,9 +23,7 @@ function collectTypeSignatures(root) {
       else if (entry.isFile() && entry.name.endsWith('.d.ts')) {
         const lines = fs.readFileSync(full, 'utf8').split(/\r?\n/);
         lines.forEach((line, index) => {
-          if (wanted.some((name) => line.includes(name))) {
-            matches.push({ file: full, line: index + 1, text: line.trim() });
-          }
+          if (wanted.some((name) => line.includes(name))) matches.push({ file: full, line: index + 1, text: line.trim() });
         });
       }
     }
@@ -69,17 +67,11 @@ const worldInverse = b3.b3Body_GetWorldInverseRotationalInertia(body);
 const localInertia = b3.b3Body_GetLocalRotationalInertia(body);
 
 const report = {
-  schema: 'e17-inertia-binding-probe-v3',
+  schema: 'e17-inertia-binding-probe-v4',
   packageRoot,
   runtimeFunctions,
   signatures,
-  samples: {
-    center,
-    rotation,
-    worldX,
-    worldInverse: describe(worldInverse),
-    localInertia: describe(localInertia),
-  },
+  samples: { center, rotation, worldX, worldInverse: describe(worldInverse), localInertia: describe(localInertia) },
   boundary: 'Read-only binding contract probe using only signatures confirmed from the exact installed box3d.js package. Runtime behavior is unchanged.',
 };
 
@@ -87,7 +79,7 @@ if (outPath) fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify(report, null, 2));
 
 if (signatures.length === 0) throw new Error('Could not locate relevant box3d.js TypeScript signatures');
-if (!Array.isArray(worldInverse?.ex) || !Array.isArray(worldInverse?.ey) || !Array.isArray(worldInverse?.ez)) {
+if (!Array.isArray(worldInverse?.cx) || !Array.isArray(worldInverse?.cy) || !Array.isArray(worldInverse?.cz)) {
   throw new Error(`Unexpected b3Matrix3 shape: ${JSON.stringify(describe(worldInverse))}`);
 }
 
