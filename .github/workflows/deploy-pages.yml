@@ -41,6 +41,37 @@ jobs:
             e14-1d-diagnostics.json
             e14-1e-preparation-crucible.json
           if-no-files-found: error
+      - name: Capture E15 gate diagnostics
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        run: node scripts/e15-hybrid-gate-diagnostic.mjs --out=e15-hybrid-gate-diagnostic.json
+      - name: Capture E15 world-contact causality
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        run: node scripts/e15-world-contact-causality.mjs --out=e15-world-contact-causality.json
+      - name: Test E15 contact-episode semantics
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        run: node scripts/e15-contact-episode-semantics.mjs --out=e15-contact-episode-semantics.json
+      - name: Qualify E15 V0 hybrid bridge
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        run: node scripts/e15-hybrid-bridge-smoke.mjs --out=e15-hybrid-bridge.json
+      - name: Qualify E15.1 contact-semantic bridge
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        run: node scripts/e15-contact-semantic-smoke.mjs --out=e15-contact-semantic-smoke.json
+      - name: Qualify E15 browser affordance ecology
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        run: node scripts/e15-affordance-smoke.mjs --out=e15-affordance-smoke.json
+      - name: Upload E15 hybrid evidence
+        if: always() && github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        uses: actions/upload-artifact@v4
+        with:
+          name: e15-hybrid-bridge
+          path: |
+            e15-hybrid-gate-diagnostic.json
+            e15-world-contact-causality.json
+            e15-contact-episode-semantics.json
+            e15-hybrid-bridge.json
+            e15-contact-semantic-smoke.json
+            e15-affordance-smoke.json
+          if-no-files-found: error
       - name: Build playground
         run: npm run build
       - name: Configure Pages
