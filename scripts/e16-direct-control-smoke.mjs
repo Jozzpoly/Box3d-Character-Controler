@@ -2,6 +2,9 @@ import fs from 'node:fs';
 import {
   E16_CAPABILITY_LIMITS,
   horizontalPointTargetOffset,
+  radialControlRadiusPx,
+  radialPointTargetOffset,
+  screenRadialReach,
 } from '../src/e16-capability-interaction.js';
 
 const outPath = process.argv.find((arg) => arg.startsWith('--out='))?.slice(6) ?? null;
@@ -35,14 +38,50 @@ for (const [label, vector] of Object.entries({ withinRange, farClamp, nearClamp,
   }
 }
 
+const radius1080 = radialControlRadiusPx(1920, 1080);
+const radius768 = radialControlRadiusPx(1366, 768);
+const radiusTiny = radialControlRadiusPx(320, 240);
+if (!near(radius1080, 259.2)) throw new Error(`1080p radial radius mismatch: ${radius1080}`);
+if (!near(radius768, 184.32)) throw new Error(`768p radial radius mismatch: ${radius768}`);
+if (!near(radiusTiny, 150)) throw new Error(`small viewport radial radius should clamp to 150px: ${radiusTiny}`);
+
+const minRadialReach = screenRadialReach(0, 200);
+const halfRadialReach = screenRadialReach(100, 200);
+const maxRadialReach = screenRadialReach(200, 200);
+const overRadialReach = screenRadialReach(500, 200);
+if (!near(minRadialReach, E16_CAPABILITY_LIMITS.minReach)) throw new Error(`radial min reach mismatch: ${minRadialReach}`);
+if (!near(halfRadialReach, 0.54)) throw new Error(`radial half reach mismatch: ${halfRadialReach}`);
+if (!near(maxRadialReach, E16_CAPABILITY_LIMITS.maxReach)) throw new Error(`radial max reach mismatch: ${maxRadialReach}`);
+if (!near(overRadialReach, E16_CAPABILITY_LIMITS.maxReach)) throw new Error(`radial over-range clamp mismatch: ${overRadialReach}`);
+
+const radialHalf = radialPointTargetOffset([3, 1.6, 4], origin, 100, 200);
+const radialFull = radialPointTargetOffset([3, 5.0, 4], origin, 200, 200);
+const radialFallback = radialPointTargetOffset(origin, origin, 100, 200, [0, 0, -1]);
+assertVector(radialHalf, [0.324, 0, 0.432], 'radial half target');
+assertVector(radialFull, [0.54, 0, 0.72], 'radial full target');
+assertVector(radialFallback, [0, 0, -0.54], 'radial fallback target');
+
+for (const [label, vector] of Object.entries({ radialHalf, radialFull, radialFallback })) {
+  if (!near(vector[1], 0)) throw new Error(`${label} introduced vertical authority`);
+}
+
 const report = {
-  schema: 'e16-direct-horizontal-task-space-smoke-v0',
-  withinRange,
-  farClamp,
-  nearClamp,
-  zeroFallback,
+  schema: 'e16-direct-horizontal-task-space-smoke-v1-radial',
+  legacy: { withinRange, farClamp, nearClamp, zeroFallback },
+  radial: {
+    radius1080,
+    radius768,
+    radiusTiny,
+    minRadialReach,
+    halfRadialReach,
+    maxRadialReach,
+    overRadialReach,
+    radialHalf,
+    radialFull,
+    radialFallback,
+  },
   limits: E16_CAPABILITY_LIMITS,
-  boundary: 'Pure intent-to-target mapping only. No Box3D authority, grab force, transport, mass or Owner-feel claim is changed by this qualifier.',
+  boundary: 'Pure intent-to-target mapping only. Screen normalization changes reach ergonomics, not Box3D authority, grab force, transport, mass or vertical capability.',
 };
 
 if (outPath) fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
