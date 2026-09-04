@@ -1,6 +1,6 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-04, after public E16.2a deployment and exact-main verification**
+Grounded: **2026-09-04, after E17 public Owner free play and E18-R0 research synthesis**
 
 This is the compact canonical orientation layer. Before any future write, re-fetch live `main` and exact SHA. Recorded SHAs are provenance, not permission to assume the repository has not moved.
 
@@ -8,28 +8,23 @@ This is the compact canonical orientation layer. Before any future write, re-fet
 
 - Accepted public/default player remains **A‴ / Donor v1**.
 - Accepted reference ground agency remains `31 m/s²` acceleration / `36 m/s²` braking.
-- E14 is closed by Owner judgement as exhausted for now; its causal evidence remains valid provenance.
-- E15 established that accepted Donor traversal can coexist with a separate solver-owned physical consequence layer.
-- Current research frontier is **E16 — capability-first embodiment**.
-- Current public experiment is **E16.2a — Horizontal Physical Capability Yard**.
-- E16.2a preserves accepted Donor traversal and adds one solver-owned physical organ that can physically reach, earn a grab only through actual contact, reel while constrained and create geometry-checked carrier transport.
-- E16.1c contact-earned topology, E16.2a interaction policy and integrated yard are machine-qualified on the clean publication composition and on exact merged `main`.
-- Exact-main Pages deployment succeeded and the deployed artifact contains the E16 browser bundle and route mapping.
-- Current action is **Owner spontaneous free play on `?mode=e16`**.
+- E14 one-leg/contextual tuning is closed for now by Owner judgement; its causal evidence remains valid provenance.
+- E15 established a bounded path from solver-owned body response to player consequence without replacing Donor traversal.
+- E16 established capability-first embodiment, contact-earned grab topology and constraint-transport authority, but Owner judged its end-effector-first interaction far too awkward.
+- Current public experiment is **E17 — intent-first physical manipulator**.
+- Current research frontier is **E18 — manipulation architecture / orientation / compliance / closed-loop authority**.
 
-Current public/Owner boundary:
+Current exact implementation at this grounding:
 
-[`E16_2A_PUBLIC_OWNER_BOUNDARY_2026-09-04.md`](E16_2A_PUBLIC_OWNER_BOUNDARY_2026-09-04.md)
+- `main`: `c51bee303e85762ca5583fd63db02918205a9da5`
+- PR #39: `Publish E17 intent-first physical manipulator`
+- exact-main workflow `33883029369` / run #668 — **SUCCESS**
+- E16 regressions, E17 qualifier, build and Pages deploy — **SUCCESS**
+- public E17 route: `?mode=e17` / `?mode=intent`
 
-Detailed E16 design/evidence boundary:
+Detailed current research map:
 
-[`E16_CAPABILITY_YARD_2026-09-04.md`](E16_CAPABILITY_YARD_2026-09-04.md)
-
-Current hard stop:
-
-> **STOP FOR OWNER E16.2a FREE PLAY.**
-
-Do not automatically implement E16.2b, add vertical aiming/climbing, a second organ, anatomy, or tune the interaction before Owner judgement gives a reason.
+[`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md)
 
 ## 1. Project identity
 
@@ -45,7 +40,7 @@ Central tension:
 
 Working model:
 
-> **Player intends. Controller interprets. Body attempts. Physics answers.**
+> **Player intends. Controller interprets. Body/system attempts. Physics answers.**
 
 Method:
 
@@ -53,224 +48,195 @@ Method:
 
 Mechanical/controller complexity must pay rent in agency, embodiment, causal readability, gameplay value or explanatory power. Physical purity is not a goal by itself.
 
-Current design lesson from E14 → E15 → E16:
+## 2. Authority / evidence hierarchy
 
-> **Preserve agency already known to be fun. Embodiment should add useful physical competencies and consequences rather than amputating the player's action repertoire.**
-
-## 2. Authority hierarchy
-
-1. **Owner hands-on judgement** — feel, causal readability, artificiality, fun and whether a behavior/mechanism is worth pursuing.
+1. **Owner hands-on judgement** — feel, artificiality, readability, fun, strategy generation and whether a mechanism is worth pursuing.
 2. **Live `main` + exact SHA + source + CI/Pages** — implementation/publication truth.
-3. Current stage handoff/orientation — research intent where repo docs lag live work.
+3. Current research/frontier docs — experiment intent and evidence boundary.
 4. Stage ledgers/docs — provenance and prior qualification.
 5. Historical branches/conversations/recommendations — context only.
 
-Machine PASS does not prove feel. Owner fun does not prove a causal claim. Negative, confounded, protocol-miss and tooling-defect evidence must retain their correct class.
+Machine PASS proves declared mechanics, not fun. Owner fun does not prove a causal claim.
 
-## 3. Accepted player / inherited boundaries
+## 3. Accepted Donor boundaries
 
-Normal public/default runtime remains **A‴ / Donor v1**.
+Normal/default player remains **A‴ / Donor v1**.
 
-Relevant reference values:
+Reference values:
 
-- player interaction mass `80 kg`;
+- interaction mass `80 kg`;
 - max speed `5.2 m/s`;
 - ground acceleration `31 m/s²`;
 - ground braking `36 m/s²`;
 - gravity `20 m/s²`;
-- fixed outer `dt=1/60 s`;
-- canonical `4` Box3D substeps.
+- outer `dt=1/60 s`;
+- `4` Box3D substeps.
 
-Do not silently weaken accepted `31/36` to make embodiment easier.
+Do not silently weaken `31/36` to make embodiment easier.
 
-E12 research entitlement remains:
+E12 research entitlement remains, within its qualified scope:
 
-`q = clamp( μ × J_n~ / 25.3333, 0, 1 )`
-
-within its qualified scope. It is not a production policy or universal support-quality metric.
+`q = clamp(mu * Jn~ / 25.3333, 0, 1)`
 
 E13 durable rule remains:
 
 > **Do not create an external reaction path at authority time and then call it causally neutral plumbing.**
 
-If the wider world carries reaction, that coupling must already arise naturally from the situation and retain its physical/history consequences.
-
 Historical `lead8` remains a foresight oracle only, not gameplay timing.
 
-## 4. Closed E14 frontier
+## 4. Durable E14 → E16 lesson
 
-E14 developed a finite one-leg/contextual organism and established useful causal results about support, reaction placement and control quality. Owner later judged that the accepted capsule/Donor controller still offered more fun and more possibilities than the best E14 organism.
+E14 showed that a more physical representation can still lose to the plain Donor when it removes too much agency or strategy space.
 
-That closes the one-leg tuning frontier for now without invalidating its evidence. The dominant limitation was the restricted strategy/action repertoire of the representation itself.
+E15 preserved Donor agency but a passive physical torso mostly reacted after Donor had already done the interesting work.
 
-## 5. E15 durable result
+E16 therefore gave one solver-owned physical part a deliberate capability. This established useful mechanics:
 
-E15 preserved full Donor traversal while adding a finite Box3D upper-body consequence layer. After representation corrections it established a bounded causal path:
+- aggregate subsystem momentum accounting;
+- internal momentum-neutral actuation;
+- contact-qualified grab topology;
+- explicit grab constraint;
+- constraint transport authority through the normal analytical mover.
 
-> **world → solver-owned body → measured physical response → player consequence**
-
-without replacing Donor locomotion policy.
-
-E15.1 corrected sustained-contact semantics so a persistent constraint reaction is not accumulated every frame as fresh knockback.
+But Owner free play showed the interaction abstraction was still wrong: piloting the end effector dominated attention and remained extremely awkward even after direct/radial task-space mapping improvements.
 
 Durable lesson:
 
-> **Separating responsive intent from physical consequence avoids the E2 failure where one active velocity servo immediately erased knockback.**
+> **Embodiment should add useful verbs and consequences; the player should not need to micromanage low-level physics merely to express intent.**
 
-Owner free play then exposed the next limitation: a passive torso mostly reacted after Donor had already done the interesting thing. This motivated E16 capability-first embodiment.
+## 5. E17 — current public experiment
 
-Detailed E15 evidence:
+E17 is an **architecture reset**, not E16 tuning.
 
-[`E15_DONOR_AGENCY_PHYSICAL_BODY_BRIDGE_2026-09-04.md`](E15_DONOR_AGENCY_PHYSICAL_BODY_BRIDGE_2026-09-04.md)
+Interaction contract:
 
-## 6. E16 hypothesis — capability-first embodiment
+> **click nearby dynamic object / exact surface point → express 3D target intent → finite physical actuator attempts it**
 
-E16 does not start by adding more anatomy. It asks whether a solver-owned physical part can own a useful deliberate capability while accepted Donor traversal remains intact.
+instead of:
 
-Current representation:
+> **pilot organ → collide → earn grab → manipulate**.
 
-- Donor analytical carrier remains traversal authority;
-- E15 physical core remains a finite solver-owned body layer;
-- one additional solver-owned spherical organ is driven relative to that core by internal `+J/-J` actuation;
-- internal organ/core actuation is momentum-neutral across the bounded physical subsystem;
-- genuine wider-world action is measured from aggregate subsystem response rather than one body's velocity alone.
+The selected object is not teleported. E17 applies finite force at the selected world point and equal/opposite reaction to the finite physical core. Mass, collision, off-centre leverage and release momentum remain physical consequences.
 
-This is not a humanoid arm, IK system, hand, tether or final anatomy claim.
+Current E17 is still crude and unstable. It is not accepted as a finished manipulation system.
 
-## 7. E16 authority split
+## 6. Owner E17 judgement
 
-E16 currently separates three authority channels:
+Owner free play gave the strongest positive gameplay evidence of the E14–E17 line so far.
 
-1. **Donor intent/traversal authority** — responsive accepted locomotion.
-2. **External impulse consequence** — genuine world impulses can persist separately from intent.
-3. **Constraint transport authority lease** — while an explicit player-created grab topology exists, measured solver-imposed subsystem displacement may contribute to carrier displacement for that tick through the normal analytical capsule mover.
+Positive:
 
-Constraint transport is not direct teleportation or a bespoke `pullPlayer()` rule. It enters the existing mover as an instantaneous transport contribution; the normal mover/plane/cast solve remains final geometry authority.
+- attention shifted from operating the interface to experimenting with the world;
+- spontaneous behavior included lift, carry, throw, drag, pile/stack attempts, leverage, object↔object interaction, object↔player interaction, sphere play and locomotion+manipulation;
+- one capability began generating a family of verbs and persistent scene history;
+- Owner explicitly judged the direction substantially closer to something sensible.
 
-## 8. E16.1c — contact-earned topology
+Negative:
 
-Owner-facing grab is earned from the organ's real current Box3D contact manifold.
+- current manipulator is a **"latający niestabilny wibrator"**;
+- strong oscillation/overshoot;
+- weak precise placement;
+- uncontrolled orientation;
+- off-centre grabs can generate extreme rotation;
+- unclear boundary between skill and accidental chaos;
+- representation remains prototype-grade.
 
-Each current-tick candidate carries:
+Interpretation:
 
-- exact opposite shape/body identity;
-- separate organ-side and world-side contact anchors;
-- separation, normal impulse and manifold normal;
-- a contact epoch.
+> **E17 does not prove the manipulator is good. It proves intent-first manipulation is promising enough to produce spontaneous play despite a bad executor.**
 
-A candidate becomes invalid as soon as physics advances. Physics does not choose among simultaneous candidates; interaction policy is separate.
+## 7. Self-lift / closed-loop authority exploit
 
-Current bounded assumption: E16.2a grab-eligible yard bodies use one centred primitive per body. Compound/off-centre bodies require deliberate anchor reconstruction before generalization.
+Owner discovered that standing on the dynamic sphere while manipulating it can lift sphere + player together and enable flight.
 
-## 9. E16.2a — Horizontal Physical Capability Yard
+Do **not** remove this during exploratory work.
 
-E16.2a deliberately stays horizontal. Full 3D aim, climbing, a second organ and anatomical interpretation are deferred so Owner judgement can isolate the value of the capability itself.
+Current classification:
 
-Desktop controls:
+- **generative exploit** — funny, high-fun, creates a new toy/verb;
+- **authority exploit / causal debt** — closed player↔object subsystem gains net translation through hybrid Donor/manipulation authority.
 
-- `WASD` — Donor movement;
-- `Space` — jump;
-- `Shift` — sprint;
-- `RMB drag` — camera;
-- `LMB hold` — engage physical capability / reach / earn grab from actual contact;
-- `LMB + wheel` — retract / extend desired reach;
-- release `LMB` — release grab;
-- `R` — reset;
-- `H` — telemetry.
+Use it as a stress specimen for future authority coherence and balance. Do not call it physically valid merely because it is fun.
 
-When capability input is inactive, rotating the camera does not sweep the organ through the world. Camera direction becomes capability direction only while engaged.
+## 8. E18 research frontier
 
-If several current contacts exist, interaction policy selects the manifold midpoint nearest the active task-space target. Solver enumeration order is therefore not hidden gameplay semantics.
+Do not ask only "how do we add rotation?".
 
-Public route:
+Current question:
 
-`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=e16`
+> **What interaction grammar lets a player express useful 6-DoF object intent while finite physics, mass, leverage, contacts, body reaction and failure remain meaningful parts of execution?**
 
-Aliases: `?mode=organ`, `?mode=toybox`.
+E18 separates at least:
 
-## 10. Capability yard philosophy
+- selection/grip topology;
+- translation intent;
+- orientation intent;
+- compliance / force and torque authority;
+- reach and strength;
+- release momentum;
+- reaction closure;
+- object semantics / handles;
+- self-interaction / support loops;
+- eventual multi-agent ownership.
 
-The yard is an affordance ecology, not a challenge course. It has no success condition and no scripted solution. Nearby primitives provide several mass, anchoring and leverage situations so Owner free play can reveal spontaneous strategies.
+Research/donor synthesis and candidate architectures are in:
 
-Expected verbs are observations, not requirements. Push, pull, drag, brace, anchor, release, sling-like behavior or something unexpected are all valid evidence if they emerge naturally.
+[`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md)
 
-## 11. Exact publication evidence
+## 9. Current prototype portfolio
 
-Research provenance branch:
+Preserve E17 as **P1 — one-point chaos baseline**.
 
-`experiment/e16-active-contact-organ`
+Current next candidates:
 
-Qualified research head at extraction:
+- **P2 — finite 6-DoF pose coupling:** desired position + orientation executed through bounded force/torque;
+- **P3 — two-point / virtual two-hand grip:** orientation emerges from two finite target points rather than direct quaternion ownership;
+- **P4 — separated precision clutch:** keep rough E17 one-point physics, add explicit temporary rotate/align control for precision.
 
-`cf93b5c2da2cbf181887ee1c4a8cd4250a1926e0`
+Current-best first implementation candidate after E18-R0:
 
-Clean publication head:
+> **P3 — bounded two-point virtual-grip crucible**
 
-`bb5405895bd43af68c1741d9b745ec4e0490b2db`
+because it tests intentional orientation while preserving leverage and does not require committing to humanoid anatomy.
 
-Clean publication workflow:
+P2 remains the control/engineering reference; P4 remains the usability/reference alternative.
 
-`33873317419` / run #634 — **SUCCESS**
+## 10. Exploit policy during research
 
-PR #35 merged to first E16.2a main SHA:
+Do not immediately patch unexpected behavior.
 
-`7b1c4a7c264d85cb4341853d13635805ec2d1ebc`
+Classify first:
 
-Exact-main workflow:
+- **generative exploit** — creates interesting skill/strategy/play;
+- **authority exploit** — violates causal authority/accounting;
+- **degenerate exploit** — bypasses play without generating a useful new problem;
+- **hybrid** — both generative and causally invalid.
 
-`33873543165` / run #635 — **SUCCESS**
+Preserve representative specimens until the question they expose is understood.
 
-Exact-main jobs:
+## 11. Cross-project relevance
 
-- verify `101024971864` — SUCCESS;
-- deploy `101025201469` — SUCCESS.
+Owner sees long-term convergence with Multi_World, Nextgen JV and other projects. Treat that as strategic context, **not current implementation scope**.
 
-Artifacts:
+Potentially exportable primitives include:
 
-- E16 evidence `9936910663`, digest `sha256:77f5e251da9222d26db80bc662c39a6e6ffa4c4cc3ec5c0e31627e1cc754fe92`;
-- Pages `9936913157`, digest `sha256:850fad1fdac302a7c714ced6753ac5d4334e4fa4600b90322ad8e9decbf9e15d`.
+- intent representation;
+- grip/constraint topology;
+- finite force/torque authority;
+- support/contact graphs;
+- object-level manipulation semantics;
+- closed-loop exploit tests;
+- future multiplayer-compatible high-level intent;
+- generic attachment/handle concepts.
 
-Downloaded Pages artifact contains `assets/e16-toybox-browser-B2T3GhBy.js`; its bootstrap bundle maps `e16|organ|toybox` to that bundle.
+Do not integrate projects merely because the possibilities are exciting.
 
-Exact-main representative machine facts:
+## 12. Current action / stop boundary
 
-- neutral grab candidates `0`;
-- stale candidate rejected;
-- contact-manifold grab qualified;
-- static retract carrier pull `0.14611056898716657 m` with `0` persistent leak frames;
-- release → recontact → regrab qualified;
-- dynamic-object distance closure `0.2807130194146339 m`;
-- integrated yard horizontal pull `0.37321099868430263 m`;
-- integrated persistent leak frames `0`;
-- release succeeds;
-- build and Pages deploy succeed.
+E18-R0 is a research stage. **Do not tune E17 through many spring/damping iterations and do not patch self-lift.**
 
-Detailed exact publication record:
+Next implementation, once E18-R0 is reviewed/accepted, should be the smallest causal P3 experiment answering:
 
-[`E16_2A_PUBLIC_OWNER_BOUNDARY_2026-09-04.md`](E16_2A_PUBLIC_OWNER_BOUNDARY_2026-09-04.md)
+> **Can two finite target points materially improve intentional orientation/placement over E17 while preserving mass, leverage, collision response and emergent physical play?**
 
-Machine evidence establishes declared mechanics and publication identity only. It does not establish gameplay value.
-
-## 12. Current Owner protocol
-
-Play `?mode=e16` **spontaneously**.
-
-Do not prescribe a challenge route, timing pattern, expected trick or success metric before the first session. The most valuable evidence is what Owner naturally tries to do.
-
-Primary questions are qualitative:
-
-- does the capability actually add possibilities rather than merely another thing to manage?;
-- does earning a grab through contact read physically, or feel arbitrary?;
-- does reel/constraint transport feel like useful physical leverage or disguised movement assistance?;
-- are the red Donor carrier, gold physical core and green organ legible enough to understand cause/effect?;
-- which behaviors are voluntarily repeated because they are interesting or fun?;
-- what immediately damages Donor-level agency or flow?;
-- does any spontaneous behavior suggest the next useful capability more strongly than the planned 3D-aim/climb idea?
-
-Recording is useful if interesting behavior emerges, but it is not required to begin play.
-
-## 13. Hard stop
-
-> **STOP FOR OWNER E16.2a FREE PLAY.**
-
-Do not automatically proceed to E16.2b. Treat 3D aiming, climbing, a second organ, more anatomy, stronger/weaker reel authority and visual redesign as candidates only. The next stage should be chosen from Owner evidence plus live machine evidence, not inherited from the previous plan.
+Do not build full arms, humanoid anatomy or a production manipulation UI before this question is separated.
