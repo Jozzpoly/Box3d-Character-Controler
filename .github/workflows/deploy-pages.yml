@@ -75,6 +75,9 @@ jobs:
       - name: Probe E16 joint binding surface
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         run: node scripts/e16-joint-api-probe.mjs --out=e16-joint-api-probe.json
+      - name: Probe E16 contact identity surface
+        if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
+        run: node scripts/e16-contact-identity-probe.mjs --out=e16-contact-identity-probe.json
       - name: Run E16 active-contact-organ crucible
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         run: node scripts/e16-active-contact-organ-crucible.mjs --out=e16-active-contact-organ-crucible.json
@@ -99,6 +102,7 @@ jobs:
           name: e16-active-contact-organ
           path: |
             e16-joint-api-probe.json
+            e16-contact-identity-probe.json
             e16-active-contact-organ-crucible.json
             e16-grab-transport-diagnostic.json
             e16-grab-pull-crucible.json
