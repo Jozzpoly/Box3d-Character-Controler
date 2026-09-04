@@ -98,6 +98,9 @@ jobs:
       - name: Qualify isolated E16.1b constraint transport causal A/B
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         run: node scripts/e16-grab-transport-causal-crucible.mjs --out=e16-grab-transport-causal-crucible.json
+      - name: Qualify E16.1c contact-earned grab topology
+        if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
+        run: node scripts/e16-contact-qualified-grab-crucible.mjs --out=e16-contact-qualified-grab-crucible.json
       - name: Upload E16 active-contact-organ evidence
         if: always() && github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         uses: actions/upload-artifact@v4
@@ -112,6 +115,7 @@ jobs:
             e16-grab-pull-crucible.json
             e16-grab-transport-crucible.json
             e16-grab-transport-causal-crucible.json
+            e16-contact-qualified-grab-crucible.json
           if-no-files-found: error
       - name: Build playground
         run: npm run build
