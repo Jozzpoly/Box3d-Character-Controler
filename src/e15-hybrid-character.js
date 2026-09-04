@@ -1,6 +1,7 @@
 import { ConstraintVelocityCharacter } from './constraint-velocity-character.js';
 
 const IDENTITY_QUAT = [0, 0, 0, 1];
+const E15_EMBODIMENT_CATEGORY = 1n << 63n;
 
 function clampMagnitude3(vector, maxLength) {
   const length = Math.hypot(vector[0], vector[1], vector[2]);
@@ -41,6 +42,10 @@ function finiteVector(vector) {
  * question: can horizontal/rotational physical consequence coexist with accepted
  * agency? Root dynamic-contact behavior otherwise retains Donor v1 semantics.
  *
+ * The embodiment shape remains a normal Box3D collision participant, but the
+ * controller-owned mover query excludes the dedicated embodiment category. This
+ * prevents the carrier from treating its own body layer as an external obstacle.
+ *
  * This deliberately does NOT claim mass-equivalent whole-body physics.
  */
 export class E15HybridCharacter extends ConstraintVelocityCharacter {
@@ -57,6 +62,12 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
     this.maxUprightTorque = options.maxUprightTorque ?? 700;
     this.feedbackGain = options.feedbackGain ?? 1;
     this.maxFeedbackDeltaV = options.maxFeedbackDeltaV ?? 0.65;
+
+    // Default world shapes currently use the default all-bits category/mask. Give
+    // the E15 body a dedicated category and remove only that category from this
+    // carrier's mover-query mask. The body still physically collides with default
+    // world shapes because its shape mask remains unchanged.
+    this.queryFilter.maskBits &= ~E15_EMBODIMENT_CATEGORY;
 
     const bodyDef = b3.b3DefaultBodyDef();
     bodyDef.type = b3.b3BodyType.b3_dynamicBody;
@@ -75,6 +86,7 @@ export class E15HybridCharacter extends ConstraintVelocityCharacter {
     shapeDef.density = densityForBoxMass(this.bodyMassTarget, this.bodyHalf);
     shapeDef.baseMaterial.friction = options.bodyFriction ?? 0.55;
     shapeDef.baseMaterial.restitution = 0;
+    shapeDef.filter.categoryBits = E15_EMBODIMENT_CATEGORY;
     this.embodimentShape = b3.b3CreateBoxShape(
       this.embodimentBody,
       shapeDef,
