@@ -1,6 +1,8 @@
+import fs from 'node:fs';
 import Box3D from 'box3d.js/inline';
 
 const b3 = await Box3D();
+const outPath = process.argv.find((arg) => arg.startsWith('--out='))?.slice(6) ?? null;
 const names = [
   'b3DefaultDistanceJointDef',
   'b3CreateDistanceJoint',
@@ -16,8 +18,6 @@ const names = [
 ];
 
 const surface = Object.fromEntries(names.map((name) => [name, typeof b3[name]]));
-console.log(JSON.stringify(surface, null, 2));
-
 const required = [
   'b3DefaultDistanceJointDef',
   'b3CreateDistanceJoint',
@@ -27,13 +27,27 @@ const required = [
   'b3Body_GetLocalPoint',
   'b3DestroyJoint',
 ];
-for (const name of required) {
-  if (surface[name] !== 'function') throw new Error(`Required joint binding missing: ${name} (${surface[name]})`);
-}
 
 const distance = b3.b3DefaultDistanceJointDef();
 const spherical = b3.b3DefaultSphericalJointDef();
-console.log('distance keys', Object.keys(distance).sort().join(','));
-console.log('distance.base keys', Object.keys(distance.base ?? {}).sort().join(','));
-console.log('spherical keys', Object.keys(spherical).sort().join(','));
-console.log('spherical.base keys', Object.keys(spherical.base ?? {}).sort().join(','));
+const report = {
+  schema: 'e16-joint-binding-surface-v1',
+  surface,
+  distance: {
+    keys: Object.keys(distance).sort(),
+    baseKeys: Object.keys(distance.base ?? {}).sort(),
+    defaults: distance,
+  },
+  spherical: {
+    keys: Object.keys(spherical).sort(),
+    baseKeys: Object.keys(spherical.base ?? {}).sort(),
+    defaults: spherical,
+  },
+};
+
+if (outPath) fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
+console.log(JSON.stringify(report, null, 2));
+
+for (const name of required) {
+  if (surface[name] !== 'function') throw new Error(`Required joint binding missing: ${name} (${surface[name]})`);
+}
