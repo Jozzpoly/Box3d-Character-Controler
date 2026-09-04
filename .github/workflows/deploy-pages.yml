@@ -72,6 +72,16 @@ jobs:
             e15-contact-semantic-smoke.json
             e15-affordance-smoke.json
           if-no-files-found: error
+      - name: Run E16 body-owned feasibility crucible
+        if: github.ref == 'refs/heads/experiment/e16-body-owned-feasibility'
+        run: node scripts/e16-body-feasibility-crucible.mjs --out=e16-body-feasibility-crucible.json
+      - name: Upload E16 feasibility evidence
+        if: always() && github.ref == 'refs/heads/experiment/e16-body-owned-feasibility'
+        uses: actions/upload-artifact@v4
+        with:
+          name: e16-body-feasibility
+          path: e16-body-feasibility-crucible.json
+          if-no-files-found: error
       - name: Build playground
         run: npm run build
       - name: Configure Pages
