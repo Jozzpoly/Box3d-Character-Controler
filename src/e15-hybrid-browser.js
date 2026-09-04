@@ -1,7 +1,8 @@
 import Box3D from 'box3d.js/inline';
 import * as THREE from 'three';
 import { createCharacterVisual } from './character-visual.js';
-import { createE15HybridCharacter } from './e15-hybrid-character.js';
+import { createE15Affordances } from './e15-affordances.js';
+import { createE15ContactSemanticCharacter } from './e15-contact-semantic-character.js';
 import { FollowCamera } from './follow-camera.js';
 import { PlayerInput } from './player-input.js';
 import { createPlayground } from './playground.js';
@@ -72,6 +73,10 @@ if (touchResetButton) {
   touchResetButton.addEventListener('lostpointercapture', () => touchResetButton.classList.remove('is-held'));
 }
 
+function bodyKey(body) {
+  return `${body.index1}:${body.world0}:${body.generation}`;
+}
+
 function setupScene() {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -123,11 +128,20 @@ async function main() {
   const b3 = await Box3D();
   const { renderer, scene, camera } = setupScene();
   const playground = createPlayground(b3);
-  const character = createE15HybridCharacter(b3, playground.world, {
+  const character = createE15ContactSemanticCharacter(b3, playground.world, {
     startPosition: playground.spawn,
     gravity: playground.gravity,
     feedbackGain,
   });
+
+  // Make the split representation legible during Owner free play:
+  // red capsule = accepted Donor agency carrier; gold box = solver-owned physical body.
+  playground.appearance.set(bodyKey(character.embodimentBody), {
+    color: 0xf0c45e,
+    roughness: 0.5,
+    metalness: 0.02,
+  });
+  const affordances = createE15Affordances(b3, playground.world, playground.appearance);
 
   const worldView = createWorldRenderer(b3, playground.world, {
     appearance: playground.appearance,
@@ -140,19 +154,20 @@ async function main() {
   followCamera.snap(character.position);
 
   phaseEl.textContent = feedbackGain > 0
-    ? 'E15 V0 · DONOR AGENCY + PHYSICAL BODY FEEDBACK'
-    : 'E15 CONTROL · BODY FEEDBACK DISABLED';
+    ? 'E15.1 · DONOR AGENCY + CONTACT-EPISODE PHYSICAL BODY'
+    : 'E15.1 CONTROL · PHYSICAL BODY FEEDBACK DISABLED';
   debugLabels.external.textContent = 'body offset';
   debugLabels.impulse.textContent = 'body→root feedback';
   debugLabels.transport.textContent = 'upright torque';
 
   const counts = playground.stats();
   statusEl.textContent = playerInput.touchEnabled
-    ? `E15 experimental · Donor agency preserved · physical upper-body bridge · touch active · ${counts.dynamicCount + 1} dynamic bodies`
-    : `E15 experimental · Donor agency preserved · physical upper-body bridge · ${counts.dynamicCount + 1} dynamic bodies`;
+    ? `E15.1 experimental · red = Donor carrier · gold = physical torso · touch active · ${counts.dynamicCount + 1} dynamic bodies`
+    : `E15.1 experimental · red = Donor carrier · gold = physical torso · ${counts.dynamicCount + 1} dynamic bodies`;
 
   function resetAll() {
     playground.reset();
+    affordances.reset();
     character.reset(playground.spawn);
     characterVisual.reset();
     followCamera.reset();
@@ -167,6 +182,7 @@ async function main() {
   function physicsTick(dt) {
     if (resetQueued) resetAll();
     playground.preStep(dt);
+    affordances.preStep(dt);
     const basis = followCamera.basis();
     const intent = playerInput.sample(basis);
 
@@ -197,7 +213,9 @@ async function main() {
     debugValues.vertical.textContent = `${data.verticalSpeed.toFixed(2)} m/s`;
     debugValues.support.textContent = data.grounded ? data.supportType : 'AIR';
     debugValues.contacts.textContent = `${data.bodyContacts} body / ${data.dynamicContacts} root`;
-    debugValues.impulse.textContent = `${data.bodyFeedbackImpulse.toFixed(1)} N·s`;
+    debugValues.impulse.textContent =
+      `${data.bodyFeedbackImpulse.toFixed(1)} N·s ` +
+      `(P ${data.bodyPersistentFeedbackImpulse.toFixed(1)} / C ${data.bodyConstraintFeedbackImpulse.toFixed(1)})`;
     debugValues.transport.textContent = `${data.bodyUprightTorque.toFixed(0)} N·m`;
     debugValues.constraintClips.textContent = Number.isFinite(data.constraintClips)
       ? `${data.constraintClips}/tick`
