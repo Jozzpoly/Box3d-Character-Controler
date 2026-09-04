@@ -85,9 +85,13 @@ jobs:
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         continue-on-error: true
         run: node scripts/e16-grab-pull-crucible.mjs --out=e16-grab-pull-crucible.json
-      - name: Qualify E16.1b constraint transport authority lease
+      - name: Capture confounded E16.1b whole-episode A/B
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
+        continue-on-error: true
         run: node scripts/e16-grab-transport-crucible.mjs --out=e16-grab-transport-crucible.json
+      - name: Qualify isolated E16.1b constraint transport causal A/B
+        if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
+        run: node scripts/e16-grab-transport-causal-crucible.mjs --out=e16-grab-transport-causal-crucible.json
       - name: Upload E16 active-contact-organ evidence
         if: always() && github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         uses: actions/upload-artifact@v4
@@ -99,6 +103,7 @@ jobs:
             e16-grab-transport-diagnostic.json
             e16-grab-pull-crucible.json
             e16-grab-transport-crucible.json
+            e16-grab-transport-causal-crucible.json
           if-no-files-found: error
       - name: Build playground
         run: npm run build
