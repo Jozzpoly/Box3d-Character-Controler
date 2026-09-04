@@ -5,24 +5,12 @@ import { createE17IntentManipulatorCharacter } from '../src/e17-intent-manipulat
 const b3 = await Box3D();
 const outPath = process.argv.find((arg) => arg.startsWith('--out='))?.slice(6) ?? null;
 
-function mulMatVec(m, v) {
-  return [
-    m.cx.x * v[0] + m.cy.x * v[1] + m.cz.x * v[2],
-    m.cx.y * v[0] + m.cy.y * v[1] + m.cz.y * v[2],
-    m.cx.z * v[0] + m.cy.z * v[1] + m.cz.z * v[2],
-  ];
-}
-
 function cross(a, b) {
   return [
     a[1] * b[2] - a[2] * b[1],
     a[2] * b[0] - a[0] * b[2],
     a[0] * b[1] - a[1] * b[0],
   ];
-}
-
-function dot(a, b) {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
 function normalize(v) {
@@ -46,18 +34,31 @@ function createDynamicBox(world, position, half = [0.35, 0.25, 0.20], density = 
   return body;
 }
 
-function exactDirectionalEffectiveMass(body, coreMass, worldAnchor, direction) {
+function inverseBoxInertiaDiagonal(mass, half) {
+  const [hx, hy, hz] = half;
+  const width = 2 * hx;
+  const height = 2 * hy;
+  const depth = 2 * hz;
+  const ix = mass * (height * height + depth * depth) / 12;
+  const iy = mass * (width * width + depth * depth) / 12;
+  const iz = mass * (width * width + height * height) / 12;
+  return [1 / ix, 1 / iy, 1 / iz];
+}
+
+function exactDirectionalEffectiveMass(body, coreMass, worldAnchor, direction, inverseInertiaDiagonal) {
   const n = normalize(direction);
   const center = [0, 0, 0];
   b3.b3Body_GetWorldCenter(center, body);
   const r = [worldAnchor[0] - center[0], worldAnchor[1] - center[1], worldAnchor[2] - center[2]];
-  const invI = b3.b3Body_GetWorldInverseRotationalInertia(body);
   const rn = cross(r, n);
-  const rotational = dot(rn, mulMatVec(invI, rn));
+  const rotational =
+    rn[0] * rn[0] * inverseInertiaDiagonal[0] +
+    rn[1] * rn[1] * inverseInertiaDiagonal[1] +
+    rn[2] * rn[2] * inverseInertiaDiagonal[2];
   const invMassObject = b3.b3Body_GetInverseMass(body);
   const invMassCore = 1 / coreMass;
   const k = invMassObject + invMassCore + rotational;
-  return { r, n, rotational, invMassObject, invMassCore, exactEffectiveMass: k > 0 ? 1 / k : 0 };
+  return { r, n, rn, rotational, invMassObject, invMassCore, exactEffectiveMass: k > 0 ? 1 / k : 0 };
 }
 
 function scalarEffectiveMass(body, coreMass) {
@@ -74,22 +75,22 @@ const character = createE17IntentManipulatorCharacter(b3, world, {
   feedbackGain: 0,
 });
 
+const half = [0.35, 0.25, 0.20];
 const center = [1.1, character.bodyPosition[1], 0];
-const box = createDynamicBox(world, center);
+const box = createDynamicBox(world, center, half);
 const objectMass = b3.b3Body_GetMass(box);
-const halfY = 0.25;
-const halfZ = 0.20;
+const analyticInverseInertia = inverseBoxInertiaDiagonal(objectMass, half);
 const direction = [-1, 0.15, 0.2];
 const cases = [
   { name: 'center', anchor: [...center] },
-  { name: 'mid-y', anchor: [center[0], center[1] + halfY * 0.5, center[2]] },
-  { name: 'edge-y', anchor: [center[0], center[1] + halfY, center[2]] },
-  { name: 'corner-yz', anchor: [center[0], center[1] + halfY, center[2] + halfZ] },
+  { name: 'mid-y', anchor: [center[0], center[1] + half[1] * 0.5, center[2]] },
+  { name: 'edge-y', anchor: [center[0], center[1] + half[1], center[2]] },
+  { name: 'corner-yz', anchor: [center[0], center[1] + half[1], center[2] + half[2]] },
 ];
 
 const scalar = scalarEffectiveMass(box, character.bodyMass);
 const evaluated = cases.map((entry) => {
-  const exact = exactDirectionalEffectiveMass(box, character.bodyMass, entry.anchor, direction);
+  const exact = exactDirectionalEffectiveMass(box, character.bodyMass, entry.anchor, direction, analyticInverseInertia);
   return {
     ...entry,
     direction,
@@ -100,13 +101,16 @@ const evaluated = cases.map((entry) => {
 });
 
 const report = {
-  schema: 'e17-point-effective-mass-diagnostic-v1',
+  schema: 'e17-point-effective-mass-diagnostic-v2',
   objectMass,
   coreMass: character.bodyMass,
+  halfExtents: half,
   scalarEffectiveMass: scalar,
-  inverseInertiaShape: b3.b3Body_GetWorldInverseRotationalInertia(box),
+  analyticInverseInertia,
+  bindingWorldInverseInertiaRaw: b3.b3Body_GetWorldInverseRotationalInertia(box),
+  bindingLocalInertiaRaw: b3.b3Body_GetLocalRotationalInertia(box),
   cases: evaluated,
-  boundary: 'Measurement-only diagnostic. It tests whether E17 scalar effective mass diverges from Box3D directional point effective mass as leverage increases. No runtime behavior is changed.',
+  boundary: 'Measurement-only diagnostic. Known axis-aligned box inertia is computed analytically because the current box3d.js matrix-return binding appears to expose zero-valued ex/ey/ez arrays. Runtime behavior is unchanged.',
 };
 
 if (outPath) fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
@@ -117,8 +121,8 @@ const cornerCase = evaluated.at(-1);
 if (Math.abs(centerCase.scalarOverExact - 1) > 1e-4) {
   throw new Error(`Center grab should reduce to scalar effective mass: ${JSON.stringify(centerCase)}`);
 }
-if (!(cornerCase.scalarOverExact > 1.15) || !(cornerCase.rotational > 0)) {
-  throw new Error(`Off-centre leverage did not expose a meaningful scalar effective-mass mismatch: ${JSON.stringify(cornerCase)}`);
+if (!(cornerCase.scalarOverExact > 2.0) || !(cornerCase.rotational > 0)) {
+  throw new Error(`Off-centre leverage did not expose the expected strong scalar effective-mass mismatch: ${JSON.stringify(cornerCase)}`);
 }
 
 b3.b3DestroyWorld(world);
