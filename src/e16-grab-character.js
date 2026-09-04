@@ -22,6 +22,13 @@ function clampMagnitude3(vector, maxLength) {
  * While the grab exists, joint reaction is a sustained constraint response. It may
  * alter current carrier velocity, but it must not be accumulated into persistent
  * externalVelocity every frame as if each solver iteration were a fresh knockback.
+ *
+ * E16.1a additionally MEASURES a displacement-level world residual for the complete
+ * {core + organ} subsystem. Internal +J/-J actuation preserves aggregate momentum, so
+ * the horizontal COM position expected from the recorded pre-solve momentum is known.
+ * The difference between actual and expected COM after the Box3D step is a candidate
+ * "constraint transport" signal. This revision only measures it; it does not yet move
+ * the carrier with it.
  */
 export class E16GrabCharacter extends E16ActiveContactOrganCharacter {
   constructor(b3, world, options = {}) {
@@ -32,6 +39,14 @@ export class E16GrabCharacter extends E16ActiveContactOrganCharacter {
     this.grabCount = 0;
     this.releaseCount = 0;
     this.lastGrabConstraintFeedbackImpulse = 0;
+
+    this._subsystemMass = this.bodyMass + this.organMass;
+    this._aggregatePreSolveCom = [0, 0, 0];
+    this._aggregatePreSolveVelocity = [0, 0, 0];
+    this.lastAggregateWorldTransport = [0, 0, 0];
+    this.lastAggregateWorldTransportDistance = 0;
+    this.peakGrabWorldTransportDistance = 0;
+    this._recordAggregatePreSolveCom();
   }
 
   grabBody(bodyId, worldAnchor = this.organPosition) {
@@ -74,9 +89,47 @@ export class E16GrabCharacter extends E16ActiveContactOrganCharacter {
     this.grabCount = 0;
     this.releaseCount = 0;
     this.lastGrabConstraintFeedbackImpulse = 0;
+    this.lastAggregateWorldTransport = [0, 0, 0];
+    this.lastAggregateWorldTransportDistance = 0;
+    this.peakGrabWorldTransportDistance = 0;
+    this._syncBody();
+    this._syncOrgan();
+    this._recordAggregatePreSolveCom();
+  }
+
+  preStep(dt, intent) {
+    super.preStep(dt, intent);
+    // Parent ends after all carrier-follow and internal +J/-J actuation and records
+    // aggregate pre-solve momentum. Capture the matching COM at exactly that boundary.
+    this._syncBody();
+    this._syncOrgan();
+    this._recordAggregatePreSolveCom();
   }
 
   postStep(dt) {
+    // Measure displacement-level world action BEFORE the parent mutates analytical
+    // carrier state. Box3D has already stepped when postStep is called.
+    this._syncBody();
+    this._syncOrgan();
+    const aggregatePostCom = this._aggregateCom();
+    const expectedX = this._aggregatePreSolveCom[0] + dt * this._aggregatePreSolveVelocity[0];
+    const expectedZ = this._aggregatePreSolveCom[2] + dt * this._aggregatePreSolveVelocity[2];
+    this.lastAggregateWorldTransport = [
+      aggregatePostCom[0] - expectedX,
+      0,
+      aggregatePostCom[2] - expectedZ,
+    ];
+    this.lastAggregateWorldTransportDistance = Math.hypot(
+      this.lastAggregateWorldTransport[0],
+      this.lastAggregateWorldTransport[2],
+    );
+    if (this.grabJoint) {
+      this.peakGrabWorldTransportDistance = Math.max(
+        this.peakGrabWorldTransportDistance,
+        this.lastAggregateWorldTransportDistance,
+      );
+    }
+
     super.postStep(dt);
 
     // E16 classifies non-contact world response as persistent. A live grab is a
@@ -111,7 +164,28 @@ export class E16GrabCharacter extends E16ActiveContactOrganCharacter {
       grabCount: this.grabCount,
       releaseCount: this.releaseCount,
       grabConstraintFeedbackImpulse: this.lastGrabConstraintFeedbackImpulse,
+      aggregateWorldTransport: [...this.lastAggregateWorldTransport],
+      aggregateWorldTransportDistance: this.lastAggregateWorldTransportDistance,
+      peakGrabWorldTransportDistance: this.peakGrabWorldTransportDistance,
     };
+  }
+
+  _aggregateCom() {
+    return [
+      (this.bodyMass * this.bodyPosition[0] + this.organMass * this.organPosition[0]) / this._subsystemMass,
+      (this.bodyMass * this.bodyPosition[1] + this.organMass * this.organPosition[1]) / this._subsystemMass,
+      (this.bodyMass * this.bodyPosition[2] + this.organMass * this.organPosition[2]) / this._subsystemMass,
+    ];
+  }
+
+  _recordAggregatePreSolveCom() {
+    const com = this._aggregateCom();
+    this._aggregatePreSolveCom[0] = com[0];
+    this._aggregatePreSolveCom[1] = com[1];
+    this._aggregatePreSolveCom[2] = com[2];
+    this._aggregatePreSolveVelocity[0] = this._aggregatePreSolveMomentum[0] / this._subsystemMass;
+    this._aggregatePreSolveVelocity[1] = this._aggregatePreSolveMomentum[1] / this._subsystemMass;
+    this._aggregatePreSolveVelocity[2] = this._aggregatePreSolveMomentum[2] / this._subsystemMass;
   }
 }
 
