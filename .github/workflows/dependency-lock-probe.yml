@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   generate:
@@ -37,6 +37,17 @@ jobs:
             dependency-toolchain.txt
             dependency-rollup.txt
           if-no-files-found: error
+      - name: Materialize exact generated lockfile on probe branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package-lock.json
+          if git diff --cached --quiet; then
+            echo 'package-lock.json already exact'
+          else
+            git commit -m 'Materialize verified dependency lockfile'
+            git push origin HEAD:maintenance/dependency-lock-probe
+          fi
 
   reproduce-plain:
     needs: generate
