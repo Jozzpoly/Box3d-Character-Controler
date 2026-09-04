@@ -1,29 +1,26 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-04, after Owner closure of the E14 one-leg line and machine qualification of E15.1 Donor-agency / physical-body bridge**
+Grounded: **2026-09-04, after public E15.1 deployment and exact-main verification**
 
-This is the compact canonical orientation layer. Before any future write, re-fetch live `main` and exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
+This is the compact canonical orientation layer. Detailed experiment reasoning and evidence live in the linked stage documents. Before any future write, re-fetch live `main` and exact SHA; recorded SHAs are provenance, not permission to assume the repository has not moved.
 
 ## 0. Current snapshot
 
 - Accepted public/default player remains **A‴ / Donor v1**.
 - Accepted reference ground agency remains `31 m/s²` acceleration / `36 m/s²` braking.
 - No E14 or E15 mechanics are promoted into Donor/default runtime.
-- E14 remains valuable research provenance, but its current one-leg/contextual branch of gameplay exploration is **closed by Owner judgement as exhausted for now**.
-- Decisive Owner judgement after extensive E14 play:
-  - the best current one-leg specimen was briefly interesting;
-  - it remained far from a useful player;
-  - the capsule/Donor controller still offered **more fun and more possibilities**;
-  - further `mass/friction/braking/torque` tuning is therefore not the current frontier.
-- Current experiment is **E15.1 — Donor Agency / Physical Body Bridge**:
-  - keep full Donor movement/repertoire;
-  - add a separate finite Box3D upper-body mass;
-  - preserve neutral Donor behavior;
-  - route genuine body/world consequence back into the carrier without allowing sustained contact to accumulate fictitious persistent knockback.
-- Machine qualification of E15.1 and its bounded browser ecology is PASS.
-- Next boundary is **Owner free play on opt-in `?mode=e15`**.
+- The E14 one-leg/contextual line is **closed by Owner judgement as exhausted for now**. Its causal evidence remains valid provenance.
+- Current experiment is **E15.1 — Donor Agency / Physical Body Bridge**.
+- E15.1 preserves normal Donor movement/repertoire and adds a separate finite Box3D upper-body consequence layer.
+- E15.1 machine/causal qualification is PASS.
+- E15.1 is publicly deployed as an opt-in route.
+- Current action is **Owner free play on `?mode=e15`**.
 
-Current E15 checkpoint:
+Current publication / Owner boundary:
+
+[`E15_PUBLICATION_OWNER_BOUNDARY_2026-09-04.md`](E15_PUBLICATION_OWNER_BOUNDARY_2026-09-04.md)
+
+Detailed E15 implementation/evidence checkpoint:
 
 [`E15_DONOR_AGENCY_PHYSICAL_BODY_BRIDGE_2026-09-04.md`](E15_DONOR_AGENCY_PHYSICAL_BODY_BRIDGE_2026-09-04.md)
 
@@ -41,9 +38,9 @@ E14 stage ledger:
 
 Current hard stop:
 
-> **E15.1 is machine-qualified as an opt-in hybrid that preserves accepted Donor agency while adding a separate finite physical torso and bounded contact consequence. Publish `?mode=e15`, then STOP FOR OWNER FREE PLAY.**
+> **E15.1 publication is complete. STOP FOR OWNER E15 FREE PLAY.**
 
-Do not automatically promote E15 into default mechanics, tune it toward a desired feel, add full limbs/ragdoll, or return to E14 parameter sweeps.
+Do not automatically tune E15, add limbs/full ragdoll, change Donor/default mechanics, expand the ecology to manufacture interesting collisions, or return to E14 parameter sweeps.
 
 ## 1. Project identity
 
@@ -67,7 +64,7 @@ Method:
 
 Mechanical/controller complexity must pay rent in agency, embodiment, causal readability, gameplay value or explanatory power. Physical purity is not a goal by itself.
 
-The new E15 direction adds an explicit design lesson from E14:
+Current design lesson from E14 → E15:
 
 > **Agency already known to be fun is an asset to preserve, not noise that must be removed before embodiment can count.**
 
@@ -138,68 +135,58 @@ Owner distinguished world-external wind-like acceleration from reciprocal suppor
 
 ### E14.1 — continuous one-leg/contextual lab
 
-E14 developed a finite sagittal body/support organism and the public pinned specimen instrument. It produced real causal learning:
+E14 developed a finite sagittal body/support organism and public pinned specimen instrument. It established useful causal results:
 
 - Natural-only under-delivers strong accepted agency at reference conditions;
 - reaction placement materially changes world feel;
 - support mass changes support recoil;
 - Owner can read controller-response asymmetry as control quality;
-- the selected `b=36` variant was easier to catch/recenter than `b=3`;
+- selected `b=36` was easier to catch/recenter than `b=3`;
 - the lab could briefly become a primitive physical toy.
 
-These results remain valid evidence.
-
-They do **not** imply that the one-leg representation is worth indefinite optimization.
+These results remain valid evidence. They do **not** imply that the one-leg representation is worth indefinite optimization.
 
 ## 5. E14 closure by Owner judgement
 
-The previous canonical state stopped for the `1180 kg → 800 kg` World Transfer.
-
-Owner subsequently reported that this family of tests had already been explored sufficiently and that the current experiment had exhausted its useful possibilities for now.
-
-The strongest project-level observation was comparative:
+The strongest later Owner judgement was comparative:
 
 > **the capsule/Donor controller still gave more fun and more possibilities than the best current E14 one-leg organism.**
 
-This does not falsify E14's causal results or the existence of a small seed of boundary/competence play.
+Owner considered the current one-leg experiment largely exhausted for now.
 
-It changes the optimization target:
+This does not falsify E14's causal findings or the small supported seed of boundary/competence play. It changes the frontier:
 
-- the limiting factor is no longer an unknown value of support mass, friction, braking or torque;
-- the limiting factor is the **restricted strategy/action repertoire of the representation itself**.
+- another support-mass/friction/braking/torque sweep is not the high-value question;
+- the dominant limitation is the **restricted strategy/action repertoire of the representation itself**.
 
-Therefore previous `STOP FOR OWNER WORLD TRANSFER` language is historical after this state.
+All earlier `STOP FOR OWNER WORLD TRANSFER` language is historical after this state.
 
-Current action is not another E14 sweep.
+## 6. Historical E2 lesson reused in E15
 
-## 6. Historical E2 lesson now reused explicitly
+E2 showed that making the root solver-owned is not automatically a better embodied player. If responsive control and physical knockback fight over one velocity state, active braking can erase physical consequence almost immediately.
 
-E2 had already shown that a solver-owned capsule/root is not automatically a better embodied player.
+E15 therefore preserves the Donor split:
 
-If responsive control and physical knockback compete over one velocity state, active braking can erase physical consequence almost immediately.
-
-E15 reuses that negative result positively by separating:
-
-- **intent/current velocity** — responsive Donor control;
+- **intent/current velocity** — responsive player-control channel;
 - **external velocity** — physical consequence with its own decay semantics.
 
-The objective is not to weaken Donor response. It is to keep a physical event alive long enough to matter without forcing normal input authority to disappear.
+The objective is not to weaken Donor response. It is to keep a physical event alive long enough to matter without making normal control disappear.
 
-## 7. E15 V0 — Donor Agency / Physical Body Bridge
+## 7. E15 V0 representation
 
-E15 begins from current Donor instead of replacing it.
+E15 starts from current Donor instead of replacing it.
 
-Carrier:
+Carrier retains:
 
 - full camera-relative 2D movement;
 - sprint;
 - jump/coyote/buffer;
 - air control;
 - stairs;
-- moving supports;
-- accepted Donor agency constants unchanged.
+- moving-support behavior;
+- accepted Donor agency constants.
 
-Physical body:
+Physical body layer:
 
 - separate Box3D dynamic upper-body box;
 - target mass `35 kg`;
@@ -209,83 +196,85 @@ Physical body:
 - finite upright torque;
 - normal Box3D collisions with the world.
 
-E15 V0 scope is deliberately partial:
+Scope is deliberately partial:
 
-- horizontal + rotational embodiment are tested;
+- horizontal + rotational embodiment are the research channels;
 - vertical jump/traversal remains explicit carrier transport;
-- this is not a claim of full `80 kg` whole-body physical equivalence.
+- `35 kg` torso is a consequence probe, not a whole-body `80 kg` momentum-equivalence claim.
 
 ## 8. E15 representation corrections
 
 ### 8.1 Vertical split
 
-A single finite 3D follow cap let the torso lag vertically by nearly `1 m` during jump.
+A shared finite 3D follow cap caused nearly `1 m` torso separation during Donor jump. This was not fixed by increasing actuator strength.
 
-This was not fixed with stronger tuning. Vertical traversal was instead declared carrier infrastructure, leaving finite horizontal/rotational embodiment as the actual V0 question.
+Representation was narrowed instead:
+
+- vertical traversal = explicit carrier transport;
+- horizontal follow = finite;
+- rotation/upright response = finite.
 
 ### 8.2 Self-query isolation
 
-Donor mover queries initially saw the E15 torso as an ordinary dynamic obstacle and applied Donor reciprocity to the player's own body layer. E15 then misclassified that internal response as world consequence.
+Donor mover queries initially saw the E15 torso as an external dynamic obstacle and applied Donor reciprocity to the player's own body layer. E15 then misclassified that internal carrier↔body response as world consequence.
 
 Fix:
 
-- dedicated embodiment collision category;
+- dedicated E15 embodiment collision category;
 - carrier mover-query mask ignores that category;
-- torso collision mask still allows ordinary world collision.
+- torso remains normally collidable by Box3D world physics.
 
-Result after fix on neutral Donor episode:
+After the fix, declared neutral Donor traces produce:
 
 - root delta vs Donor: `0`;
-- neutral feedback: `0`;
-- neutral horizontal torso offset: ~`1.98e-6 m`.
+- neutral body feedback: `0`;
+- neutral horizontal torso offset ~`1.98e-6 m`.
 
-## 9. Real world-contact causality established
+## 9. Real body/world causality
 
-A static bar was placed above the Donor capsule envelope but inside the E15 torso envelope.
-
-Three-world comparison:
+A static bar above the Donor capsule envelope but inside the torso envelope was used in a three-world causal test:
 
 1. pure Donor;
 2. E15 feedback ON;
 3. E15 feedback OFF.
 
-Results:
+Result:
 
 - feedback-OFF root remained exactly Donor (`max delta 0`);
 - torso genuinely contacted the bar;
-- first contact produced ~`107.6 N·s` horizontal torso response;
+- first hit produced ~`107.6 N·s` horizontal body response;
 - active bridge transferred capped `52 N·s` consequence into the carrier.
 
-This establishes the path:
+Established bounded path:
 
 > **world → solver-owned body → measured response → player consequence**
 
 without changing Donor locomotion policy.
 
-## 10. E15.1 — contact-episode semantics
+## 10. E15.1 — contact-episode consequence semantics
 
-E15 V0 then exposed a different semantic defect: every frame of sustained wall reaction was being accumulated into persistent `externalVelocity` as if every frame were a new collision.
+E15 V0 exposed a semantic failure: sustained wall reaction was accumulated into persistent `externalVelocity` every frame as if each frame were a fresh collision.
 
-V0 overhead-bar result:
+V0 overhead-bar trace:
 
-- `31` consecutive body-contact frames;
-- external velocity accumulated to about `-4.60 m/s`;
-- path deficit vs Donor about `4.04 m`.
+- `31` consecutive contact frames;
+- external velocity accumulated to ~`-4.60 m/s`;
+- path deficit vs Donor ~`4.04 m`.
 
-E15.1 changes only consequence storage:
+E15.1 changes only storage/classification of the already measured body response:
 
-- every measured response still affects **current velocity**;
-- free-body impulses with no body contact remain persistent;
+- every measured horizontal response still affects current carrier velocity;
+- free-body response with no body contact remains persistent;
 - first frame of a new contact episode may add persistent momentum;
-- subsequent sustained-contact response is **current-only constraint feedback**.
+- later frames in the same sustained contact are **current-only constraint response**.
 
-Same first impact remains unchanged:
+The first impact remains unchanged:
 
-- physics response ~`107.6 N·s`;
+- body response ~`107.6 N·s`;
 - transferred impact `52 N·s`;
 - initial external delta-v ~`-0.65 m/s`.
 
-E15.1 same-bar result:
+E15.1 same-bar trace:
 
 - `11` contact frames;
 - `1` contact episode;
@@ -294,90 +283,113 @@ E15.1 same-bar result:
 - minimum external velocity ~`-0.65 m/s`;
 - path deficit vs Donor ~`0.364 m`.
 
-This is a semantic correction, not a softer actuator tune.
+This is a semantic correction, not softer tuning.
 
-## 11. Current machine evidence
+## 11. Machine qualification
 
-Experiment branch:
+Detailed evidence:
 
-`experiment/e15-donor-physical-body-bridge`
+[`E15_DONOR_AGENCY_PHYSICAL_BODY_BRIDGE_2026-09-04.md`](E15_DONOR_AGENCY_PHYSICAL_BODY_BRIDGE_2026-09-04.md)
 
-Qualified publication-boundary head:
+Qualified PR head:
 
-`b451da5e7f10e7d29d3353e49e9e5e699ec75457`
+`d83e67bcea61d2b0fb362a76c49e26bd580970ce`
 
-Workflow:
+Exact PR-head workflow:
 
-`33827177763` — SUCCESS
+`33827423905` — SUCCESS
 
-Artifact:
+Representative qualified contracts:
 
-`9920388010`
-
-Same-head gates:
-
-- all pre-existing mandatory smoke PASS;
-- E14 diagnostics PASS;
-- E15 V0 causal diagnostics PASS;
-- E15.1 contact-episode semantics PASS;
-- E15 V0 bridge smoke PASS;
-- E15.1 bridge smoke PASS;
-- exact browser-affordance ecology smoke PASS;
+- ordinary neutral Donor repertoire: root delta `0`;
+- feedback-OFF exact browser path vs pure Donor: delta `0`;
+- free `20 N·s` torso impulse produces ~`20 N·s` persistent consequence while feedback-OFF root remains unchanged;
+- external consequence after 3 frames remains ~`0.226 m/s`;
+- rotational perturbation peaks ~`1.82°`, respects finite torque cap and recovers;
+- exact browser affordance ecology produces real torso contact and separated impact/constraint response;
 - build PASS.
 
-Representative E15.1 generic results:
+Machine evidence establishes declared mechanics/causal contracts only. It does not establish gameplay value.
 
-- neutral ordinary Donor repertoire: root delta `0`;
-- free `20 N·s` torso impulse: ~`20 N·s` persistent consequence, feedback-OFF root unchanged;
-- external velocity after 3 frames ~`0.226 m/s`;
-- angular perturbation peak tilt ~`1.82°`, finite recovery to ~0.
+## 12. Public E15.1 state
 
-Machine PASS proves the declared mechanics/causal contracts only. It does not prove fun.
+PR #33 merged E15.1 into `main`.
 
-## 12. E15 browser free-play ecology
+First published E15.1 main SHA:
 
-The opt-in route is:
+`b8e2a2abc248000931b9093e2e9f0db435989d38`
 
-`?mode=e15` / `?mode=hybrid`
+Exact-main workflow:
 
-It keeps the normal playground and adds only E15-specific upper-body probes:
+`33827592660` — SUCCESS
+
+Same run:
+
+- mandatory mechanics smoke — SUCCESS;
+- build — SUCCESS;
+- Configure Pages — SUCCESS;
+- Pages artifact upload — SUCCESS;
+- deploy — SUCCESS.
+
+Pages deployment identity:
+
+- `pages_build_version`: `b8e2a2abc248000931b9093e2e9f0db435989d38`;
+- Pages artifact: `9920519388`;
+- artifact digest: `sha256:0d3ec7ae8d117edaee13f44b055c2ea1363da01d2dc42920934e7741f3bd6c4a`;
+- deployment reported success;
+- environment URL: `https://jozzpoly.github.io/Box3d-Character-Controler/`.
+
+The exact deployed artifact contains:
+
+- `assets/e15-hybrid-browser-DQi8qwPl.js`;
+- bootstrap mapping `mode=e15 || mode=hybrid` to that E15 bundle;
+- expected runtime identity `E15.1 · DONOR AGENCY + CONTACT-EPISODE PHYSICAL BODY`.
+
+Primary Owner route:
+
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=e15`
+
+Alias:
+
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=hybrid`
+
+Diagnostic control:
+
+append `&feedback=0` to disable body→carrier feedback while retaining the physical body representation.
+
+## 13. E15 free-play ecology
+
+The normal Donor playground remains available. E15 adds only three opt-in upper-body probes:
 
 1. thin static beam ahead of spawn;
 2. short torso-height canopy for sustained scrape/contact;
-3. moving upper-body ram for timing/dodge/impact.
+3. moving torso-height ram for timing/dodge/impact.
 
-They occupy a vertical band above the settled Donor mover capsule but inside the physical torso envelope.
+Visual split:
 
-Visual representation:
-
-- **red capsule** = Donor agency carrier;
+- **red capsule** = accepted Donor agency carrier;
 - **gold box** = solver-owned physical torso.
 
-Exact browser-affordance smoke:
+The probes are not objectives and should not dictate Owner behavior.
 
-- feedback-OFF root vs pure Donor: `max delta 0`;
-- active contact frames: `9`;
-- persistent impact frames: `2` across `2` contact episodes;
-- current-only constraint frames: `6`;
-- first impact body response ~`84.85 N·s`;
-- transferred first impact `52 N·s`;
-- max active body offset ~`0.149 m`.
+## 14. Instrumentation provenance correction remains binding
 
-The affordances are therefore causal probes, not decorative geometry.
+Historical workflow `33802322554`, artifact `9911568231`, head `b858bf48e300b8c9297cd22ac86357f658fedccc` has invalid E14.1d body-lean summaries because its consumer read stale `signedLeanX` while corrected sagittal sim emitted `signedLean`.
 
-## 13. Instrumentation provenance correction remains binding
+That is an observation/tooling defect, not a physics negative.
 
-Historical workflow `33802322554`, artifact `9911568231`, head `b858bf48e300b8c9297cd22ac86357f658fedccc` has invalid E14.1d body-lean phase summaries because its consumer read stale `signedLeanX` while corrected sagittal sim emitted `signedLean`.
+Corrected evidence began at:
 
-This is an observation/tooling defect, not a physics negative.
-
-Corrected evidence began at commit `4b70cbf6e37566c357c84eed87a67ce9b2310d01`, workflow `33811359560`, artifact `9914925276`, schema `e14-1d-corrected-sagittal-telemetry-v2`.
+- commit `4b70cbf6e37566c357c84eed87a67ce9b2310d01`;
+- workflow `33811359560`;
+- artifact `9914925276`;
+- schema `e14-1d-corrected-sagittal-telemetry-v2`.
 
 Do not rewrite historical evidence classes.
 
-## 14. Current Owner protocol
+## 15. Current Owner protocol
 
-After public publication, Owner should play `?mode=e15` **spontaneously**.
+Play `?mode=e15` **spontaneously**.
 
 Do not prescribe an ideal route, timing pattern or success metric.
 
@@ -385,29 +397,28 @@ Primary questions:
 
 - does preserving full Donor agency avoid the E14 feeling of lost possibilities?;
 - is the gold physical torso legible or merely visual clutter?;
-- do impacts feel like meaningful body/world consequences rather than arbitrary slowing?;
+- do impacts read as meaningful body/world consequences rather than arbitrary slowing?;
 - does the body create anything Owner wants to deliberately exploit, dodge, recover from or repeat?;
-- does free-body recoil last long enough to matter without making control feel stolen?;
+- does recoil last long enough to matter without making control feel stolen?;
 - is the red-carrier / gold-body seam promising, tolerable, or fundamentally too artificial?;
 - most importantly: **is this more fun or more generative than plain Donor, not merely more physical?**
 
 Recording is useful if spontaneous behavior becomes interesting, but it is not required to begin play.
 
-## 15. Hard stop / next action
+## 16. Hard stop
 
 Current stage:
 
-> **E14's narrow one-leg line is closed by Owner judgement as exhausted for now. E15.1 is machine-qualified as an opt-in hybrid preserving accepted Donor agency while adding a separate finite physical torso with contact-episode consequence semantics.**
+> **E14's narrow one-leg line is closed by Owner judgement as exhausted for now. E15.1 is machine-qualified and publicly deployed as an opt-in hybrid preserving accepted Donor agency while adding a finite physical torso with contact-episode consequence semantics.**
 
-Next action:
-
-**publish `?mode=e15` to the public Pages build and STOP FOR OWNER FREE PLAY.**
+**STOP FOR OWNER E15 FREE PLAY.**
 
 Do not yet:
 
 - replace or weaken Donor/default mechanics;
-- tune E15 parameters to chase a preferred feel before Owner evidence;
+- tune torso mass, follow authority, upright torque, feedback gain or feedback cap;
 - add limbs/full ragdoll merely because E15.1 is technically viable;
+- expand the E15 ecology to manufacture success;
 - claim whole-body momentum correctness;
-- interpret machine PASS as gameplay success;
+- interpret machine/publication PASS as gameplay success;
 - return automatically to E14 support-mass/friction/braking/torque sweeps.
