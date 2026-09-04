@@ -72,6 +72,9 @@ jobs:
             e15-contact-semantic-smoke.json
             e15-affordance-smoke.json
           if-no-files-found: error
+      - name: Probe E16 joint binding surface
+        if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
+        run: node scripts/e16-joint-api-probe.mjs
       - name: Run E16 active-contact-organ crucible
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         run: node scripts/e16-active-contact-organ-crucible.mjs --out=e16-active-contact-organ-crucible.json
