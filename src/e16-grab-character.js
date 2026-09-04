@@ -26,9 +26,12 @@ function clampMagnitude3(vector, maxLength) {
  * E16.1a additionally MEASURES a displacement-level world residual for the complete
  * {core + organ} subsystem. Internal +J/-J actuation preserves aggregate momentum, so
  * the horizontal COM position expected from the recorded pre-solve momentum is known.
- * The difference between actual and expected COM after the Box3D step is a candidate
- * "constraint transport" signal. This revision only measures it; it does not yet move
- * the carrier with it.
+ * The difference between actual and expected COM after the Box3D step is the candidate
+ * "constraint transport" signal.
+ *
+ * Subclasses may consume this measured signal at the explicit hook below. The base
+ * class remains measurement-only so the authority-transfer hypothesis has a clean
+ * control specimen.
  */
 export class E16GrabCharacter extends E16ActiveContactOrganCharacter {
   constructor(b3, world, options = {}) {
@@ -130,6 +133,10 @@ export class E16GrabCharacter extends E16ActiveContactOrganCharacter {
       );
     }
 
+    // Explicit extension point for an authority-transfer experiment. Base E16.1a
+    // deliberately does nothing with the signal.
+    this._applyGrabConstraintTransport(dt);
+
     super.postStep(dt);
 
     // E16 classifies non-contact world response as persistent. A live grab is a
@@ -153,6 +160,10 @@ export class E16GrabCharacter extends E16ActiveContactOrganCharacter {
     this.lastGrabConstraintFeedbackImpulse = this.grabJoint
       ? this.lastConstraintSubsystemFeedbackImpulse
       : 0;
+  }
+
+  _applyGrabConstraintTransport(_dt) {
+    // Measurement-only control. E16.1b overrides this explicitly.
   }
 
   telemetry() {
