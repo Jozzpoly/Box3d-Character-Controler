@@ -25,6 +25,8 @@ jobs:
         run: node scripts/e17-point-effective-mass-diagnostic.mjs --out=e17-point-effective-mass-diagnostic.json
       - name: Compare scalar vs point impulse response
         run: node scripts/e17-point-impulse-ab.mjs --out=e17-point-impulse-ab.json
+      - name: Compare multi-frame one-point tracking
+        run: node scripts/e17-one-point-tracking-ab.mjs --out=e17-one-point-tracking-ab.json
       - name: Upload E17 one-point depth evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -33,4 +35,5 @@ jobs:
           path: |
             e17-point-effective-mass-diagnostic.json
             e17-point-impulse-ab.json
+            e17-one-point-tracking-ab.json
           if-no-files-found: error
