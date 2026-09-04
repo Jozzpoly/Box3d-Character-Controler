@@ -78,6 +78,9 @@ jobs:
       - name: Run E16 active-contact-organ crucible
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         run: node scripts/e16-active-contact-organ-crucible.mjs --out=e16-active-contact-organ-crucible.json
+      - name: Diagnose E16.1 constraint transport
+        if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
+        run: node scripts/e16-grab-transport-diagnostic.mjs --out=e16-grab-transport-diagnostic.json
       - name: Run E16.1 grab-pull crucible
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         run: node scripts/e16-grab-pull-crucible.mjs --out=e16-grab-pull-crucible.json
@@ -89,6 +92,7 @@ jobs:
           path: |
             e16-joint-api-probe.json
             e16-active-contact-organ-crucible.json
+            e16-grab-transport-diagnostic.json
             e16-grab-pull-crucible.json
           if-no-files-found: error
       - name: Build playground
