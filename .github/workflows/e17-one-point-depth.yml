@@ -27,6 +27,8 @@ jobs:
         run: node scripts/e17-point-impulse-ab.mjs --out=e17-point-impulse-ab.json
       - name: Compare multi-frame one-point tracking
         run: node scripts/e17-one-point-tracking-ab.mjs --out=e17-one-point-tracking-ab.json
+      - name: Probe inertia binding shape
+        run: node scripts/e17-inertia-binding-probe.mjs --out=e17-inertia-binding-probe.json
       - name: Upload E17 one-point depth evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -36,4 +38,5 @@ jobs:
             e17-point-effective-mass-diagnostic.json
             e17-point-impulse-ab.json
             e17-one-point-tracking-ab.json
+            e17-inertia-binding-probe.json
           if-no-files-found: error
