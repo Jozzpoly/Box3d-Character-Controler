@@ -111,6 +111,16 @@ jobs:
           name: e17-intent-first-manipulator
           path: e17-intent-manipulator-smoke.json
           if-no-files-found: error
+      - name: Diagnose E17 point effective mass
+        if: github.ref == 'refs/heads/experiment/e17-one-point-depth'
+        run: node scripts/e17-point-effective-mass-diagnostic.mjs --out=e17-point-effective-mass-diagnostic.json
+      - name: Upload E17 point effective-mass evidence
+        if: always() && github.ref == 'refs/heads/experiment/e17-one-point-depth'
+        uses: actions/upload-artifact@v4
+        with:
+          name: e17-point-effective-mass
+          path: e17-point-effective-mass-diagnostic.json
+          if-no-files-found: error
       - name: Build playground
         run: npm run build
       - name: Configure Pages
