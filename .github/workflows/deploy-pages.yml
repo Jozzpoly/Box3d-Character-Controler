@@ -44,6 +44,9 @@ jobs:
       - name: Capture E15 gate diagnostics
         if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
         run: node scripts/e15-hybrid-gate-diagnostic.mjs --out=e15-hybrid-gate-diagnostic.json
+      - name: Capture E15 world-contact causality
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        run: node scripts/e15-world-contact-causality.mjs --out=e15-world-contact-causality.json
       - name: Qualify E15 hybrid bridge
         if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
         run: node scripts/e15-hybrid-bridge-smoke.mjs --out=e15-hybrid-bridge.json
@@ -54,6 +57,7 @@ jobs:
           name: e15-hybrid-bridge
           path: |
             e15-hybrid-gate-diagnostic.json
+            e15-world-contact-causality.json
             e15-hybrid-bridge.json
           if-no-files-found: error
       - name: Build playground
