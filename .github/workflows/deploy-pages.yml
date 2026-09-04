@@ -50,9 +50,12 @@ jobs:
       - name: Test E15 contact-episode semantics
         if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
         run: node scripts/e15-contact-episode-semantics.mjs --out=e15-contact-episode-semantics.json
-      - name: Qualify E15 hybrid bridge
+      - name: Qualify E15 V0 hybrid bridge
         if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
         run: node scripts/e15-hybrid-bridge-smoke.mjs --out=e15-hybrid-bridge.json
+      - name: Qualify E15.1 contact-semantic bridge
+        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
+        run: node scripts/e15-contact-semantic-smoke.mjs --out=e15-contact-semantic-smoke.json
       - name: Upload E15 hybrid evidence
         if: always() && github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
         uses: actions/upload-artifact@v4
@@ -63,6 +66,7 @@ jobs:
             e15-world-contact-causality.json
             e15-contact-episode-semantics.json
             e15-hybrid-bridge.json
+            e15-contact-semantic-smoke.json
           if-no-files-found: error
       - name: Build playground
         run: npm run build
