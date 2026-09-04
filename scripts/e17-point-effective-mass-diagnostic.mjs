@@ -47,15 +47,20 @@ function inverseBoxInertiaDiagonal(mass, half) {
 
 function exactDirectionalEffectiveMass(body, coreMass, worldAnchor, direction, inverseInertiaDiagonal) {
   const n = normalize(direction);
+
+  // This diagnostic intentionally uses a centred, axis-aligned primitive and evaluates
+  // it before stepping the world. For that bounded fixture, body origin == COM and the
+  // local principal-inertia axes are world axes. We therefore need no private binding API.
   const center = [0, 0, 0];
-  b3.b3Body_GetWorldCenter(center, body);
+  b3.b3Body_GetPosition(center, body);
   const r = [worldAnchor[0] - center[0], worldAnchor[1] - center[1], worldAnchor[2] - center[2]];
   const rn = cross(r, n);
   const rotational =
     rn[0] * rn[0] * inverseInertiaDiagonal[0] +
     rn[1] * rn[1] * inverseInertiaDiagonal[1] +
     rn[2] * rn[2] * inverseInertiaDiagonal[2];
-  const invMassObject = b3.b3Body_GetInverseMass(body);
+  const objectMass = b3.b3Body_GetMass(body);
+  const invMassObject = 1 / objectMass;
   const invMassCore = 1 / coreMass;
   const k = invMassObject + invMassCore + rotational;
   return { r, n, rn, rotational, invMassObject, invMassCore, exactEffectiveMass: k > 0 ? 1 / k : 0 };
@@ -101,16 +106,14 @@ const evaluated = cases.map((entry) => {
 });
 
 const report = {
-  schema: 'e17-point-effective-mass-diagnostic-v2',
+  schema: 'e17-point-effective-mass-diagnostic-v3',
   objectMass,
   coreMass: character.bodyMass,
   halfExtents: half,
   scalarEffectiveMass: scalar,
   analyticInverseInertia,
-  bindingWorldInverseInertiaRaw: b3.b3Body_GetWorldInverseRotationalInertia(box),
-  bindingLocalInertiaRaw: b3.b3Body_GetLocalRotationalInertia(box),
   cases: evaluated,
-  boundary: 'Measurement-only diagnostic. Known axis-aligned box inertia is computed analytically because the current box3d.js matrix-return binding appears to expose zero-valued ex/ey/ez arrays. Runtime behavior is unchanged.',
+  boundary: 'Measurement-only diagnostic. The fixture is a centred axis-aligned box evaluated before world stepping, so body position is the COM and analytic principal inertia is exact for this bounded case. Runtime behavior is unchanged.',
 };
 
 if (outPath) fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
