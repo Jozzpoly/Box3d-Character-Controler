@@ -6,6 +6,8 @@ import {
   chooseGrabCandidate,
   horizontalOrganTargetOffset,
   horizontalPointTargetOffset,
+  radialControlRadiusPx,
+  radialPointTargetOffset,
 } from './e16-capability-interaction.js';
 import { createE16ContactQualifiedGrabCharacter } from './e16-contact-qualified-grab-character.js';
 import { createE16Toybox } from './e16-toybox.js';
@@ -25,6 +27,8 @@ const controlsEl = document.querySelector('#hud .controls');
 const secondaryEl = document.querySelector('#hud .secondary');
 const touchRoot = document.querySelector('#touch-controls');
 const touchResetButton = document.querySelector('#touch-reset');
+const query = new URLSearchParams(window.location.search);
+const radialMapping = query.get('mapping') === 'radial';
 const debugValues = {
   speed: document.querySelector('#d-speed'),
   external: document.querySelector('#d-external'),
@@ -177,6 +181,8 @@ async function main() {
   followCamera.snap(character.position);
 
   const pointerNdc = new THREE.Vector2(0, 0);
+  const pointerCanvas = new THREE.Vector2(0, 0);
+  const bodyScreen = new THREE.Vector3();
   const raycaster = new THREE.Raycaster();
   const targetPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   const pointerWorld = new THREE.Vector3();
@@ -184,8 +190,10 @@ async function main() {
   function updatePointer(event) {
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
-    pointerNdc.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    pointerNdc.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    pointerCanvas.x = event.clientX - rect.left;
+    pointerCanvas.y = event.clientY - rect.top;
+    pointerNdc.x = (pointerCanvas.x / rect.width) * 2 - 1;
+    pointerNdc.y = -(pointerCanvas.y / rect.height) * 2 + 1;
   }
 
   function directTargetOffset() {
@@ -196,11 +204,26 @@ async function main() {
       return horizontalOrganTargetOffset(capabilityDirection, desiredReach);
     }
 
-    const offset = horizontalPointTargetOffset(
-      [pointerWorld.x, pointerWorld.y, pointerWorld.z],
-      character.bodyPosition,
-      capabilityDirection,
-    );
+    const point = [pointerWorld.x, pointerWorld.y, pointerWorld.z];
+    let offset;
+    if (radialMapping) {
+      const rect = canvas.getBoundingClientRect();
+      bodyScreen.set(...character.bodyPosition).project(camera);
+      const bodyPixelX = (bodyScreen.x * 0.5 + 0.5) * rect.width;
+      const bodyPixelY = (-bodyScreen.y * 0.5 + 0.5) * rect.height;
+      const screenDistance = Math.hypot(pointerCanvas.x - bodyPixelX, pointerCanvas.y - bodyPixelY);
+      const controlRadius = radialControlRadiusPx(rect.width, rect.height);
+      offset = radialPointTargetOffset(
+        point,
+        character.bodyPosition,
+        screenDistance,
+        controlRadius,
+        capabilityDirection,
+      );
+    } else {
+      offset = horizontalPointTargetOffset(point, character.bodyPosition, capabilityDirection);
+    }
+
     desiredReach = Math.hypot(offset[0], offset[2]);
     if (desiredReach > 1e-9) {
       capabilityDirection = [offset[0] / desiredReach, 0, offset[2] / desiredReach];
@@ -237,12 +260,16 @@ async function main() {
     });
   }
 
-  phaseEl.textContent = 'E16 DIRECT · POINTER TASK-SPACE A/B';
+  phaseEl.textContent = radialMapping
+    ? 'E16 DIRECT.1 · SCREEN-NORMALIZED RADIAL REACH'
+    : 'E16 DIRECT · POINTER TASK-SPACE A/B';
   if (controlsEl) {
     controlsEl.innerHTML = '<strong>WASD</strong> move · <strong>Space</strong> jump · <strong>Shift</strong> sprint · <strong>RMB drag</strong> camera · <strong>wheel</strong> zoom';
   }
   if (secondaryEl) {
-    secondaryEl.innerHTML = '<strong>move cursor</strong> choose horizontal capability target · <strong>LMB hold</strong> physically reach / earn grab · <strong>release LMB</strong> let go · <strong>R</strong> reset · <strong>H</strong> telemetry';
+    secondaryEl.innerHTML = radialMapping
+      ? '<strong>move cursor around the character</strong> choose direction + proportional reach · <strong>LMB hold</strong> physically reach / earn grab · <strong>release LMB</strong> let go · <strong>R</strong> reset · <strong>H</strong> telemetry'
+      : '<strong>move cursor</strong> choose horizontal capability target · <strong>LMB hold</strong> physically reach / earn grab · <strong>release LMB</strong> let go · <strong>R</strong> reset · <strong>H</strong> telemetry';
   }
   debugLabels.external.textContent = 'pointer reach / error';
   debugLabels.impulse.textContent = 'grab reaction';
@@ -250,7 +277,9 @@ async function main() {
 
   const baseCounts = playground.stats();
   const toyboxCounts = toybox.stats();
-  statusEl.textContent = `E16 direct-control probe · SAME mechanics as E16.2a · pointer = direction + reach · ${baseCounts.dynamicCount + toyboxCounts.dynamicBodies + 2} dynamic bodies`;
+  statusEl.textContent = radialMapping
+    ? `E16 direct radial-control probe · SAME mechanics as E16.2a · screen radius = full analog reach · ${baseCounts.dynamicCount + toyboxCounts.dynamicBodies + 2} dynamic bodies`
+    : `E16 direct-control probe · SAME mechanics as E16.2a · pointer = direction + reach · ${baseCounts.dynamicCount + toyboxCounts.dynamicBodies + 2} dynamic bodies`;
 
   function resetAll() {
     if (character.grabJoint) character.releaseGrab();
