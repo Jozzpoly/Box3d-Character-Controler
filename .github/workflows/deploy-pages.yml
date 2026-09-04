@@ -74,7 +74,7 @@ jobs:
           if-no-files-found: error
       - name: Probe E16 joint binding surface
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
-        run: node scripts/e16-joint-api-probe.mjs
+        run: node scripts/e16-joint-api-probe.mjs --out=e16-joint-api-probe.json
       - name: Run E16 active-contact-organ crucible
         if: github.ref == 'refs/heads/experiment/e16-active-contact-organ'
         run: node scripts/e16-active-contact-organ-crucible.mjs --out=e16-active-contact-organ-crucible.json
@@ -83,7 +83,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e16-active-contact-organ
-          path: e16-active-contact-organ-crucible.json
+          path: |
+            e16-joint-api-probe.json
+            e16-active-contact-organ-crucible.json
           if-no-files-found: error
       - name: Build playground
         run: npm run build
