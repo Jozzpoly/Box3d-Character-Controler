@@ -72,6 +72,25 @@ jobs:
             e15-contact-semantic-smoke.json
             e15-affordance-smoke.json
           if-no-files-found: error
+      - name: Qualify E16.1c contact-earned grab topology
+        if: github.ref == 'refs/heads/publication/e16-2a-capability-yard' || github.ref == 'refs/heads/main'
+        run: node scripts/e16-contact-qualified-grab-crucible.mjs --out=e16-contact-qualified-grab-crucible.json
+      - name: Qualify E16.2a interaction policy
+        if: github.ref == 'refs/heads/publication/e16-2a-capability-yard' || github.ref == 'refs/heads/main'
+        run: node scripts/e16-capability-interaction-smoke.mjs --out=e16-capability-interaction-smoke.json
+      - name: Qualify E16.2a integrated capability yard
+        if: github.ref == 'refs/heads/publication/e16-2a-capability-yard' || github.ref == 'refs/heads/main'
+        run: node scripts/e16-capability-yard-smoke.mjs --out=e16-capability-yard-smoke.json
+      - name: Upload E16 capability-yard evidence
+        if: always() && (github.ref == 'refs/heads/publication/e16-2a-capability-yard' || github.ref == 'refs/heads/main')
+        uses: actions/upload-artifact@v4
+        with:
+          name: e16-capability-yard
+          path: |
+            e16-contact-qualified-grab-crucible.json
+            e16-capability-interaction-smoke.json
+            e16-capability-yard-smoke.json
+          if-no-files-found: error
       - name: Build playground
         run: npm run build
       - name: Configure Pages
