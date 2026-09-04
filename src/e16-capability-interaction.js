@@ -10,6 +10,12 @@ export const E16_CAPABILITY_LIMITS = Object.freeze({
   wheelMetresPerDelta: 0.0008,
 });
 
+export const E16_DIRECT_SCREEN_LIMITS = Object.freeze({
+  viewportFraction: 0.24,
+  minControlRadiusPx: 150,
+  maxControlRadiusPx: 260,
+});
+
 /**
  * Map camera-relative horizontal intent into the organ's task-space target.
  * This intentionally ignores camera pitch in E16.2a. Vertical aiming is a separate
@@ -46,6 +52,62 @@ export function horizontalPointTargetOffset(
   }
 
   const reach = clamp(distance, limits.minReach, limits.maxReach);
+  return [reach * dx / distance, 0, reach * dz / distance];
+}
+
+/**
+ * Convert viewport size into a stable radial-control radius. This keeps the complete
+ * physical reach range usable on-screen instead of letting world-plane scale / camera
+ * zoom collapse most pointer positions into maxReach.
+ */
+export function radialControlRadiusPx(
+  viewportWidth,
+  viewportHeight,
+  screenLimits = E16_DIRECT_SCREEN_LIMITS,
+) {
+  const width = Number.isFinite(viewportWidth) ? Math.max(1, viewportWidth) : 1;
+  const height = Number.isFinite(viewportHeight) ? Math.max(1, viewportHeight) : 1;
+  const shortSide = Math.min(width, height);
+  return clamp(
+    shortSide * screenLimits.viewportFraction,
+    screenLimits.minControlRadiusPx,
+    screenLimits.maxControlRadiusPx,
+  );
+}
+
+/**
+ * Map cursor distance from the projected physical core to the complete bounded reach
+ * interval. Direction remains world-ground-plane derived; only reach is normalized in
+ * screen space. Therefore camera zoom changes visual scale but no longer destroys the
+ * useful analog reach interval.
+ */
+export function screenRadialReach(
+  screenDistancePx,
+  controlRadiusPx,
+  limits = E16_CAPABILITY_LIMITS,
+) {
+  const distance = Number.isFinite(screenDistancePx) ? Math.max(0, screenDistancePx) : 0;
+  const radius = Number.isFinite(controlRadiusPx) ? Math.max(1, controlRadiusPx) : 1;
+  const t = clamp(distance / radius, 0, 1);
+  return limits.minReach + t * (limits.maxReach - limits.minReach);
+}
+
+export function radialPointTargetOffset(
+  pointWorld,
+  originWorld,
+  screenDistancePx,
+  controlRadiusPx,
+  fallbackDirection = [0, 0, -1],
+  limits = E16_CAPABILITY_LIMITS,
+) {
+  const dx = (pointWorld?.[0] ?? originWorld?.[0] ?? 0) - (originWorld?.[0] ?? 0);
+  const dz = (pointWorld?.[2] ?? originWorld?.[2] ?? 0) - (originWorld?.[2] ?? 0);
+  const distance = Math.hypot(dx, dz);
+  const reach = screenRadialReach(screenDistancePx, controlRadiusPx, limits);
+
+  if (distance < 1e-9) {
+    return horizontalOrganTargetOffset(fallbackDirection, reach);
+  }
   return [reach * dx / distance, 0, reach * dz / distance];
 }
 
