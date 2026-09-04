@@ -1,0 +1,36 @@
+name: E17 one-point depth
+
+on:
+  push:
+    branches:
+      - experiment/e17-one-point-depth
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  depth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Measure E17 directional point effective mass
+        run: node scripts/e17-point-effective-mass-diagnostic.mjs --out=e17-point-effective-mass-diagnostic.json
+      - name: Compare scalar vs point impulse response
+        run: node scripts/e17-point-impulse-ab.mjs --out=e17-point-impulse-ab.json
+      - name: Upload E17 one-point depth evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e17-one-point-depth
+          path: |
+            e17-point-effective-mass-diagnostic.json
+            e17-point-impulse-ab.json
+          if-no-files-found: error
