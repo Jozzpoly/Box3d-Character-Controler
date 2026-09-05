@@ -35,12 +35,10 @@ export function castE19GripReach({
   translation,
   radius = 0.14,
   queryFilter = null,
-  acceptShape = null,
 }) {
   if (!b3 || !world) throw new Error('b3 and world are required');
   if (!finiteVec3(origin) || !finiteVec3(translation)) throw new Error('origin/translation must be finite vec3');
   if (!(radius > 0) || !Number.isFinite(radius)) throw new Error('radius must be finite and > 0');
-  if (acceptShape !== null && typeof acceptShape !== 'function') throw new Error('acceptShape must be a function or null');
 
   const filter = queryFilter ?? b3.b3DefaultQueryFilter();
   let best = null;
@@ -60,7 +58,6 @@ export function castE19GripReach({
       if (!shapeId || !Number.isFinite(fraction)) return bestFraction;
       if (fraction < 0 || fraction > 1) return bestFraction;
       if (!finiteVec3(point) || !finiteVec3(normal)) return bestFraction;
-      if (acceptShape && !acceptShape(shapeId)) return bestFraction;
       if (fraction >= bestFraction) return bestFraction;
 
       const body = b3.b3Shape_GetBody(shapeId);
@@ -85,9 +82,9 @@ export function castE19GripReach({
         triangleIndex,
         childIndex,
       });
-      // Clip the world query to the closest accepted hit seen so far. Box3D may invoke
-      // callbacks out of order, so this both preserves first-hit semantics and avoids
-      // making callback enumeration order gameplay authority.
+      // Clip the world query to the closest hit seen so far. Box3D may invoke callbacks
+      // out of order, so this preserves first-obstruction semantics without making
+      // callback enumeration order gameplay authority.
       return fraction;
     },
   );
