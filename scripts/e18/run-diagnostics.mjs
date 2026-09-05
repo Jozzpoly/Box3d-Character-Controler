@@ -64,6 +64,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-p3-0b-box3d-response-diagnostic.mjs',
     out: 'e18-p3-0b-box3d-response.json',
   },
+  {
+    name: 'E18 P3.0c axis-control crucible',
+    script: 'scripts/e18/e18-p3-0c-axis-control-crucible.mjs',
+    out: 'e18-p3-0c-axis-control.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
