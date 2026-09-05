@@ -24,6 +24,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-0c-static-grip-gravity-capacity.mjs',
     out: 'e19-0c-static-grip-gravity-capacity.json',
   },
+  {
+    name: 'E19.0d direct Donor static-grip bridge',
+    script: 'scripts/e19/e19-0d-donor-static-grip-bridge.mjs',
+    out: 'e19-0d-donor-static-grip-bridge.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
