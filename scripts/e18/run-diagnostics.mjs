@@ -59,6 +59,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-p3-0a-coupled-kernel-diagnostic.mjs',
     out: 'e18-p3-0a-coupled-kernel.json',
   },
+  {
+    name: 'E18 P3.0b Box3D response diagnostic',
+    script: 'scripts/e18/e18-p3-0b-box3d-response-diagnostic.mjs',
+    out: 'e18-p3-0b-box3d-response.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
