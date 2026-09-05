@@ -124,6 +124,7 @@ function run(policy) {
   const camera = new THREE.PerspectiveCamera(51, 16 / 9, 0.05, 130);
   const followCamera = new FollowCamera(camera, fakeCanvas(), { dragButtons: [] });
   followCamera.snap(character.position);
+  camera.updateMatrixWorld(true);
 
   const projected = new THREE.Vector3(...anchor).project(camera);
   const pointerNdc = new THREE.Vector2(projected.x, projected.y);
@@ -143,6 +144,7 @@ function run(policy) {
     if (policy === 'carrier-relative') {
       return add3(character.position, initialCarrierOffset);
     }
+    camera.updateMatrixWorld(true);
     raycaster.setFromCamera(pointerNdc, camera);
     const hit = raycaster.ray.intersectPlane(frozenPlane, planeHit);
     return hit ? [hit.x, hit.y, hit.z] : null;
@@ -150,7 +152,7 @@ function run(policy) {
 
   const firstTarget = requestedTarget();
   if (!firstTarget || distance3(firstTarget, anchor) > 1e-5) {
-    throw new Error(`${policy}: acquisition target reconstruction failed`);
+    throw new Error(`${policy}: acquisition target reconstruction failed; error=${firstTarget ? distance3(firstTarget, anchor) : 'MISS'}`);
   }
 
   let activeFrames = 0;
@@ -187,6 +189,7 @@ function run(policy) {
     character.setManipulationTarget(target);
     tick(world, character, WALK_INTENT);
     followCamera.update(character.position, Boolean(character.currentSupport), DT);
+    camera.updateMatrixWorld(true);
 
     const angularSpeed = bodyAngularSpeed(object);
     peakAngularSpeed = Math.max(peakAngularSpeed, angularSpeed);
