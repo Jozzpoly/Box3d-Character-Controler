@@ -136,6 +136,18 @@ export class E17IntentManipulatorCharacter extends E15HybridCharacter {
     return 1 / (1 / objectMass + 1 / this.bodyMass);
   }
 
+  /**
+   * Extension seam for later interaction layers that need to resolve a requested
+   * manipulation target from the Donor carrier after super.preStep() has advanced it,
+   * but before E17 applies reach feasibility and physical actuator impulse.
+   *
+   * E17 and E17-depth intentionally leave this as a no-op, preserving their current
+   * public target semantics exactly. The seam exists so an E18 experiment does not
+   * need to fork or reorder the E17 actuator itself merely to resolve intent at the
+   * correct phase.
+   */
+  _resolveManipulatorRequestedTargetAfterCarrierStep(_dt, _intent) {}
+
   preStep(dt, intent) {
     super.preStep(dt, intent);
     if (!this.manipulatedBody) {
@@ -147,6 +159,7 @@ export class E17IntentManipulatorCharacter extends E15HybridCharacter {
     }
 
     this._syncBody();
+    this._resolveManipulatorRequestedTargetAfterCarrierStep(dt, intent);
     this.b3.b3Body_GetWorldPoint(
       this.manipulatedAnchorWorld,
       this.manipulatedBody,
