@@ -94,14 +94,12 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
       0,
       this.desiredDirection[2] * this.desiredSpeed,
     ];
-    const constrained = applyIntentCappedRelativeConstraintVelocity({
-      b3: this.b3,
+    const constrained = this._applyConstraintVelocityPolicy({
       velocity: this.velocity,
       desiredVelocity,
       planes: lastPlanes,
       extras: lastExtras,
       recoveredPushes: lastRecoveredPushes,
-      bodyPointVelocity: (body, point) => this._bodyPointVelocity(body, point),
     });
     this.velocity = constrained.velocity;
     this.lastConstraintClips = constrained.clippedComponents;
@@ -114,6 +112,18 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
       this.landingSpeed = -preClipVelocity[1];
     }
     if (this.currentSupport) this.coyoteRemaining = this.coyoteTime;
+  }
+
+  _applyConstraintVelocityPolicy({ velocity, desiredVelocity, planes, extras, recoveredPushes }) {
+    return applyIntentCappedRelativeConstraintVelocity({
+      b3: this.b3,
+      velocity,
+      desiredVelocity,
+      planes,
+      extras,
+      recoveredPushes,
+      bodyPointVelocity: (body, point) => this._bodyPointVelocity(body, point),
+    });
   }
 
   telemetry() {
