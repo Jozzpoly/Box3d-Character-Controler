@@ -1,6 +1,6 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-04, after E17 public Owner free play and E18-R0 research synthesis**
+Grounded: **2026-09-05, after E17-depth publication, reproducible-dependency maintenance and E17 lifecycle convergence**
 
 This is the compact canonical orientation layer. Before any future write, re-fetch live `main` and exact SHA. Recorded SHAs are provenance, not permission to assume the repository has not moved.
 
@@ -8,23 +8,27 @@ This is the compact canonical orientation layer. Before any future write, re-fet
 
 - Accepted public/default player remains **A‴ / Donor v1**.
 - Accepted reference ground agency remains `31 m/s²` acceleration / `36 m/s²` braking.
-- E14 one-leg/contextual tuning is closed for now by Owner judgement; its causal evidence remains valid provenance.
-- E15 established a bounded path from solver-owned body response to player consequence without replacing Donor traversal.
-- E16 established capability-first embodiment, contact-earned grab topology and constraint-transport authority, but Owner judged its end-effector-first interaction far too awkward.
-- Current public experiment is **E17 — intent-first physical manipulator**.
-- Current research frontier is **E18 — manipulation architecture / orientation / compliance / closed-loop authority**.
+- E14 narrow one-leg/contextual tuning is closed by Owner judgement; causal evidence remains valid provenance.
+- E15 established a bounded body-response → player-consequence bridge but Owner judged the passive torso too gameplay-irrelevant.
+- E16 established capability-first embodiment and useful manipulation mechanics, but Owner judged end-effector-first control far too awkward.
+- **E17 intent-first physical manipulation** is the strongest current gameplay direction from Owner free play.
+- **E17-depth** is now a public bounded A/B executor probe: same one-point grammar and force/reach budget, but inertia-aware directional point effective mass.
+- **E18** remains the broader manipulation-architecture research frontier.
+- Reproducibility debt is closed: Node is pinned, `package-lock.json` is committed and CI uses `npm ci`.
+- E17 and E17-depth now share one manipulation lifecycle implementation; E17-depth overrides only effective-mass calculation and extra telemetry.
 
-Current exact implementation at this grounding:
+Latest exact canonical implementation before this documentation cleanup:
 
-- `main`: `c51bee303e85762ca5583fd63db02918205a9da5`
-- PR #39: `Publish E17 intent-first physical manipulator`
-- exact-main workflow `33883029369` / run #668 — **SUCCESS**
-- E16 regressions, E17 qualifier, build and Pages deploy — **SUCCESS**
+- `main`: `af9fab3207df2b84d3eee990a22d37cad4188a14`
+- PR #41: `Publish E17-depth inertia-aware one-point owner probe`
+- PR #42: `Make dependency resolution reproducible`
+- PR #43: `Converge E17 manipulator lifecycle`
+- exact-main workflow `33953856762` — **SUCCESS**
+- locked install, foundation/history smoke, E16 regressions, E17, E17-depth, build and Pages deploy — **SUCCESS**
 - public E17 route: `?mode=e17` / `?mode=intent`
+- public E17-depth route: `?mode=e17depth` / `?mode=pointmass`
 
-Detailed current research map:
-
-[`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md)
+After any merge following this grounding, re-fetch `main`; do not treat the SHA above as eternally current.
 
 ## 1. Project identity
 
@@ -84,159 +88,120 @@ E13 durable rule remains:
 
 Historical `lead8` remains a foresight oracle only, not gameplay timing.
 
-## 4. Durable E14 → E16 lesson
+## 4. Durable E14 → E17 lesson
 
 E14 showed that a more physical representation can still lose to the plain Donor when it removes too much agency or strategy space.
 
-E15 preserved Donor agency but a passive physical torso mostly reacted after Donor had already done the interesting work.
+E15 preserved Donor traversal but the physical torso mostly reacted after the interesting player action had already happened.
 
-E16 therefore gave one solver-owned physical part a deliberate capability. This established useful mechanics:
+E16 gave a solver-owned physical subsystem a deliberate capability, but Owner attention became dominated by operating the subsystem itself.
 
-- aggregate subsystem momentum accounting;
-- internal momentum-neutral actuation;
-- contact-qualified grab topology;
-- explicit grab constraint;
-- constraint transport authority through the normal analytical mover.
+E17 reset the abstraction boundary:
 
-But Owner free play showed the interaction abstraction was still wrong: piloting the end effector dominated attention and remained extremely awkward even after direct/radial task-space mapping improvements.
+> **high-level player/object intent first → finite physical execution second**
+
+Owner free play then shifted from interface testing to deliberate world experimentation. One capability generated lift, carry, drag, swing, throw, leverage, pile/stack attempts, object↔object interaction and persistent scene history.
 
 Durable lesson:
 
-> **Embodiment should add useful verbs and consequences; the player should not need to micromanage low-level physics merely to express intent.**
+> **Embodiment should add useful verbs and consequences without forcing the player to micromanage low-level physics merely to express intent.**
 
-## 5. E17 — current public experiment
-
-E17 is an **architecture reset**, not E16 tuning.
+## 5. E17 — one-point chaos baseline
 
 Interaction contract:
 
-> **click nearby dynamic object / exact surface point → express 3D target intent → finite physical actuator attempts it**
+> **select nearby dynamic object / exact surface point → express 3D target intent → finite physical actuator attempts it**
 
-instead of:
+The object is not teleported. Finite impulse acts at the selected point and equal/opposite reaction acts on the finite physical core.
 
-> **pilot organ → collide → earn grab → manipulate**.
+Owner-positive evidence:
 
-The selected object is not teleported. E17 applies finite force at the selected world point and equal/opposite reaction to the finite physical core. Mass, collision, off-centre leverage and release momentum remain physical consequences.
+- attention shifted toward experimenting with the world;
+- one capability generated a family of verbs;
+- mass, leverage, collision and release momentum remained perceptible parts of play.
 
-Current E17 is still crude and unstable. It is not accepted as a finished manipulation system.
+Owner-negative evidence:
 
-## 6. Owner E17 judgement
-
-Owner free play gave the strongest positive gameplay evidence of the E14–E17 line so far.
-
-Positive:
-
-- attention shifted from operating the interface to experimenting with the world;
-- spontaneous behavior included lift, carry, throw, drag, pile/stack attempts, leverage, object↔object interaction, object↔player interaction, sphere play and locomotion+manipulation;
-- one capability began generating a family of verbs and persistent scene history;
-- Owner explicitly judged the direction substantially closer to something sensible.
-
-Negative:
-
-- current manipulator is a **"latający niestabilny wibrator"**;
 - strong oscillation/overshoot;
-- weak precise placement;
+- poor precise placement;
 - uncontrolled orientation;
-- off-centre grabs can generate extreme rotation;
-- unclear boundary between skill and accidental chaos;
+- off-centre grabs can create extreme rotation;
 - representation remains prototype-grade.
 
 Interpretation:
 
-> **E17 does not prove the manipulator is good. It proves intent-first manipulation is promising enough to produce spontaneous play despite a bad executor.**
+> **E17 does not prove the manipulator is good. It proves the intent-first abstraction is promising enough to generate play despite a bad executor.**
+
+Preserve E17 as **P1 — one-point chaos baseline**.
+
+## 6. E17-depth — bounded one-point executor correction
+
+E17-depth preserves the E17 interaction grammar, input, acquisition/release lifecycle, reach and `900 N` force cap.
+
+Only requested impulse calculation changes: it uses the directional effective mass of the grabbed rigid-body point, including the rotational contribution from world COM and inverse rotational inertia.
+
+Machine evidence establishes the bounded mechanical distinction and successful browser build/publication. It does **not** establish better feel, better gameplay or Owner preference.
+
+Therefore:
+
+> **E17-depth is an Owner-facing A/B candidate, not an accepted replacement for E17.**
+
+Do not quietly add damping, orientation ownership, a second grip point or stronger force and still call the result this same bounded A/B.
 
 ## 7. Self-lift / closed-loop authority exploit
 
-Owner discovered that standing on the dynamic sphere while manipulating it can lift sphere + player together and enable flight.
-
-Do **not** remove this during exploratory work.
+Standing on a manipulated dynamic object can let the closed player↔object subsystem lift itself through the hybrid Donor/manipulation authority arrangement.
 
 Current classification:
 
 - **generative exploit** — funny, high-fun, creates a new toy/verb;
-- **authority exploit / causal debt** — closed player↔object subsystem gains net translation through hybrid Donor/manipulation authority.
+- **authority exploit / causal debt** — closed subsystem receives effective external translation authority.
 
-Use it as a stress specimen for future authority coherence and balance. Do not call it physically valid merely because it is fun.
+Do not remove it merely because it is an exploit during exploratory work. Also do not call it physically valid merely because it is fun.
 
 ## 8. E18 research frontier
-
-Do not ask only "how do we add rotation?".
 
 Current question:
 
 > **What interaction grammar lets a player express useful 6-DoF object intent while finite physics, mass, leverage, contacts, body reaction and failure remain meaningful parts of execution?**
 
-E18 separates at least:
+Current candidate portfolio:
 
-- selection/grip topology;
-- translation intent;
-- orientation intent;
-- compliance / force and torque authority;
-- reach and strength;
-- release momentum;
-- reaction closure;
-- object semantics / handles;
-- self-interaction / support loops;
-- eventual multi-agent ownership.
+- **P1** — E17 one-point chaos baseline;
+- **P2** — finite 6-DoF pose coupling;
+- **P3** — bounded two-point / virtual two-hand grip;
+- **P4** — one-point manipulation plus a separated precision/rotation clutch.
 
-Research/donor synthesis and candidate architectures are in:
+E18-R0 selected **P3** as the current-best next architectural crucible because it can test intentional orientation while preserving leverage without committing to humanoid anatomy.
+
+P2 remains the engineering/control reference. P4 remains the usability alternative.
+
+Detailed map:
 
 [`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md)
 
-## 9. Current prototype portfolio
+## 9. Current action / stop boundary
 
-Preserve E17 as **P1 — one-point chaos baseline**.
+The immediate Owner-facing evidence boundary is now the **E17 vs E17-depth one-point A/B**.
 
-Current next candidates:
+Do not infer that E17-depth won because its causal/mechanical qualifier passed.
 
-- **P2 — finite 6-DoF pose coupling:** desired position + orientation executed through bounded force/torque;
-- **P3 — two-point / virtual two-hand grip:** orientation emerges from two finite target points rather than direct quaternion ownership;
-- **P4 — separated precision clutch:** keep rough E17 one-point physics, add explicit temporary rotate/align control for precision.
+After Owner judgement, use the result to decide whether:
 
-Current-best first implementation candidate after E18-R0:
+- one-point execution quality was materially improved enough to keep as the P1 reference; or
+- the dominant limitation is still the one-point interaction grammar/orientation problem, in which case proceed to the smallest bounded E18 P3 crucible.
 
-> **P3 — bounded two-point virtual-grip crucible**
+Do not build full arms, humanoid anatomy or a production manipulation UI before this distinction is learned.
 
-because it tests intentional orientation while preserving leverage and does not require committing to humanoid anatomy.
+## 10. Workflow / maintenance state
 
-P2 remains the control/engineering reference; P4 remains the usability/reference alternative.
+Canonical workflow policy is documented in [`WORKFLOW.md`](WORKFLOW.md).
 
-## 10. Exploit policy during research
+Important current maintenance rules:
 
-Do not immediately patch unexpected behavior.
-
-Classify first:
-
-- **generative exploit** — creates interesting skill/strategy/play;
-- **authority exploit** — violates causal authority/accounting;
-- **degenerate exploit** — bypasses play without generating a useful new problem;
-- **hybrid** — both generative and causally invalid.
-
-Preserve representative specimens until the question they expose is understood.
-
-## 11. Cross-project relevance
-
-Owner sees long-term convergence with Multi_World, Nextgen JV and other projects. Treat that as strategic context, **not current implementation scope**.
-
-Potentially exportable primitives include:
-
-- intent representation;
-- grip/constraint topology;
-- finite force/torque authority;
-- support/contact graphs;
-- object-level manipulation semantics;
-- closed-loop exploit tests;
-- future multiplayer-compatible high-level intent;
-- generic attachment/handle concepts.
-
-Do not integrate projects merely because the possibilities are exciting.
-
-## 12. Current action / stop boundary
-
-E18-R0 is a research stage. **Do not tune E17 through many spring/damping iterations and do not patch self-lift.**
-
-Next implementation, once E18-R0 is reviewed/accepted, should be the smallest causal P3 experiment answering:
-
-> **Can two finite target points materially improve intentional orientation/placement over E17 while preserving mass, leverage, collision response and emergent physical play?**
-
-Do not build full arms, humanoid anatomy or a production manipulation UI before this question is separated.
+- `main` is canonical;
+- dependencies are reproduced with Node `22.23.2` + committed lockfile + `npm ci`;
+- `npm run smoke` preserves the existing foundation/historical green regression spine;
+- `npm run smoke:current` covers currently promoted E16/E17/E17-depth prototypes;
+- experiment-specific diagnostics belong to bounded branch-local qualification, not permanent branch-name conditions in the Pages workflow;
+- negative/confounded experiments remain provenance and do not need to be converted into permanent green CI.

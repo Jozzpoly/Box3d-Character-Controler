@@ -27,6 +27,10 @@ const SUITES = {
   donor: [
     { name: 'Donor contract / equivalence / input', scripts: ['scripts/donor-contract-smoke.mjs','scripts/donor-smoke.mjs','scripts/donor-v1-smoke.mjs','scripts/mobile-input-smoke.mjs'] },
   ],
+  current: [
+    { name: 'E16 promoted capability regressions', scripts: ['scripts/e16-contact-qualified-grab-crucible.mjs','scripts/e16-capability-interaction-smoke.mjs','scripts/e16-capability-yard-smoke.mjs','scripts/e16-direct-control-smoke.mjs'] },
+    { name: 'E17 promoted manipulation regressions', scripts: ['scripts/e17-intent-manipulator-smoke.mjs','scripts/e17-point-mass-character-smoke.mjs'] },
+  ],
 };
 
 function fail(message) {

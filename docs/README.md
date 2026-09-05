@@ -1,140 +1,90 @@
 # Documentation map
 
-This directory contains both current authority and historical research evidence. Do not read every file on every takeover.
+This directory contains both **current authority** and **historical research evidence**. Do not read every file on takeover.
 
 ## Start here
 
-1. [`PROJECT_STATE.md`](PROJECT_STATE.md) — compact canonical orientation;
-2. repository [`README.md`](../README.md) — public/current overview;
-3. newest relevant ledger — currently [`E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md).
+1. [`PROJECT_STATE.md`](PROJECT_STATE.md) — compact canonical orientation and current stop boundary;
+2. [`WORKFLOW.md`](WORKFLOW.md) — branch / evidence / qualification / publication workflow;
+3. [`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md) — current manipulation architecture research map;
+4. repository [`README.md`](../README.md) — public/current overview.
 
-`main` + exact SHA + CI are implementation truth. Branch names and historical handoffs are provenance/context only.
+`main` + exact SHA + source + CI/Pages are implementation/publication truth. Stage-local words such as “current” and “next” inside old ledgers are historical unless `PROJECT_STATE.md` explicitly promotes them again.
 
-## Accepted runtime / donor
+## Authority layers
 
-- [`DONOR_CONTRACT.md`](DONOR_CONTRACT.md) — stable downstream contract;
-- [`E2_3E_STABILIZATION.md`](E2_3E_STABILIZATION.md) — A‴ / Donor v1 promotion;
-- [`DONOR_STABILIZATION.md`](DONOR_STABILIZATION.md) — prior donor stabilization;
-- [`MOBILE_PAGES.md`](MOBILE_PAGES.md) — mobile/Pages evidence.
+### Current
 
-The normal public/default player remains **A‴ / Donor v1** unless `PROJECT_STATE.md` says otherwise.
+- [`PROJECT_STATE.md`](PROJECT_STATE.md)
+- [`WORKFLOW.md`](WORKFLOW.md)
+- [`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md)
+- [`DONOR_CONTRACT.md`](DONOR_CONTRACT.md)
 
-## Current research lineage
+### Recent experimental lineage
 
+- [`E14_CONTEXTUAL_AUTHORITY_LAB.md`](E14_CONTEXTUAL_AUTHORITY_LAB.md) — contextual authority / one-leg laboratory; narrow tuning line later closed by Owner judgement;
+- [`E14_OWNER_PIN_CAUSAL_CHECKPOINT_2026-09-03.md`](E14_OWNER_PIN_CAUSAL_CHECKPOINT_2026-09-03.md) — corrected E14 causal checkpoint;
+- [`E15_DONOR_AGENCY_PHYSICAL_BODY_BRIDGE_2026-09-04.md`](E15_DONOR_AGENCY_PHYSICAL_BODY_BRIDGE_2026-09-04.md) — Donor agency + finite physical torso bridge;
+- [`E15_PUBLICATION_OWNER_BOUNDARY_2026-09-04.md`](E15_PUBLICATION_OWNER_BOUNDARY_2026-09-04.md) — E15 publication / Owner boundary;
+- [`E16_CAPABILITY_YARD_2026-09-04.md`](E16_CAPABILITY_YARD_2026-09-04.md) — capability-first embodiment yard;
+- [`E16_2A_PUBLIC_OWNER_BOUNDARY_2026-09-04.md`](E16_2A_PUBLIC_OWNER_BOUNDARY_2026-09-04.md) — E16 public Owner boundary;
+- [`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md) — E17 Owner evidence and E18 candidate architectures.
+
+E17 and E17-depth implementation/publication provenance also lives in their merged PRs and exact-main Actions runs. Do not infer Owner acceptance from publication alone.
+
+## Earlier research lineage
+
+- [`RESEARCH.md`](RESEARCH.md) — early ledger through E2;
 - [`E3_ROTATIONAL_EMBODIMENT.md`](E3_ROTATIONAL_EMBODIMENT.md) — finite posture / first Owner-positive physical balance;
 - [`E3_1_VALIDATION_LOOP.md`](E3_1_VALIDATION_LOOP.md) and [`E3_1_SUPPORT_TRANSITIONS.md`](E3_1_SUPPORT_TRANSITIONS.md) — causal support semantics;
-- [`E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — local mechanism, solver-resolution robustness failure;
-- [`E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](E4_LOCOMOTION_POSTURE_COMPATIBILITY.md) — accepted translational demand vs finite posture;
-- [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — physical contact contribution vs world-external/support-mediated authority;
-- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) — latent translation in primary ankle rejected before actuation;
-- [`E7_PARALLEL_SUPPORT_SET.md`](E7_PARALLEL_SUPPORT_SET.md) — representation-neutral parallel support and real ground acquisition, but no stable load-bearing path;
-- [`E8_UNILATERAL_AXIAL_COMPLIANCE.md`](E8_UNILATERAL_AXIAL_COMPLIANCE.md) — viable axial-compliance primitives, failed mass/inertia-matched latent serial telescope;
-- [`E9_RIGID_STOW_SPLIT.md`](E9_RIGID_STOW_SPLIT.md) — weld primitive PASS, but even a no-prismatic rigid split fails strict inactive mechanical representation;
-- [`E10_ONE_PIECE_SUPPORT_BRACE.md`](E10_ONE_PIECE_SUPPORT_BRACE.md) — clean one-piece latch/acquisition transition, but load recruitment and demand-aligned support regulation fail;
-- [`E11_PHYSICS_FIRST_RESIDUAL.md`](E11_PHYSICS_FIRST_RESIDUAL.md) — physics-first residual decomposition: fixed-deficit and binary-support safeguards rejected;
-- [`E12_GRADED_CAPACITY_ENTITLEMENT.md`](E12_GRADED_CAPACITY_ENTITLEMENT.md) — graded traction-capacity entitlement survives canonical launch/braking; fair dynamic-support placement accounting exposes the external-world boundary;
-- [`E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md) — genuine external coupling discriminates reaction placement, but late world-reference engagement after physical preparation is materially non-neutral.
+- [`E3_2_BOUNDED_INTERNAL_MOMENTUM.md`](E3_2_BOUNDED_INTERNAL_MOMENTUM.md) — bounded internal momentum;
+- [`E4_LOCOMOTION_POSTURE_COMPATIBILITY.md`](E4_LOCOMOTION_POSTURE_COMPATIBILITY.md) — accepted translation vs finite posture;
+- [`E5_AUTHORITY_PLACEMENT.md`](E5_AUTHORITY_PLACEMENT.md) — contact contribution vs authority placement;
+- [`E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md`](E6_SUPPORT_RELATIVE_TRANSLATION_SUBSTRATE.md) through [`E10_ONE_PIECE_SUPPORT_BRACE.md`](E10_ONE_PIECE_SUPPORT_BRACE.md) — support-mechanism search and falsifiers;
+- [`E11_PHYSICS_FIRST_RESIDUAL.md`](E11_PHYSICS_FIRST_RESIDUAL.md) — physics-first residual boundary;
+- [`E12_GRADED_CAPACITY_ENTITLEMENT.md`](E12_GRADED_CAPACITY_ENTITLEMENT.md) — graded capacity entitlement;
+- [`E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md) — external world coupling and reaction-placement causality.
 
-These ledgers are research authority, not automatic runtime promotion.
-
-## Current E12 → E13 result
-
-E12 established two separate variables:
-
-1. **physical-capacity entitlement** — graded by measured support capacity rather than a boolean contact gate;
-2. **reaction placement** — world-external versus equal-and-opposite reciprocal placement, compared using the same support-relative granted agency.
-
-On an isolated free player+support pair those fair placement variants are almost Galilean-equivalent in relative/contact/posture behavior. Their substantive difference is whole-system momentum relative to the external world.
-
-E13 therefore introduced a genuine external world reference.
-
-The durable E13 boundary is:
-
-1. **A corrected unilateral prismatic world stop is a qualified binding.** The initial failure was a source-confirmed harness conflict: body angular locks made the prismatic limit effectively `fixedRotation` and skipped the axial limit solve.
-2. **The free-prismatic `800 kg` support preserves embodied passive representation.** A zero-gap stop can also be enabled neutrally at the quiet settled state.
-3. **Genuine world coupling makes placement observable.** In E13.1a the one-step stop-isolated world effect was approximately `0 N·s` for world-external placement but about `33.177 N·s` for reciprocal placement in both mirrors.
-4. **The unilateral reaction path is intermittent.** A second identical pulse did not strongly re-cross the stop after the first world reaction moved the support into the allowed side; this is preserved as a protocol miss, not tuned into a verdict.
-5. **World coupling can alter state before locomotion authority.** In a bounded lead8/current31 trajectory, stop ON already produced `~56.8/68.6 N·s` ON−OFF world effect during posture preparation before translational authority.
-6. **Prepared-state engagement is materially non-neutral.** After exact free-prismatic lead8 preparation, enabling the stop at the actual current translation and solving once with no translational authority produced `80.793918 / 72.348356 N·s` differential world impulses and material state differences.
-
-Therefore:
-
-> **Do not manufacture a world reaction path at the moment authority needs somewhere to react and call it neutral plumbing. Once an external reference is real, reaction placement is inseparable from the environmental contact/constraint history.**
-
-This does **not** reject reciprocal mechanics. A naturally pre-existing world brace or environmental interaction may legitimately carry reaction, but then that coupling is part of the mechanics/gameplay and must be evaluated as such.
-
-Do not reopen another stop-gap, pulse, friction, support-mass, `q` or residual-ratio sweep by inertia.
+These are evidence/provenance, not a checklist that every future experiment must replay.
 
 ## Validation map
 
-Canonical command:
+Canonical commands:
 
-`npm run smoke`
-
-Split into:
-
-- `npm run smoke:research`;
-- `npm run smoke:donor`.
+- `npm run smoke` — foundation + accepted historical green regressions;
+- `npm run smoke:research` — the historical research portion of that spine;
+- `npm run smoke:donor` — Donor contract/equivalence/input;
+- `npm run smoke:current` — promoted E16/E17/E17-depth regressions;
+- `npm run build` — browser build.
 
 Suite membership lives in [`../scripts/smoke-suite.mjs`](../scripts/smoke-suite.mjs).
 
-Important rule:
+Important distinction:
 
-> **A failed research experiment may remain executable provenance without belonging to permanent green smoke.**
+> **Permanent green smoke is regression protection, not the full evidence archive.**
 
-Durable positive smoke currently includes the previous E6–E12 qualified set plus:
+A failed, confounded or protocol-miss experiment may remain executable provenance without being forced into permanent green smoke. Do not rewrite negative experiments into artificial PASSes merely to satisfy CI.
 
-- E13.0b corrected prismatic world-stop binding;
-- E13.0c1 embodied free-prismatic representation;
-- E13.0d quiet embodied stop neutrality;
-- E13.1a world-coupled placement factorial;
-- E13.2a bounded current31 world-coupled trajectory;
-- E13.2b prepared-state engagement boundary.
+## Current workflow policy
 
-Negative/confounded/protocol-miss provenance outside mandatory smoke includes:
+The canonical GitHub Actions workflow is intentionally boring:
 
-- E7.2 load-transfer falsifiers;
-- E8.1 embodied serial-telescope falsifiers/decomposition;
-- E9.0b rigid-split inactive representation falsifier;
-- E10.1 load/stability falsifiers;
-- E11.0a fixed-deficit residual falsifier;
-- E11.2a weak-support masking falsifier;
-- first E12.1a direct-velocity braking initialization failure;
-- E13.0a direct wall-contact variants;
-- initial locked-body E13.0b failure before the source-backed correction;
-- early E13.0c measurement/decomposition path before corrected semantics;
-- E13.1b second-pulse persistence probe/diagnostic.
+`locked install → historical/foundation smoke → current smoke → build → main-only Pages`
 
-Do not rewrite negative experiments into artificial PASSes merely to keep CI green.
+Stage-specific diagnostics, sweeps and qualification artifacts belong to bounded experiment branches. If a dedicated temporary workflow is useful, it may live on that branch and be removed before the clean publication/maintenance merge. Historical Actions runs remain provenance.
 
-## Current research boundary
+This prevents the canonical deploy workflow from becoming an ever-growing archive of old branch names and one-off conditions.
 
-Highest-value question:
-
-> **Which naturally present environmental relationships should legitimately carry player-authority reaction, and when should accepted agency remain explicitly controller/world-external instead?**
-
-A useful next specimen must have the external coupling **already present independently of the authority command**. Candidate families include:
-
-- support already anchored/braced by level geometry before player intent;
-- externally driven support;
-- third-body/environment contact with a genuine pre-existing causal history.
-
-Do not create a stop exactly at the current support position merely to harvest reaction. Do not select a wall gap, spring stiffness, support mass, clutch timing or similar free parameter to manufacture a preferred result.
-
-The next stage should test **contextual reaction ownership / environmental causality**, not momentum purity.
-
-A genuinely new physical support mechanism remains admissible if it introduces a capability E6–E10 did not already exercise. More anatomy is not the default.
-
-## Historical evidence
-
-[`RESEARCH.md`](RESEARCH.md) preserves the early ledger through E2. Focused E2 files are useful only when the live question touches their causal boundary. Stage-local words such as “current” or “next” inside historical ledgers are historical, not live plan.
+See [`WORKFLOW.md`](WORKFLOW.md) for the full compact policy.
 
 ## Repository hygiene
 
 - `main` is canonical;
-- active branches are provisional evidence;
-- preserve corrected/confounded failures;
-- keep runtime, Donor, research harness and presentation claims distinct;
-- avoid refactors inside experiments unless correctness requires them;
-- do not introduce process ceremony without an observed problem;
-- direct package versions are pinned, but there is no npm lockfile and CI uses `npm install`; dependency-resolution changes require separate validation.
+- active experiment/publication/maintenance branches are provisional until merged;
+- preserve corrected, rejected and confounded evidence rather than laundering it into success;
+- keep runtime claims, causal claims, Owner judgement and publication state distinct;
+- avoid refactors inside causal experiments unless correctness requires them;
+- maintenance/refactor work gets its own qualification boundary;
+- exact dependency graph is committed in `package-lock.json`;
+- Node is pinned by `.nvmrc` and CI currently uses Node `22.23.2` + `npm ci`;
+- do not introduce process ceremony without an observed failure mode it fixes.
