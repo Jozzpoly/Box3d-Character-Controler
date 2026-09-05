@@ -8,7 +8,13 @@ const outDirArg = process.argv.find((arg) => arg.startsWith('--out-dir='))?.slic
 const outDir = path.resolve(ROOT, outDirArg || 'e19-diagnostics');
 fs.mkdirSync(outDir, { recursive: true });
 
-const diagnostics = [];
+const diagnostics = [
+  {
+    name: 'E19.0a unified static/dynamic relative-grip algebra',
+    script: 'scripts/e19/e19-0a-unified-relative-grip-kernel.mjs',
+    out: 'e19-0a-unified-relative-grip-kernel.json',
+  },
+];
 
 for (const diagnostic of diagnostics) {
   const scriptPath = path.join(ROOT, diagnostic.script);
