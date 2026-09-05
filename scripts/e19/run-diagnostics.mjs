@@ -34,6 +34,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-0e-grip-aware-donor-vertical-constraint.mjs',
     out: 'e19-0e-grip-aware-donor-vertical-constraint.json',
   },
+  {
+    name: 'E19.0f dynamic/mixed multi-frame Donor reciprocity',
+    script: 'scripts/e19/e19-0f-dynamic-mixed-donor-reciprocity.mjs',
+    out: 'e19-0f-dynamic-mixed-donor-reciprocity.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
