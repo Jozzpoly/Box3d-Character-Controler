@@ -44,6 +44,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-0g-accepted-feedback-transport-diagnostic.mjs',
     out: 'e18-0g-accepted-feedback-transport.json',
   },
+  {
+    name: 'E18.0h headless intent pipeline diagnostic',
+    script: 'scripts/e18/e18-0h-headless-intent-pipeline-diagnostic.mjs',
+    out: 'e18-0h-headless-intent-pipeline.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
