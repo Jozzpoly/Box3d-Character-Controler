@@ -112,7 +112,7 @@ function createFixture() {
     startPosition: [0, 0.90, 0],
     gravity: 20,
     // Keep this integration probe causally narrow. E18.0g separately qualified the
-    // live/default feedback bridge; here we want input/intent/API ordering only.
+    // live/default feedback bridge; here we want input/intent/API phase composition.
     feedbackGain: 0,
     manipulatorRate: 10,
     manipulatorMaxForce: 900,
@@ -236,56 +236,70 @@ function runWalkTransport(axis) {
   const carrierStart = [...character.position];
   const targetStart = [...state.targetWorld];
   const initialOffset = sub3(state.targetWorld, state.transportOriginWorld);
-  let peakPreStepCarrierLag = 0;
-  let peakOffsetDriftAfterStep = 0;
+  let peakPostStepCarrierSeparation = 0;
+  let peakCarrierRelativeOffsetSeparationAfterFullStep = 0;
   const checkpoints = [];
 
   for (let frame = 0; frame < 60; frame++) {
+    // At this point the target is exactly aligned to the current Donor carrier. E17
+    // then resolves/applies its manipulator command in preStep; Box3D steps; finally
+    // ControllerOwnedCharacter.postStep moves the Donor carrier via _solveMovement.
     pushIntentToExecutor(character, state);
-    const originUsedThisStep = [...state.transportOriginWorld];
+    const originUsedForThisOuterStep = [...state.transportOriginWorld];
     tick(world, character, movementIntent(axis));
 
-    const carrierLag = distance3(originUsedThisStep, character.position);
-    const offsetAfterStep = sub3(state.targetWorld, character.position);
-    const offsetDriftAfterStep = distance3(initialOffset, offsetAfterStep);
-    peakPreStepCarrierLag = Math.max(peakPreStepCarrierLag, carrierLag);
-    peakOffsetDriftAfterStep = Math.max(peakOffsetDriftAfterStep, offsetDriftAfterStep);
+    const postStepCarrierSeparation = distance3(originUsedForThisOuterStep, character.position);
+    const offsetAfterFullStep = sub3(state.targetWorld, character.position);
+    const carrierRelativeOffsetSeparationAfterFullStep = distance3(initialOffset, offsetAfterFullStep);
+    peakPostStepCarrierSeparation = Math.max(peakPostStepCarrierSeparation, postStepCarrierSeparation);
+    peakCarrierRelativeOffsetSeparationAfterFullStep = Math.max(
+      peakCarrierRelativeOffsetSeparationAfterFullStep,
+      carrierRelativeOffsetSeparationAfterFullStep,
+    );
     if (frame % 15 === 0 || frame === 59) {
       checkpoints.push({
         frame,
-        carrier: [...character.position],
-        intentTransportOrigin: [...state.transportOriginWorld],
+        carrierAfterPostStep: [...character.position],
+        intentTransportOriginUsedForOuterStep: [...state.transportOriginWorld],
         targetWorld: [...state.targetWorld],
-        carrierLag,
-        offsetDriftAfterStep,
+        postStepCarrierSeparation,
+        carrierRelativeOffsetSeparationAfterFullStep,
         manipulatorError: character.lastManipulatorError,
         manipulatorForce: character.lastManipulatorForce,
       });
     }
   }
 
-  // Catch the final carrier translation as an adapter would at the start of the next
-  // frame. This proves the intent representation itself is exact while exposing that
-  // the current E17 API updates Donor carrier inside preStep, one phase after an
-  // external adapter can push its target.
+  // The next normal target update transports by the carrier displacement that became
+  // known during the previous postStep. This verifies exact state transport while
+  // keeping the within-outer-step phase separation visible as a separate observation.
   pushIntentToExecutor(character, state);
   const finalOffset = sub3(state.targetWorld, state.transportOriginWorld);
   const finalOffsetDrift = distance3(initialOffset, finalOffset);
   const carrierTravel = distance3(carrierStart, character.position);
   const targetTravel = distance3(targetStart, state.targetWorld);
 
-  assert.ok(finalOffsetDrift < 1e-12, `${axis}: intent transport itself must remain exact`);
-  assert.ok(peakPreStepCarrierLag > 0.01, `${axis}: current external API ordering should expose measurable one-step carrier lag`);
-  assert.ok(peakPreStepCarrierLag < 0.06, `${axis}: observed lag should remain bounded to approximately one Donor frame`);
-  assert.ok(Math.abs(carrierTravel - targetTravel) < 1e-6, `${axis}: after next-frame catch-up target travel must equal carrier travel`);
+  assert.ok(finalOffsetDrift < 1e-12, `${axis}: intent transport itself must remain exact after next update`);
+  assert.ok(
+    peakPostStepCarrierSeparation > 0.01,
+    `${axis}: full outer step should expose measurable carrier movement after the manipulator target was resolved`,
+  );
+  assert.ok(
+    peakPostStepCarrierSeparation < 0.06,
+    `${axis}: observed phase separation should remain bounded to approximately one Donor movement step in this fixture`,
+  );
+  assert.ok(
+    Math.abs(carrierTravel - targetTravel) < 1e-6,
+    `${axis}: after next target update total target travel must equal total carrier travel`,
+  );
 
   const report = {
     axis,
     carrierTravel,
-    targetTravelAfterCatchUp: targetTravel,
-    finalCarrierRelativeOffsetDriftAfterCatchUp: finalOffsetDrift,
-    peakPreStepCarrierLag,
-    peakOffsetDriftAfterStep,
+    targetTravelAfterNextUpdate: targetTravel,
+    finalCarrierRelativeOffsetDriftAfterNextUpdate: finalOffsetDrift,
+    peakPostStepCarrierSeparation,
+    peakCarrierRelativeOffsetSeparationAfterFullStep,
     checkpoints,
   };
   b3.b3DestroyWorld(world);
@@ -343,24 +357,29 @@ const walkForward = runWalkTransport('forward');
 const walkRight = runWalkTransport('right');
 const reachSeparation = runReachSeparation();
 
-const lagSymmetry = Math.abs(walkForward.peakPreStepCarrierLag - walkRight.peakPreStepCarrierLag);
-assert.ok(lagSymmetry < 1e-5, `preStep adapter timing debt should be direction-independent: ${lagSymmetry}`);
+const phaseSeparationSymmetry = Math.abs(
+  walkForward.peakPostStepCarrierSeparation - walkRight.peakPostStepCarrierSeparation,
+);
+assert.ok(
+  phaseSeparationSymmetry < 1e-5,
+  `outer-step phase separation should be direction-independent in this symmetric fixture: ${phaseSeparationSymmetry}`,
+);
 
 const report = {
-  schema: 'e18-0h-headless-intent-pipeline-diagnostic-v1',
-  boundary: 'Headless integration qualification on real E17 + Box3D. It composes the qualified incremental screen mapping, E18 ManipulationIntent, Donor carrier transport and the existing finite E17 executor without changing browser/runtime code. feedbackGain=0 isolates pipeline ordering; E18.0g separately qualifies accepted feedback. The diagnostic proves layer composition and deliberately exposes the current external setManipulationTarget-before-preStep one-frame transport lag. It does not select final device sensitivity, browser event policy, P3 orientation grammar or a new executor.',
+  schema: 'e18-0h-headless-intent-pipeline-diagnostic-v2',
+  boundary: 'Headless integration qualification on real E17 + Box3D. It composes the qualified incremental screen mapping, E18 ManipulationIntent, Donor carrier transport and the existing finite E17 executor without changing browser/runtime mechanics. feedbackGain=0 isolates phase composition; E18.0g separately qualifies accepted feedback. The pipeline composes cleanly. During locomotion it also exposes a within-outer-step phase separation: the manipulation target is resolved and the physical actuator command is applied before Box3D World_Step, while ControllerOwnedCharacter moves the Donor carrier later in postStep via support transport/_solveMovement. The next normal target update catches that carrier displacement exactly. This diagnostic does not establish that the separation is perceptually harmful, call it an API bug, select a compensation policy, or choose final browser UX/P3/executor architecture.',
   cameraInertness,
   explicitScreenCommand,
   walkForward,
   walkRight,
-  timingDebt: {
-    description: 'character.position advances inside character.preStep after an external adapter can call setManipulationTarget, so exact Donor-relative carry reaches the current E17 executor one frame late unless a later integration boundary/hook resolves target after Donor motion and before manipulator execution',
-    forwardPeakLag: walkForward.peakPreStepCarrierLag,
-    rightPeakLag: walkRight.peakPreStepCarrierLag,
-    directionalDifference: lagSymmetry,
+  outerStepPhaseSeparation: {
+    description: 'target transport is exact at update time; after the same outer step completes, Donor postStep may have moved character.position while that step\'s physical manipulator command necessarily used the earlier carrier-relative target. The next update transports the target by the realized carrier delta.',
+    forwardPeakPostStepSeparation: walkForward.peakPostStepCarrierSeparation,
+    rightPeakPostStepSeparation: walkRight.peakPostStepCarrierSeparation,
+    directionalDifference: phaseSeparationSymmetry,
   },
   reachSeparation,
-  verdict: 'QUALIFIED_WITH_TIMING_DEBT',
+  verdict: 'QUALIFIED_WITH_OUTER_STEP_PHASE_SEPARATION',
 };
 
 if (outPath) fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
