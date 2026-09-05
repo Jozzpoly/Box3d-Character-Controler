@@ -5,6 +5,7 @@ on:
     branches:
       - experiment/e18-manipulation-v0
       - experiment/e18-p3-coupled-two-point
+      - experiment/e18-p3-owner-interaction
   workflow_dispatch:
 
 permissions:
