@@ -54,6 +54,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-0j-carrier-precompensation-falsifier.mjs',
     out: 'e18-0j-carrier-precompensation-falsifier.json',
   },
+  {
+    name: 'E18 P3.0a coupled-kernel diagnostic',
+    script: 'scripts/e18/e18-p3-0a-coupled-kernel-diagnostic.mjs',
+    out: 'e18-p3-0a-coupled-kernel.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
