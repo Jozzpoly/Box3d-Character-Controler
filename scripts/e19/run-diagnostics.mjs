@@ -39,6 +39,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-0f-dynamic-mixed-donor-reciprocity.mjs',
     out: 'e19-0f-dynamic-mixed-donor-reciprocity.json',
   },
+  {
+    name: 'E19.0f2 braced blocked impossible task',
+    script: 'scripts/e19/e19-0f2-braced-blocked-impossible-task.mjs',
+    out: 'e19-0f2-braced-blocked-impossible-task.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
