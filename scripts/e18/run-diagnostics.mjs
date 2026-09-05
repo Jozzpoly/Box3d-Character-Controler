@@ -19,6 +19,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-0b-hold-frame-physical-diagnostic.mjs',
     out: 'e18-0b-hold-frame-physical.json',
   },
+  {
+    name: 'E18.0c camera-orbit hold diagnostic',
+    script: 'scripts/e18/e18-0c-camera-orbit-hold-physical.mjs',
+    out: 'e18-0c-camera-orbit-hold.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
