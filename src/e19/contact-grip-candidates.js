@@ -18,6 +18,10 @@ function add3(a, b) {
   return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 }
 
+function negate3(v) {
+  return [-v[0], -v[1], -v[2]];
+}
+
 function midpoint3(a, b) {
   return [(a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5, (a[2] + b[2]) * 0.5];
 }
@@ -103,6 +107,14 @@ export class E19ContactGripCandidateTracker {
       for (let m = 0; m < contact.manifoldCount; m++) {
         this.b3.getManifoldAt(this._manifoldScratch, contact, m);
         const manifold = this._manifoldScratch;
+        const rawNormal = manifold.normal ? [...manifold.normal] : null;
+        // Box3D's manifold normal is oriented from shape A toward shape B. Contact order
+        // is not stable gameplay semantics, so expose explicit probe/target orientation.
+        const probeToOtherNormal = rawNormal
+          ? (probeIsA ? rawNormal : negate3(rawNormal))
+          : null;
+        const otherToProbeNormal = probeToOtherNormal ? negate3(probeToOtherNormal) : null;
+
         for (let p = 0; p < manifold.pointCount; p++) {
           const point = manifold.points[p];
 
@@ -141,7 +153,13 @@ export class E19ContactGripCandidateTracker {
             anchorPairGap: distance3(probeAnchorWorld, otherAnchorWorld),
             separation: point.separation,
             normalImpulse: point.normalImpulse,
-            manifoldNormal: manifold.normal ? Object.freeze([...manifold.normal]) : null,
+            manifoldNormal: rawNormal ? Object.freeze([...rawNormal]) : null,
+            probeToOtherNormal: probeToOtherNormal
+              ? Object.freeze([...probeToOtherNormal])
+              : null,
+            otherToProbeNormal: otherToProbeNormal
+              ? Object.freeze([...otherToProbeNormal])
+              : null,
           }));
         }
       }
@@ -183,8 +201,11 @@ export class E19ContactGripCandidateTracker {
       bodyKind: current.otherBodyKind,
       localAnchor: Object.freeze([...current.otherLocalAnchor]),
       worldAnchorAtAcquisition: Object.freeze([...current.otherAnchorWorld]),
-      manifoldNormalAtAcquisition: current.manifoldNormal
-        ? Object.freeze([...current.manifoldNormal])
+      targetSurfaceNormalAtAcquisition: current.otherToProbeNormal
+        ? Object.freeze([...current.otherToProbeNormal])
+        : null,
+      probeToTargetNormalAtAcquisition: current.probeToOtherNormal
+        ? Object.freeze([...current.probeToOtherNormal])
         : null,
       separationAtAcquisition: current.separation,
       normalImpulseAtAcquisition: current.normalImpulse,
