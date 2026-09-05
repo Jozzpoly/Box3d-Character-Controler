@@ -1,0 +1,36 @@
+name: E19 branch diagnostics
+
+on:
+  push:
+    branches:
+      - research/e19-hand-grip-reframe
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e19-diagnostics-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run E19 branch diagnostics
+        run: node scripts/e19/run-diagnostics.mjs --out-dir=e19-diagnostics
+      - name: Upload E19 diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e19-diagnostics
+          path: e19-diagnostics/
+          if-no-files-found: warn
