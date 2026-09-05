@@ -69,6 +69,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-p3-0c-axis-control-crucible.mjs',
     out: 'e18-p3-0c-axis-control.json',
   },
+  {
+    name: 'E18 P3.0d authority and mass stress',
+    script: 'scripts/e18/e18-p3-0d-authority-mass-stress.mjs',
+    out: 'e18-p3-0d-authority-mass-stress.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
