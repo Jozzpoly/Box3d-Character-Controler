@@ -26,10 +26,6 @@ function scaleMatrix(matrix, scalar) {
   return matrix.map((row) => row.map((value) => scalar * value));
 }
 
-function addMatrices(a, b) {
-  return a.map((row, i) => row.map((value, j) => value + b[i][j]));
-}
-
 function subtractMatrices(a, b) {
   return a.map((row, i) => row.map((value, j) => value - b[i][j]));
 }
@@ -122,7 +118,7 @@ function normN(vector) {
   return Math.hypot(...vector);
 }
 
-function solveLinearSystem(matrix, rhs, pivotTolerance = 1e-14) {
+function solveLinearSystem(matrix, rhs, pivotTolerance) {
   const size = matrix.length;
   const augmented = matrix.map((row, i) => [...row, rhs[i]]);
 
@@ -149,7 +145,7 @@ function solveLinearSystem(matrix, rhs, pivotTolerance = 1e-14) {
     for (let row = 0; row < size; row++) {
       if (row === column) continue;
       const factor = augmented[row][column];
-      if (Math.abs(factor) < 1e-18) continue;
+      if (Math.abs(factor) < pivotTolerance * 1e-2) continue;
       for (let j = column; j <= size; j++) augmented[row][j] -= factor * augmented[column][j];
     }
   }
@@ -233,8 +229,10 @@ export function solveCoupledTwoPointImpulse({
   const rhs = multiplyMatrixVector(operatorTranspose, desired);
   const maxOperatorDiagonal = Math.max(...operator.map((row, i) => Math.abs(row[i])), 1e-12);
   const lambda = regularizationRelative * maxOperatorDiagonal;
-  const regularizedNormal = addDiagonal(normal, lambda * lambda);
-  const raw = solveLinearSystem(regularizedNormal, rhs);
+  const lambdaSquared = lambda * lambda;
+  const regularizedNormal = addDiagonal(normal, lambdaSquared);
+  const pivotTolerance = Math.max(lambdaSquared * 1e-8, Number.MIN_VALUE);
+  const raw = solveLinearSystem(regularizedNormal, rhs, pivotTolerance);
   if (!raw.every(Number.isFinite)) throw new Error('P3 raw impulse solve became non-finite');
 
   const [rawImpulse1, rawImpulse2] = splitPair(raw);
