@@ -85,6 +85,7 @@ function run(policy) {
   for (let i = 0; i < 90; i++) tick(world, character);
   if (!character.currentSupport) throw new Error(`${policy}: support setup failed`);
 
+  const carrierStart = [...character.position];
   const objectStart = bodyPosition(object);
   const anchor = [...objectStart];
   if (!character.beginManipulation(object, anchor)) throw new Error(`${policy}: acquisition failed`);
@@ -109,6 +110,10 @@ function run(policy) {
   );
   const hit = new THREE.Vector3();
 
+  // Use the real FollowCamera control path: the user changes desiredYaw and the camera
+  // reaches it through the production damping law. No manipulation-pointer motion occurs.
+  follow.desiredYaw = ORBIT_ANGLE;
+
   let previousObject = [...objectStart];
   let previousTarget = [...anchor];
   let objectPath = 0;
@@ -123,7 +128,6 @@ function run(policy) {
   const checkpoints = [];
 
   for (let frame = 0; frame <= ORBIT_FRAMES; frame++) {
-    follow.yaw = ORBIT_ANGLE * (frame / ORBIT_FRAMES);
     follow.update(character.position, Boolean(character.currentSupport), DT);
     camera.updateMatrixWorld(true);
 
@@ -160,7 +164,8 @@ function run(policy) {
     if (frame % 15 === 0 || frame === ORBIT_FRAMES) {
       checkpoints.push({
         frame,
-        yaw: follow.yaw,
+        desiredYaw: follow.desiredYaw,
+        actualYaw: follow.yaw,
         target,
         object: currentObject,
         targetDrift: distance3(target, anchor),
@@ -173,8 +178,11 @@ function run(policy) {
   const objectEnd = bodyPosition(object);
   const result = {
     policy,
+    requestedOrbitAngle: ORBIT_ANGLE,
+    finalActualYaw: follow.yaw,
+    finalYawError: Math.abs(ORBIT_ANGLE - follow.yaw),
     initialReach,
-    carrierDrift: distance3(character.position, [0, 0.8950001818313625, 0]),
+    carrierDrift: distance3(character.position, carrierStart),
     targetPath,
     finalTargetDrift: distance3(previousTarget, anchor),
     peakTargetDrift,
@@ -188,6 +196,9 @@ function run(policy) {
     releaseReason: character.lastManipulatorReleaseReason,
     checkpoints,
   };
+  if (result.finalYawError > 1e-5) {
+    throw new Error(`${policy}: FollowCamera did not converge to requested 45deg orbit; error=${result.finalYawError}`);
+  }
   b3.b3DestroyWorld(world);
   return result;
 }
@@ -195,8 +206,8 @@ function run(policy) {
 const frozen = run('frozen-plane');
 const stable = run('stable-world-reference');
 const report = {
-  schema: 'e18-0c-camera-orbit-hold-physical-v0',
-  boundary: 'Real E17 + Box3D diagnostic. Carrier and manipulation pointer stay stationary while FollowCamera yaw is driven through 45 degrees. The current frozen click-plane mapping is compared with a stable world target solely to test whether camera orbit itself creates manipulation command. This does not select the final E18 hold frame.',
+  schema: 'e18-0c-camera-orbit-hold-physical-v1',
+  boundary: 'Real E17 + Box3D diagnostic. Carrier and manipulation pointer stay stationary while production FollowCamera smoothing converges to a requested 45-degree yaw change. The current frozen click-plane mapping is compared with a stable world target solely to test whether camera orbit itself creates manipulation command. This does not select the final E18 hold frame.',
   frozenPlane: frozen,
   stableWorldReference: stable,
   contrast: {
