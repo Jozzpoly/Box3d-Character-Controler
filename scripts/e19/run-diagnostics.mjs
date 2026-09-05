@@ -49,6 +49,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-1a-contact-qualified-latch-descriptors.mjs',
     out: 'e19-1a-contact-qualified-latch-descriptors.json',
   },
+  {
+    name: 'E19.1b intent-assisted contact ranking',
+    script: 'scripts/e19/e19-1b-intent-assisted-contact-ranking.mjs',
+    out: 'e19-1b-intent-assisted-contact-ranking.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
