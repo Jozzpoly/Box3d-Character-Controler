@@ -39,6 +39,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-0f-transport-origin-physical-diagnostic.mjs',
     out: 'e18-0f-transport-origin-physical.json',
   },
+  {
+    name: 'E18.0g accepted-feedback transport diagnostic',
+    script: 'scripts/e18/e18-0g-accepted-feedback-transport-diagnostic.mjs',
+    out: 'e18-0g-accepted-feedback-transport.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
