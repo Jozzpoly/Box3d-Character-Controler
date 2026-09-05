@@ -74,6 +74,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-p3-0d-authority-mass-stress.mjs',
     out: 'e18-p3-0d-authority-mass-stress.json',
   },
+  {
+    name: 'E18 P3.0e free-twist null-DOF audit',
+    script: 'scripts/e18/e18-p3-0e-free-twist-audit.mjs',
+    out: 'e18-p3-0e-free-twist-audit.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
