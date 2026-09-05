@@ -9,6 +9,7 @@ const DT = 1 / 60;
 const SUBSTEPS = 4;
 const MAX_DRIVE_FRAMES = 90;
 const TARGET_CARRIER_TRAVEL = 2.0;
+const REACH_MARGIN = 0.10;
 const outPath = process.argv.find((arg) => arg.startsWith('--out='))?.slice(6) ?? null;
 
 const ZERO_INTENT = {
@@ -20,10 +21,14 @@ const ZERO_INTENT = {
   jumpHeld: false,
   sprint: false,
 };
-const WALK_INTENT = {
-  ...ZERO_INTENT,
-  moveForward: 0.5,
-};
+
+function driveIntent(axis) {
+  return {
+    ...ZERO_INTENT,
+    moveForward: axis === 'forward' ? 0.5 : 0,
+    moveRight: axis === 'right' ? 0.5 : 0,
+  };
+}
 
 function add3(a, b) {
   return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -91,7 +96,7 @@ function bodyAngularSpeed(body) {
   return Math.hypot(...out);
 }
 
-function run(policy) {
+function run(policy, axis) {
   const worldDef = b3.b3DefaultWorldDef();
   worldDef.gravity = [0, -20, 0];
   const world = b3.b3CreateWorld(worldDef);
@@ -108,17 +113,19 @@ function run(policy) {
     manipulatorBreakReach: 2.35,
   });
 
-  const half = [0.30, 0.50, 0.30];
-  const object = createDynamicBox(world, [0.85, 0.52, -0.95], half, 70);
+  // ~25 kg, narrow enough to stay clear of the carrier path. The centred anchor keeps
+  // orientation secondary while leaving >10 cm command-reach margin at acquisition.
+  const half = [0.22, 0.50, 0.22];
+  const object = createDynamicBox(world, [0.65, 0.52, -0.65], half, 130);
 
   for (let i = 0; i < 90; i++) tick(world, character, ZERO_INTENT);
-  if (!character.currentSupport) throw new Error(`${policy}: Donor did not settle onto static support`);
+  if (!character.currentSupport) throw new Error(`${policy}/${axis}: Donor did not settle onto static support`);
 
   const objectStart = bodyPosition(object);
   const anchor = [...objectStart];
   const selected = character.beginManipulation(object, anchor);
   if (!selected) {
-    throw new Error(`${policy}: failed to acquire centred diagnostic object; distance=${distance3(anchor, character.bodyPosition)}`);
+    throw new Error(`${policy}/${axis}: failed to acquire centred diagnostic object; distance=${distance3(anchor, character.bodyPosition)}`);
   }
 
   const camera = new THREE.PerspectiveCamera(51, 16 / 9, 0.05, 130);
@@ -137,8 +144,15 @@ function run(policy) {
   );
   const planeHit = new THREE.Vector3();
   const initialCarrierOffset = sub3(anchor, character.position);
+  const initialObjectCarrierOffset = sub3(objectStart, character.position);
   const carrierStart = [...character.position];
   const coreStart = [...character.bodyPosition];
+  const initialRequestedReach = distance3(anchor, character.bodyPosition);
+  if (initialRequestedReach > character.manipulatorMaxReach - REACH_MARGIN) {
+    throw new Error(
+      `${policy}/${axis}: diagnostic fixture violates reach margin: ${initialRequestedReach} > ${character.manipulatorMaxReach - REACH_MARGIN}`,
+    );
+  }
 
   function requestedTarget() {
     if (policy === 'carrier-relative') {
@@ -152,7 +166,7 @@ function run(policy) {
 
   const firstTarget = requestedTarget();
   if (!firstTarget || distance3(firstTarget, anchor) > 1e-5) {
-    throw new Error(`${policy}: acquisition target reconstruction failed; error=${firstTarget ? distance3(firstTarget, anchor) : 'MISS'}`);
+    throw new Error(`${policy}/${axis}: acquisition target reconstruction failed; error=${firstTarget ? distance3(firstTarget, anchor) : 'MISS'}`);
   }
 
   let activeFrames = 0;
@@ -161,7 +175,7 @@ function run(policy) {
   let totalImpulse = 0;
   let sumError = 0;
   let peakError = 0;
-  let peakRequestedReach = 0;
+  let peakRequestedReach = initialRequestedReach;
   let peakAnchorCoreDistance = 0;
   let peakTargetRelativeDrift = 0;
   let peakAngularSpeed = 0;
@@ -170,6 +184,7 @@ function run(policy) {
   let releaseFrame = null;
   let targetMisses = 0;
   const checkpoints = [];
+  const intent = driveIntent(axis);
 
   for (let frame = 0; frame < MAX_DRIVE_FRAMES; frame++) {
     const target = requestedTarget();
@@ -187,7 +202,7 @@ function run(policy) {
     peakTargetRelativeDrift = Math.max(peakTargetRelativeDrift, relativeDrift);
 
     character.setManipulationTarget(target);
-    tick(world, character, WALK_INTENT);
+    tick(world, character, intent);
     followCamera.update(character.position, Boolean(character.currentSupport), DT);
     camera.updateMatrixWorld(true);
 
@@ -229,10 +244,13 @@ function run(policy) {
   const objectEnd = bodyPosition(object);
   const carrierEnd = [...character.position];
   const coreEnd = [...character.bodyPosition];
+  const finalObjectCarrierOffset = sub3(objectEnd, carrierEnd);
   const report = {
     policy,
+    axis,
     selected,
     objectMass: b3.b3Body_GetMass(object),
+    initialRequestedReach,
     carrierStart,
     carrierEnd,
     carrierTravel: distance3(carrierStart, carrierEnd),
@@ -241,6 +259,7 @@ function run(policy) {
     objectEnd,
     objectTravel: distance3(objectStart, objectEnd),
     initialCarrierOffset,
+    objectCarrierOffsetDrift: distance3(initialObjectCarrierOffset, finalObjectCarrierOffset),
     activeFrames,
     releaseFrame,
     releaseReason: character.lastManipulatorReleaseReason,
@@ -264,23 +283,38 @@ function run(policy) {
   return report;
 }
 
-const report = {
-  schema: 'e18-0b-hold-frame-physical-diagnostic-v0',
-  boundary: 'Real E17 baseline character + Box3D diagnostic with identical mechanics and walking input. feedbackGain=0 isolates target-frame effects from carrier feedback. Centred grip minimizes orientation as a confound. Frozen-plane uses the actual FollowCamera implementation and click-time plane semantics; carrier-relative is a reference policy, not a promoted design.',
-  frozenPlane: run('frozen-plane'),
-  carrierRelative: run('carrier-relative'),
-};
+function contrast(frozen, carrierRelative) {
+  return {
+    frozenMinusCarrierObjectOffsetDrift:
+      frozen.objectCarrierOffsetDrift - carrierRelative.objectCarrierOffsetDrift,
+    frozenMinusCarrierReachClampOccupancy:
+      frozen.reachClampOccupancy - carrierRelative.reachClampOccupancy,
+    frozenMinusCarrierForceCapOccupancy:
+      frozen.forceCapOccupancy - carrierRelative.forceCapOccupancy,
+    frozenMinusCarrierMeanError: frozen.meanError - carrierRelative.meanError,
+    frozenMinusCarrierObjectTravel: frozen.objectTravel - carrierRelative.objectTravel,
+    frozenMinusCarrierTargetWorldTravel: frozen.targetWorldTravel - carrierRelative.targetWorldTravel,
+  };
+}
 
-report.contrast = {
-  targetRelativeDriftRatio: report.carrierRelative.peakTargetRelativeDrift > 1e-9
-    ? report.frozenPlane.peakTargetRelativeDrift / report.carrierRelative.peakTargetRelativeDrift
-    : null,
-  frozenMinusCarrierReachClampOccupancy:
-    report.frozenPlane.reachClampOccupancy - report.carrierRelative.reachClampOccupancy,
-  frozenMinusCarrierForceCapOccupancy:
-    report.frozenPlane.forceCapOccupancy - report.carrierRelative.forceCapOccupancy,
-  frozenMinusCarrierMeanError: report.frozenPlane.meanError - report.carrierRelative.meanError,
-  frozenMinusCarrierObjectTravel: report.frozenPlane.objectTravel - report.carrierRelative.objectTravel,
+const forwardFrozen = run('frozen-plane', 'forward');
+const forwardCarrier = run('carrier-relative', 'forward');
+const rightFrozen = run('frozen-plane', 'right');
+const rightCarrier = run('carrier-relative', 'right');
+
+const report = {
+  schema: 'e18-0b-hold-frame-physical-diagnostic-v1',
+  boundary: 'Real E17 baseline character + Box3D diagnostic with identical mechanics and walking input. feedbackGain=0 isolates target-frame effects from carrier feedback. Centred grip and an initial command-reach margin reduce orientation/reach confounds. Frozen-plane uses the actual FollowCamera implementation and click-time plane semantics; carrier-relative is a reference policy, not a promoted design. Rightward travel is an anisotropy falsifier because it is approximately parallel to the frozen plane.',
+  forward: {
+    frozenPlane: forwardFrozen,
+    carrierRelative: forwardCarrier,
+    contrast: contrast(forwardFrozen, forwardCarrier),
+  },
+  right: {
+    frozenPlane: rightFrozen,
+    carrierRelative: rightCarrier,
+    contrast: contrast(rightFrozen, rightCarrier),
+  },
 };
 
 if (outPath) fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
