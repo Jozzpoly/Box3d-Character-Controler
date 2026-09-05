@@ -14,6 +14,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-0a-unified-relative-grip-kernel.mjs',
     out: 'e19-0a-unified-relative-grip-kernel.json',
   },
+  {
+    name: 'E19.0b Box3D + virtual-player impulse response',
+    script: 'scripts/e19/e19-0b-box3d-virtual-player-response.mjs',
+    out: 'e19-0b-box3d-virtual-player-response.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
