@@ -11,6 +11,7 @@ import {
 const outPath = process.argv.find((arg) => arg.startsWith('--out='))?.slice(6) ?? null;
 const DEG = Math.PI / 180;
 const PIXEL_TOLERANCE = 1e-8;
+const ZERO_TOLERANCE = 1e-15;
 
 function projectPixel(point, camera, width, height) {
   const ndc = new THREE.Vector3(...point).project(camera);
@@ -162,7 +163,9 @@ assert.ok(
   'same viewport fraction must be resolution-independent',
 );
 
-// Depth remains explicit and independent from the pointer-plane scaling.
+// Depth remains explicit and independent from the pointer-plane scaling. Signed zero
+// is numerically zero and must not make this geometric contract depend on JS bit-level
+// representation details.
 const explicitDepth = screenPixelDeltaToManipulationCommand({
   deltaXPx: 0,
   deltaYPx: 0,
@@ -171,11 +174,11 @@ const explicitDepth = screenPixelDeltaToManipulationCommand({
   viewportHeightPx: 1080,
   depthDeltaMetres: -0.35,
 });
-assert.equal(explicitDepth.lateral, 0);
-assert.equal(explicitDepth.vertical, 0);
+assert.ok(Math.abs(explicitDepth.lateral) < ZERO_TOLERANCE);
+assert.ok(Math.abs(explicitDepth.vertical) < ZERO_TOLERANCE);
 assert.equal(explicitDepth.depth, -0.35);
 
-// No pointer/depth event means no command even if projection geometry changes.
+// No pointer/depth event means no numerical command even if projection geometry changes.
 const zeroA = screenPixelDeltaToManipulationCommand({
   deltaXPx: 0,
   deltaYPx: 0,
@@ -190,8 +193,11 @@ const zeroB = screenPixelDeltaToManipulationCommand({
   verticalFovRadians: 70 * DEG,
   viewportHeightPx: 900,
 });
-assert.deepEqual([zeroA.lateral, zeroA.vertical, zeroA.depth], [0, 0, 0]);
-assert.deepEqual([zeroB.lateral, zeroB.vertical, zeroB.depth], [0, 0, 0]);
+for (const [label, command] of [['nearProjection', zeroA], ['farProjection', zeroB]]) {
+  assert.ok(Math.abs(command.lateral) < ZERO_TOLERANCE, `${label}: lateral zero`);
+  assert.ok(Math.abs(command.vertical) < ZERO_TOLERANCE, `${label}: vertical zero`);
+  assert.ok(Math.abs(command.depth) < ZERO_TOLERANCE, `${label}: depth zero`);
+}
 
 const report = {
   schema: 'e18-0e-screen-delta-geometry-v0',
