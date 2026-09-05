@@ -1,6 +1,6 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-05, after E17-depth publication, reproducible-dependency maintenance and E17 lifecycle convergence**
+Grounded: **2026-09-05, after E17-depth Owner closure and E18.0 intent/proxy qualification**
 
 This is the compact canonical orientation layer. Before any future write, re-fetch live `main` and exact SHA. Recorded SHAs are provenance, not permission to assume the repository has not moved.
 
@@ -11,24 +11,29 @@ This is the compact canonical orientation layer. Before any future write, re-fet
 - E14 narrow one-leg/contextual tuning is closed by Owner judgement; causal evidence remains valid provenance.
 - E15 established a bounded body-response → player-consequence bridge but Owner judged the passive torso too gameplay-irrelevant.
 - E16 established capability-first embodiment and useful manipulation mechanics, but Owner judged end-effector-first control far too awkward.
-- **E17 intent-first physical manipulation** is the strongest current gameplay direction from Owner free play.
-- **E17-depth** is now a public bounded A/B executor probe: same one-point grammar and force/reach budget, but inertia-aware directional point effective mass.
-- **E18** remains the broader manipulation-architecture research frontier.
-- Reproducibility debt is closed: Node is pinned, `package-lock.json` is committed and CI uses `npm ci`.
-- E17 and E17-depth now share one manipulation lifecycle implementation; E17-depth overrides only effective-mass calculation and extra telemetry.
+- **E17 intent-first physical manipulation** remains the strongest current gameplay direction from Owner free play and is preserved as **P1 — one-point chaos baseline**.
+- **E17-depth** is mechanically legitimate but Owner could not reliably distinguish it from E17 in blind/free play after several minutes. Preserve it as technical executor evidence, not as a gameplay winner or automatic P1 replacement.
+- **E18** is the active manipulation-architecture frontier.
+- E18.0a–0j qualified the explicit 3D manipulation-intent/transport boundary sufficiently to stop blocking architectural work.
+- Current-best next crucible is **P3.0 — deterministic coupled two-point mechanics**, headless/scripted before Owner-facing input work.
+- Reproducibility debt and E17 browser-shell drift are closed maintenance work, not current research frontiers.
 
-Latest exact canonical implementation before this documentation cleanup:
+Latest verified canonical/public implementation:
 
-- `main`: `af9fab3207df2b84d3eee990a22d37cad4188a14`
-- PR #41: `Publish E17-depth inertia-aware one-point owner probe`
-- PR #42: `Make dependency resolution reproducible`
-- PR #43: `Converge E17 manipulator lifecycle`
-- exact-main workflow `33953856762` — **SUCCESS**
-- locked install, foundation/history smoke, E16 regressions, E17, E17-depth, build and Pages deploy — **SUCCESS**
+- `main`: `f8c4126f3f6a32eb80a0d87349e8d2e75e02438a`
+- PR #45: `Converge E17 Owner A/B browser shell`
+- exact-main workflow `33954457600` — **SUCCESS**
 - public E17 route: `?mode=e17` / `?mode=intent`
 - public E17-depth route: `?mode=e17depth` / `?mode=pointmass`
 
-After any merge following this grounding, re-fetch `main`; do not treat the SHA above as eternally current.
+Latest qualified E18 internal checkpoint before the current documentation commits:
+
+- branch: `experiment/e18-manipulation-v0`
+- checkpoint: `6a1aef0ca0ea025e3ab8ceefd9e31f59a00aada0`
+- E18 diagnostics run `33959216463` — **SUCCESS**
+- canonical verify/build run `33959216478` — **SUCCESS**
+
+After any merge or new research commit, re-fetch exact state; do not treat these SHAs as eternally current.
 
 ## 1. Project identity
 
@@ -134,19 +139,21 @@ Interpretation:
 
 Preserve E17 as **P1 — one-point chaos baseline**.
 
-## 6. E17-depth — bounded one-point executor correction
+## 6. E17-depth — bounded executor correction, Owner-closed
 
 E17-depth preserves the E17 interaction grammar, input, acquisition/release lifecycle, reach and `900 N` force cap.
 
 Only requested impulse calculation changes: it uses the directional effective mass of the grabbed rigid-body point, including the rotational contribution from world COM and inverse rotational inertia.
 
-Machine evidence establishes the bounded mechanical distinction and successful browser build/publication. It does **not** establish better feel, better gameplay or Owner preference.
+Machine evidence establishes a real bounded mechanical distinction.
+
+Owner blind/free comparison on 2026-09-05 found the difference too subtle to identify reliably after several minutes.
 
 Therefore:
 
-> **E17-depth is an Owner-facing A/B candidate, not an accepted replacement for E17.**
+> **E17-depth is a mechanically valid but gameplay-insufficient local refinement. It did not remove the dominant P1 limitation.**
 
-Do not quietly add damping, orientation ownership, a second grip point or stronger force and still call the result this same bounded A/B.
+Do not spend more Owner attention trying to force a preference from this A/B. Do not call E17-depth a gameplay winner. Preserve E17 as the historical P1 chaos/fun reference and E17-depth as technical evidence about one-point execution.
 
 ## 7. Self-lift / closed-loop authority exploit
 
@@ -165,43 +172,74 @@ Current question:
 
 > **What interaction grammar lets a player express useful 6-DoF object intent while finite physics, mass, leverage, contacts, body reaction and failure remain meaningful parts of execution?**
 
-Current candidate portfolio:
+Candidate portfolio:
 
 - **P1** — E17 one-point chaos baseline;
 - **P2** — finite 6-DoF pose coupling;
 - **P3** — bounded two-point / virtual two-hand grip;
 - **P4** — one-point manipulation plus a separated precision/rotation clutch.
 
-E18-R0 selected **P3** as the current-best next architectural crucible because it can test intentional orientation while preserving leverage without committing to humanoid anatomy.
+P3 remains the current-best next architectural crucible because it can test intentional orientation while preserving leverage without committing to humanoid anatomy.
 
 P2 remains the engineering/control reference. P4 remains the usability alternative.
 
-Detailed map:
+### E18.0 intent/proxy boundary now qualified
+
+The current hybrid should proceed with these rules:
+
+1. manipulation intent is explicit persistent 3D state, not an absolute frozen click-time drag plane;
+2. camera motion alone does not mutate the target;
+3. explicit screen/depth input changes intent incrementally using the current camera basis;
+4. high-level transport origin is the accepted Donor carrier, `character.position`, not raw physical `bodyPosition`;
+5. target transport follows **realized** Donor displacement at normal update boundaries;
+6. the known within-outer-step phase separation remains explicit debt for now;
+7. do not pre-compensate it from commanded/pre-solve velocity — collision solving can invalidate almost the entire predicted carrier step;
+8. reach, force, saturation and physical failure remain downstream executor concerns.
+
+Detailed evidence:
+
+[`E18_INTENT_PROXY_QUALIFICATION_2026-09-05.md`](E18_INTENT_PROXY_QUALIFICATION_2026-09-05.md)
+
+Broader architecture map:
 
 [`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md)
 
+Execution policy:
+
+[`E18_EXECUTION_SPINE_2026-09-05.md`](E18_EXECUTION_SPINE_2026-09-05.md)
+
 ## 9. Current action / stop boundary
 
-The immediate Owner-facing evidence boundary is now the **E17 vs E17-depth one-point A/B**.
+The immediate research boundary is now **P3.0 — deterministic coupled two-point mechanics**.
 
-Do not infer that E17-depth won because its causal/mechanical qualifier passed.
+Do not begin with browser UX. First separate the mechanical question from the input question.
 
-After Owner judgement, use the result to decide whether:
+P3.0 should:
 
-- one-point execution quality was materially improved enough to keep as the P1 reference; or
-- the dominant limitation is still the one-point interaction grammar/orientation problem, in which case proceed to the smallest bounded E18 P3 crucible.
+- use scripted/deterministic target-point trajectories;
+- preserve accepted Donor traversal and current hybrid body/core unless the probe specifically requires otherwise;
+- treat both point constraints as one coupled rigid-body task, not two independent E17 springs;
+- use one declared shared force/impulse authority budget so P3 cannot win merely by receiving twice the strength;
+- preserve finite saturation/failure;
+- exploit the useful geometric fact that two noncoincident points determine translation + an axis while leaving twist about that axis free;
+- compare centre/off-centre, long-beam leverage, light/heavy, blocked/contact and release cases against the frozen one-point reference where meaningful.
 
-Do not build full arms, humanoid anatomy or a production manipulation UI before this distinction is learned.
+Natural stop:
+
+- if coupled two-point mechanics materially improve intentional axis/orientation control without simply overpowering objects, build a bounded Owner-facing P3.1 toybox/input grammar;
+- if P3 mechanics are intrinsically poor, preserve the negative evidence and use P2 finite 6-DoF coupling as the control reference;
+- do not ask Owner for another broad pass until the capability difference is large enough to matter in play.
 
 ## 10. Workflow / maintenance state
 
 Canonical workflow policy is documented in [`WORKFLOW.md`](WORKFLOW.md).
 
-Important current maintenance rules:
+Important current rules:
 
-- `main` is canonical;
+- `main` is canonical/public truth;
 - dependencies are reproduced with Node `22.23.2` + committed lockfile + `npm ci`;
-- `npm run smoke` preserves the existing foundation/historical green regression spine;
+- `npm run smoke` preserves the foundation/historical regression spine;
 - `npm run smoke:current` covers currently promoted E16/E17/E17-depth prototypes;
 - experiment-specific diagnostics belong to bounded branch-local qualification, not permanent branch-name conditions in the Pages workflow;
-- negative/confounded experiments remain provenance and do not need to be converted into permanent green CI.
+- negative/confounded experiments remain provenance and do not need to be converted into permanent green CI;
+- separate playground/map work remains a parallel lane and must not contaminate E18 manipulation causality.
