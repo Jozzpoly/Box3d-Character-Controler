@@ -15,6 +15,14 @@ function distance3(a, b) {
   return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 
+function dot3(a, b) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+function sub3(a, b) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
 function makeWorld() {
   const def = b3.b3DefaultWorldDef();
   def.gravity = [0, 0, 0];
@@ -42,6 +50,12 @@ function worldPoint(body, local) {
   return out;
 }
 
+function bodyPosition(body) {
+  const out = [0, 0, 0];
+  b3.b3Body_GetPosition(out, body);
+  return out;
+}
+
 function findBodyCandidate(tracker, body) {
   const key = e19IdKey(body);
   return tracker.candidates.find((candidate) => candidate.otherBodyKey === key) ?? null;
@@ -54,6 +68,8 @@ function assertCandidate(candidate, label) {
     ...candidate.otherAnchorWorld,
     ...candidate.probeLocalAnchor,
     ...candidate.otherLocalAnchor,
+    ...(candidate.probeToOtherNormal ?? []),
+    ...(candidate.otherToProbeNormal ?? []),
     candidate.anchorPairGap,
     candidate.separation,
     candidate.normalImpulse,
@@ -97,6 +113,14 @@ function runContactCase(kind) {
   assert.ok(otherAnchorRoundTripError < 2e-5, `${kind}: other local-anchor round trip error ${otherAnchorRoundTripError}`);
   assert.ok(probeAnchorRoundTripError < 2e-5, `${kind}: probe local-anchor round trip error ${probeAnchorRoundTripError}`);
 
+  // Raw Box3D manifold order differs between these otherwise equivalent static/dynamic
+  // scenes. E19 therefore qualifies an interaction-stable orientation: probe -> target.
+  const probeToTarget = sub3(bodyPosition(target.body), bodyPosition(probe.body));
+  const semanticNormalDot = dot3(first.probeToOtherNormal, probeToTarget);
+  const oppositeNormalDot = dot3(first.otherToProbeNormal, probeToTarget);
+  assert.ok(semanticNormalDot > 0, `${kind}: probe->target normal points away from target: ${first.probeToOtherNormal}`);
+  assert.ok(oppositeNormalDot < 0, `${kind}: target->probe normal orientation is not opposite`);
+
   const firstLatch = tracker.makeLatchDescriptor(first);
   assert.ok(firstLatch, `${kind}: fresh candidate did not produce latch descriptor`);
   assert.equal(firstLatch.source, 'contact-manifold');
@@ -105,6 +129,8 @@ function runContactCase(kind) {
   assert.ok(Object.isFrozen(firstLatch), `${kind}: latch descriptor is mutable`);
   assert.ok(distance3(firstLatch.worldAnchorAtAcquisition, first.otherAnchorWorld) < 1e-12);
   assert.ok(distance3(firstLatch.localAnchor, first.otherLocalAnchor) < 1e-12);
+  assert.ok(dot3(firstLatch.probeToTargetNormalAtAcquisition, probeToTarget) > 0);
+  assert.ok(dot3(firstLatch.targetSurfaceNormalAtAcquisition, probeToTarget) < 0);
 
   // A second refresh invalidates the previous post-step snapshot even if physics itself
   // has not advanced. The interaction layer must always act on the current tracker epoch.
@@ -139,7 +165,10 @@ function runContactCase(kind) {
     anchorPairGap: first.anchorPairGap,
     separation: first.separation,
     normalImpulse: first.normalImpulse,
-    manifoldNormal: first.manifoldNormal,
+    rawManifoldNormal: first.manifoldNormal,
+    probeToOtherNormal: first.probeToOtherNormal,
+    otherToProbeNormal: first.otherToProbeNormal,
+    semanticNormalDot,
     otherAnchorRoundTripError,
     probeAnchorRoundTripError,
     firstLatch: {
@@ -149,6 +178,8 @@ function runContactCase(kind) {
       bodyKind: firstLatch.bodyKind,
       localAnchor: [...firstLatch.localAnchor],
       worldAnchorAtAcquisition: [...firstLatch.worldAnchorAtAcquisition],
+      targetSurfaceNormalAtAcquisition: [...firstLatch.targetSurfaceNormalAtAcquisition],
+      probeToTargetNormalAtAcquisition: [...firstLatch.probeToTargetNormalAtAcquisition],
     },
     staleRejected,
     foreignRejected,
@@ -201,9 +232,14 @@ assert.deepEqual(
   'static/dynamic latch descriptors diverged structurally',
 );
 
+// The raw manifold normals are allowed to differ with Box3D shape ordering, while the
+// semantic probe->target normals must agree for the same physical layout.
+assert.ok(staticContact.probeToOtherNormal[0] > 0.9);
+assert.ok(dynamicContact.probeToOtherNormal[0] > 0.9);
+
 const report = {
-  schema: 'e19-1a-contact-qualified-latch-descriptors-v1',
-  hypothesis: 'E16 current-manifold provenance can be extracted from its old organ architecture into a neutral E19 contact-candidate kernel that produces exact body/local-anchor latch descriptors, rejects stale/foreign state, and fabricates no remote candidates.',
+  schema: 'e19-1a-contact-qualified-latch-descriptors-v2',
+  hypothesis: 'E16 current-manifold provenance can be extracted from its old organ architecture into a neutral E19 contact-candidate kernel that produces exact body/local-anchor latch descriptors, rejects stale/foreign state, fabricates no remote candidates, and removes raw Box3D A/B ordering from interaction-facing surface-normal semantics.',
   boundary: 'Physics-provenance extraction only. The probe body is diagnostic apparatus, not a final hand representation. No left/right intent, reach assistance, candidate ranking, acquisition UX or live E19 actuator latch is qualified here.',
   staticContact,
   dynamicContact,
