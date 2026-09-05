@@ -38,10 +38,6 @@ function movementIntent(axis) {
   };
 }
 
-function add3(a, b) {
-  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-}
-
 function sub3(a, b) {
   return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 }
@@ -157,6 +153,7 @@ function runCameraInertness() {
   const { world, character, state } = createFixture();
   const initialOffset = sub3(state.targetWorld, state.transportOriginWorld);
   const targetBeforeOrbit = [...state.targetWorld];
+  const carrierStart = [...state.transportOriginWorld];
   const basisBefore = cameraBasis(0);
   const basisAfter = cameraBasis(Math.PI / 4);
 
@@ -170,11 +167,11 @@ function runCameraInertness() {
   const finalOffset = sub3(state.targetWorld, state.transportOriginWorld);
   const offsetDrift = distance3(initialOffset, finalOffset);
   const targetWorldTravel = distance3(targetBeforeOrbit, state.targetWorld);
-  const carrierTravel = distance3([0, 0.8950001818313625, 0], state.transportOriginWorld);
+  const carrierTravel = distance3(carrierStart, state.transportOriginWorld);
 
   assert.ok(offsetDrift < 1e-12, `camera-only change must not alter carrier-relative intent offset: ${offsetDrift}`);
   assert.ok(
-    Math.abs(targetWorldTravel - carrierTravel) < 1e-6,
+    Math.abs(targetWorldTravel - carrierTravel) < 1e-9,
     'any world-target movement in camera-only scenario must come from Donor transport, not camera observation',
   );
 
@@ -301,28 +298,40 @@ function runReachSeparation() {
   const rawDelta = [4.5, 0.25, -0.4];
   applyManipulationWorldDelta(state, rawDelta);
   character.setManipulationTarget(state.targetWorld);
-  tick(world, character);
 
-  const requestedReach = distance3(state.targetWorld, character.bodyPosition);
+  // Reach feasibility is resolved inside E17 preStep. Measure the clamp at that exact
+  // phase, before World_Step moves the finite physical core under the reaction impulse.
+  character.preStep(DT, ZERO_INTENT);
+  const solveBodyPosition = [...character.bodyPosition];
+  const requestedReachAtSolve = distance3(state.targetWorld, solveBodyPosition);
   const executorRequestedError = distance3(character.manipulatorRequestedTarget, state.targetWorld);
-  const executedReach = distance3(character.manipulatorTarget, character.bodyPosition);
+  const executedReachAtSolve = distance3(character.manipulatorTarget, solveBodyPosition);
 
-  assert.ok(requestedReach > 2.5, 'raw E18 intent should be allowed to exceed physical reach');
+  assert.ok(requestedReachAtSolve > 2.5, 'raw E18 intent should be allowed to exceed physical reach');
   assert.ok(executorRequestedError < 1e-12, 'executor must retain raw request separately from feasible target');
-  assert.ok(executedReach <= character.manipulatorMaxReach + 1e-6, 'finite E17 executor must clamp only downstream');
-  assert.ok(Math.abs(executedReach - character.manipulatorMaxReach) < 1e-5, 'large request should exercise downstream reach cap');
+  assert.ok(executedReachAtSolve <= character.manipulatorMaxReach + 1e-6, 'finite E17 executor must clamp only downstream at solve phase');
+  assert.ok(Math.abs(executedReachAtSolve - character.manipulatorMaxReach) < 1e-5, 'large request should exercise downstream reach cap');
+
+  b3.b3World_Step(world, DT, SUBSTEPS);
+  character.postStep(DT);
+  const bodyPositionAfterPhysics = [...character.bodyPosition];
+  const executedReachAfterPhysics = distance3(character.manipulatorTarget, bodyPositionAfterPhysics);
 
   const report = {
     rawDelta,
     rawIntentTarget: [...state.targetWorld],
-    requestedReach,
+    solveBodyPosition,
+    requestedReachAtSolve,
     executorRequestedTarget: [...character.manipulatorRequestedTarget],
     executorRequestedError,
     feasibleManipulatorTarget: [...character.manipulatorTarget],
-    executedReach,
+    executedReachAtSolve,
+    bodyPositionAfterPhysics,
+    executedReachAfterPhysics,
     maxReach: character.manipulatorMaxReach,
     force: character.lastManipulatorForce,
     maxForce: character.manipulatorMaxForce,
+    measurementBoundary: 'executedReachAtSolve is authoritative for reach-clamp qualification; executedReachAfterPhysics may exceed the cap because the finite core can move after the target was solved',
   };
   b3.b3DestroyWorld(world);
   return report;
@@ -338,7 +347,7 @@ const lagSymmetry = Math.abs(walkForward.peakPreStepCarrierLag - walkRight.peakP
 assert.ok(lagSymmetry < 1e-5, `preStep adapter timing debt should be direction-independent: ${lagSymmetry}`);
 
 const report = {
-  schema: 'e18-0h-headless-intent-pipeline-diagnostic-v0',
+  schema: 'e18-0h-headless-intent-pipeline-diagnostic-v1',
   boundary: 'Headless integration qualification on real E17 + Box3D. It composes the qualified incremental screen mapping, E18 ManipulationIntent, Donor carrier transport and the existing finite E17 executor without changing browser/runtime code. feedbackGain=0 isolates pipeline ordering; E18.0g separately qualifies accepted feedback. The diagnostic proves layer composition and deliberately exposes the current external setManipulationTarget-before-preStep one-frame transport lag. It does not select final device sensitivity, browser event policy, P3 orientation grammar or a new executor.',
   cameraInertness,
   explicitScreenCommand,
