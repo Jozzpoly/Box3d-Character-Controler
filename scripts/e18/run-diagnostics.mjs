@@ -34,6 +34,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-0e-screen-delta-geometry.mjs',
     out: 'e18-0e-screen-delta-geometry.json',
   },
+  {
+    name: 'E18.0f transport-origin physical diagnostic',
+    script: 'scripts/e18/e18-0f-transport-origin-physical-diagnostic.mjs',
+    out: 'e18-0f-transport-origin-physical.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
