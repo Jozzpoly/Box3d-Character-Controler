@@ -8,6 +8,7 @@
     "smoke": "npm run smoke:research && npm run smoke:donor",
     "smoke:research": "node scripts/smoke-suite.mjs research",
     "smoke:donor": "node scripts/smoke-suite.mjs donor",
+    "smoke:current": "node scripts/smoke-suite.mjs current",
     "build": "vite build --base=./",
     "preview": "vite preview"
   },

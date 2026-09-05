@@ -19,108 +19,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node
+      - name: Setup exact Node
         uses: actions/setup-node@v4
         with:
           node-version: 22.23.2
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
-      - name: Smoke embodied-player mechanics
+      - name: Smoke foundation and accepted historical regressions
         run: npm run smoke
-      - name: Capture E14 diagnostics
-        if: github.ref != 'refs/heads/main'
-        run: |
-          node scripts/e14-1d-continuous-diagnostics.mjs e14-1d-diagnostics.json
-          node scripts/e14-1e-preparation-coupling-crucible.mjs e14-1e-preparation-crucible.json
-      - name: Upload E14 diagnostics
-        if: github.ref != 'refs/heads/main'
-        uses: actions/upload-artifact@v4
-        with:
-          name: e14-continuous-diagnostics
-          path: |
-            e14-1d-diagnostics.json
-            e14-1e-preparation-crucible.json
-          if-no-files-found: error
-      - name: Capture E15 gate diagnostics
-        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
-        run: node scripts/e15-hybrid-gate-diagnostic.mjs --out=e15-hybrid-gate-diagnostic.json
-      - name: Capture E15 world-contact causality
-        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
-        run: node scripts/e15-world-contact-causality.mjs --out=e15-world-contact-causality.json
-      - name: Test E15 contact-episode semantics
-        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
-        run: node scripts/e15-contact-episode-semantics.mjs --out=e15-contact-episode-semantics.json
-      - name: Qualify E15 V0 hybrid bridge
-        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
-        run: node scripts/e15-hybrid-bridge-smoke.mjs --out=e15-hybrid-bridge.json
-      - name: Qualify E15.1 contact-semantic bridge
-        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
-        run: node scripts/e15-contact-semantic-smoke.mjs --out=e15-contact-semantic-smoke.json
-      - name: Qualify E15 browser affordance ecology
-        if: github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
-        run: node scripts/e15-affordance-smoke.mjs --out=e15-affordance-smoke.json
-      - name: Upload E15 hybrid evidence
-        if: always() && github.ref == 'refs/heads/experiment/e15-donor-physical-body-bridge'
-        uses: actions/upload-artifact@v4
-        with:
-          name: e15-hybrid-bridge
-          path: |
-            e15-hybrid-gate-diagnostic.json
-            e15-world-contact-causality.json
-            e15-contact-episode-semantics.json
-            e15-hybrid-bridge.json
-            e15-contact-semantic-smoke.json
-            e15-affordance-smoke.json
-          if-no-files-found: error
-      - name: Qualify E16.1c contact-earned grab topology
-        if: github.ref == 'refs/heads/publication/e16-2a-capability-yard' || github.ref == 'refs/heads/main'
-        run: node scripts/e16-contact-qualified-grab-crucible.mjs --out=e16-contact-qualified-grab-crucible.json
-      - name: Qualify E16.2a interaction policy
-        if: github.ref == 'refs/heads/publication/e16-2a-capability-yard' || github.ref == 'refs/heads/main'
-        run: node scripts/e16-capability-interaction-smoke.mjs --out=e16-capability-interaction-smoke.json
-      - name: Qualify E16.2a integrated capability yard
-        if: github.ref == 'refs/heads/publication/e16-2a-capability-yard' || github.ref == 'refs/heads/main'
-        run: node scripts/e16-capability-yard-smoke.mjs --out=e16-capability-yard-smoke.json
-      - name: Upload E16 capability-yard evidence
-        if: always() && (github.ref == 'refs/heads/publication/e16-2a-capability-yard' || github.ref == 'refs/heads/main')
-        uses: actions/upload-artifact@v4
-        with:
-          name: e16-capability-yard
-          path: |
-            e16-contact-qualified-grab-crucible.json
-            e16-capability-interaction-smoke.json
-            e16-capability-yard-smoke.json
-          if-no-files-found: error
-      - name: Qualify E16 direct task-space mapping
-        if: github.ref == 'refs/heads/experiment/e16-direct-task-space-control' || github.ref == 'refs/heads/experiment/e16-direct-radial-control' || github.ref == 'refs/heads/main'
-        run: node scripts/e16-direct-control-smoke.mjs --out=e16-direct-control-smoke.json
-      - name: Upload E16 direct-control evidence
-        if: always() && (github.ref == 'refs/heads/experiment/e16-direct-task-space-control' || github.ref == 'refs/heads/experiment/e16-direct-radial-control' || github.ref == 'refs/heads/main')
-        uses: actions/upload-artifact@v4
-        with:
-          name: e16-direct-control
-          path: e16-direct-control-smoke.json
-          if-no-files-found: error
-      - name: Qualify E17 intent-first physical manipulator
-        if: github.ref == 'refs/heads/experiment/e17-intent-first-manipulator' || github.ref == 'refs/heads/main'
-        run: node scripts/e17-intent-manipulator-smoke.mjs --out=e17-intent-manipulator-smoke.json
-      - name: Upload E17 intent-first evidence
-        if: always() && (github.ref == 'refs/heads/experiment/e17-intent-first-manipulator' || github.ref == 'refs/heads/main')
-        uses: actions/upload-artifact@v4
-        with:
-          name: e17-intent-first-manipulator
-          path: e17-intent-manipulator-smoke.json
-          if-no-files-found: error
-      - name: Qualify E17-depth inertia-aware one-point manipulator
-        if: github.ref == 'refs/heads/publication/e17-one-point-depth-owner-probe' || github.ref == 'refs/heads/main'
-        run: node scripts/e17-point-mass-character-smoke.mjs --out=e17-point-mass-character-smoke.json
-      - name: Upload E17-depth evidence
-        if: always() && (github.ref == 'refs/heads/publication/e17-one-point-depth-owner-probe' || github.ref == 'refs/heads/main')
-        uses: actions/upload-artifact@v4
-        with:
-          name: e17-point-mass-character
-          path: e17-point-mass-character-smoke.json
-          if-no-files-found: error
+      - name: Smoke current promoted prototypes
+        run: npm run smoke:current
       - name: Build playground
         run: npm run build
       - name: Configure Pages

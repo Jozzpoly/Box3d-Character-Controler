@@ -1,8 +1,8 @@
 # Box3D Character Controler — Embodied Player Laboratory
 
-Public browser laboratory for a broader question:
+Public browser laboratory for one broader question:
 
-> How can a player possess a physical body in a simulated world while retaining enough control, readability and fun that physics becomes part of gameplay rather than an obstacle?
+> **How can a player possess a physically meaningful body while retaining enough control, readability and fun that physics becomes part of gameplay rather than an obstacle?**
 
 Working tension:
 
@@ -10,150 +10,117 @@ Working tension:
 
 Working model:
 
-> **Player intends. Controller interprets. Body attempts. Physics answers.**
+> **Player intends. Controller interprets. Body/system attempts. Physics answers.**
 
-Implementation/probes may be disposable; accepted observations are not.
+Implementation probes may be disposable; accepted observations are not.
 
-For a fresh takeover or long-gap return, start with [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md), then [`docs/README.md`](docs/README.md) and the newest stage ledger, currently [`docs/E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](docs/E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md).
+## Fresh takeover
 
-## Current accepted player — Donor v1 / A‴
+Do not reconstruct the project from stage numbers or old branch names.
 
-The normal public/default runtime remains **A‴ / Donor v1**.
+Read in this order:
 
-Important current values:
+1. [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) — compact current truth and active boundary;
+2. [`docs/WORKFLOW.md`](docs/WORKFLOW.md) — how research, qualification, publication and maintenance are separated;
+3. [`docs/E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](docs/E18_MANIPULATION_LANDSCAPE_2026-09-04.md) — current manipulation research map;
+4. [`docs/README.md`](docs/README.md) — navigation into historical evidence only when needed.
 
-- virtual interaction mass `80 kg`;
+Live `main` + exact SHA + CI/Pages remain implementation/publication truth.
+
+## Accepted/default player
+
+The normal public runtime remains **A‴ / Donor v1**, a controller-owned mover.
+
+Reference contract:
+
+- interaction mass `80 kg`;
 - max speed `5.2 m/s`;
 - ground acceleration `31 m/s²`;
-- ground deceleration `36 m/s²`;
+- ground braking `36 m/s²`;
 - gravity `20 m/s²`;
-- fixed outer step `1/60 s`;
-- canonical `4` Box3D substeps.
+- outer step `1/60 s`;
+- `4` Box3D substeps.
 
-A‴ is a **controller-owned mover**, not rigid-body propulsion of an articulated player. Research E3+ asks which parts of its accepted agency can be physically earned or honestly supplemented without destroying control or feel.
+Do not silently weaken `31/36` to make embodiment easier.
 
-Historical `createDonorCharacter(...)` remains frozen Donor v0 / A″.
+## Current experimental portfolio
 
-## Research boundary in compact form
+### E17 — intent-first physical manipulation
 
-### E3–E5 — physical posture and authority accounting
+E17 changed the interaction boundary from low-level organ piloting to:
 
-Finite `320 Nm` support-mediated balance produced a real, Owner-positive embodied struggle. Preparation lets accepted-strength current31 launch/current36 braking coexist with finite posture on qualified solver resolutions.
+> **select nearby dynamic object / exact surface point → express 3D target intent → finite physical actuator attempts it**
 
-With ordinary `μ=.95` support and recovered lead8 posture, real contact supplied roughly **64.6–71.0%** of full `80 kg × 5.2 m/s` ramp impulse. World-external residual authority can cover gaps but changes reciprocity and can mask physical insufficiency.
+The object is not teleported. Finite impulse is applied at the selected point, with equal-and-opposite reaction on the finite physical core. Mass, collisions, leverage, orientation drift and release momentum remain physical consequences.
 
-### E6–E10 — cheap physical support routes did not establish stable extra capacity
+Owner free play showed the strongest positive gameplay evidence of the post-E14 line so far: one capability generated lift, carry, drag, throw, leverage, piling, stack attempts and object↔object play despite the executor still being crude and unstable.
 
-- E6: latent translation in the primary ankle failed inactive representation.
-- E7: a representation-neutral one-piece parallel probe acquired real second ground contact, but did not establish stable/regulatable load sharing.
-- E8/E9: local axial/weld primitives worked, but embodied serial split representations failed strict inactive mechanical equivalence.
-- E10: the qualified one-piece probe could be latched cleanly after real acquisition and materially reduced a fall, but still failed meaningful load recruitment and stable dual-support HOLD.
+Public route:
 
-> **Contact acquisition, a clean latch transition and a rigid brace are still not sufficient stable/regulatable support capacity.**
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=e17`
 
-Do not recurse into more serial anatomy or retune evidence thresholds by inertia.
+alias: `?mode=intent`
 
-### E11 — binary physical eligibility rejected
+### E17-depth — inertia-aware one-point A/B probe
 
-E11 forced every residual frame to be physics-first. It established two durable corrections:
+E17-depth keeps the same one-point grammar, input, reach and force budget, but computes requested impulse from the directional effective mass of the grabbed rigid-body point using world COM + inverse rotational inertia.
 
-- lower later physical horizontal impulse is not automatically masking when earlier assist reduced relative slip and therefore reduced frictional demand;
-- a boolean rule such as “support exists + some positive physical impulse” is still too weak: at `μ=.20`, severe traction loss could coexist with accepted-looking `~5.28 m/s` translation dominated by external authority while posture still fell.
+It is a bounded executor correction, **not** orientation control, a two-hand system, extra damping or a new gameplay architecture.
 
-Ledger: [`docs/E11_PHYSICS_FIRST_RESIDUAL.md`](docs/E11_PHYSICS_FIRST_RESIDUAL.md).
+Public route:
 
-### E12 — graded capacity survives; placement becomes a world-reference question
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=e17depth`
 
-E12 replaced binary eligibility with a capability-derived entitlement on the pinned E5 load scale:
+alias: `?mode=pointmass`
 
-`q = clamp( μ × J_n~ / (0.95 × 80 × 20 × 1/60), 0, 1 )`
+E17 remains the one-point chaos baseline. E17-depth is an Owner-facing A/B candidate, not an automatic replacement.
 
-where `J_n~ = 0.5 × totalNormalImpulse` is the existing E5.0a pinned-substrate load estimate.
+## Current research frontier — E18
 
-On canonical current31/current36 specimens, normal `μ=.95` retained accepted agency while weak/zero traction remained materially weak. This qualifies graded capacity as a **research principle**, not a production formula.
+E18 asks a larger question than “how do we add rotation?”:
 
-On a real `800 kg` dynamic support, fair comparison requires the same support-relative granted `Δv`:
+> **What interaction grammar lets a player express useful 6-DoF object intent while finite physics, mass, leverage, contacts, body reaction and failure remain meaningful parts of execution?**
 
-- world-external placement injects combined player+support momentum;
-- reciprocal placement uses reduced-mass equal-and-opposite exchange.
+Current candidate portfolio:
 
-But on an isolated free player+support pair those placements are almost exactly Galilean-equivalent in relative motion/contact/posture. With canonical damping, maximum relative-velocity divergence over one second was only about **0.006% of the granted pulse**.
+- **P1** — E17 one-point chaos baseline;
+- **P2** — finite 6-DoF pose coupling;
+- **P3** — bounded two-point / virtual two-hand grip;
+- **P4** — one-point manipulation plus a separate precision/rotation clutch.
 
-Ledger: [`docs/E12_GRADED_CAPACITY_ENTITLEMENT.md`](docs/E12_GRADED_CAPACITY_ENTITLEMENT.md).
+Current-best architectural candidate from E18-R0 remains **P3**, but E17-depth should be judged as the bounded one-point A/B before its evidence is overinterpreted.
 
-### E13 — genuine world coupling matters; manufactured late reaction is not neutral
+The sphere self-lift behavior remains deliberately unpatched during exploratory work: it is both a generative toy and a closed-loop authority debt.
 
-E13 introduced a genuine external world reference with the smallest qualified representation found in this stage: a mirrored unilateral prismatic world stop.
+## Durable lessons
 
-After correcting a source-backed `fixedRotation` harness conflict:
+- **E12:** capability entitlement can be graded; do not regress to blind full-strength authority.
+- **E13:** do not manufacture an external reaction path exactly when authority needs it and call that neutral plumbing.
+- **E14:** more physical representation can still be worse gameplay than the plain Donor.
+- **E15:** a passive physical body can become little more than a reactive appendage if it owns no useful player capability.
+- **E16:** giving a physical subsystem a capability is insufficient if the player must micromanage the subsystem itself.
+- **E17:** high-level intent + finite physical execution can generate a family of verbs and persistent scene history even before the executor is good.
 
-- the isolated stop binding passed;
-- the free-prismatic `800 kg` support preserved embodied passive representation;
-- zero-gap stop engagement at the **quiet settled state** was passive-neutral.
+## Validation
 
-Then E13.1a compared `{world-external, reciprocal} × {stop OFF, ON}` under the same E12 support-relative one-step grant.
+Reproducible toolchain:
 
-Stop-isolated wider-world effect:
+- Node `22.23.2` (`.nvmrc`);
+- npm lockfile committed;
+- CI uses `npm ci`;
+- `box3d.js@0.1.1`;
+- `three@0.183.0`;
+- `vite@7.0.0`.
 
-- world-external: approximately `0 N·s`;
-- reciprocal: **`33.177096 / 33.177056 N·s`**.
+Commands:
 
-So:
+- `npm run smoke` — existing foundation + accepted historical green regressions;
+- `npm run smoke:current` — current promoted E16/E17/E17-depth regressions;
+- `npm run build` — browser build.
 
-> **A real external reaction path ends the isolated Galilean ambiguity. Reaction placement becomes physically observable.**
+The canonical GitHub Actions workflow runs locked install → both smoke layers → build, then deploys Pages only from `main`.
 
-But longer observation exposed a more important boundary. During a fixed lead8/current31 trajectory, stop ON already generated about `56.8 / 68.6 N·s` ON−OFF world effect during posture preparation **before translational authority began**.
-
-E13.2b isolated that issue. Two identical free-prismatic systems performed exact lead8 with no translational authority. At the actual prepared translation both received identical limit geometry; only the candidate enabled the stop. The API transition itself was state-neutral, but one subsequent identical posture solve produced differential world impulses of:
-
-- **`80.793918 N·s`**;
-- **`72.348356 N·s`**.
-
-Therefore:
-
-> **Quiet-state neutrality does not imply active-state neutrality. Once the support has world-relative state, creating the external reaction path is itself a physical event.**
-
-And the architectural correction is:
-
-> **Do not manufacture a world reaction path when authority needs somewhere to react and then call it neutral controller plumbing. If the external world carries reaction, that coupling must already exist as part of the physical/gameplay situation, with its history and consequences visible.**
-
-This does **not** reject reciprocal mechanics and does not select world-external authority for production.
-
-Ledger: [`docs/E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md`](docs/E13_WORLD_COUPLED_AUTHORITY_PLACEMENT.md).
-
-## Current research direction
-
-The project no longer needs another isolated placement pulse, unilateral-stop tuning pass, `q` sweep, friction sweep, residual-ratio sweep or support-mass sweep.
-
-Highest-value question:
-
-> **Which naturally present environmental relationships should legitimately carry player-authority reaction, and when should accepted agency remain explicitly controller/world-external instead?**
-
-The next useful specimen should make external coupling **ecological rather than manufactured**. Candidate families include:
-
-- a support already anchored/braced by level geometry before player intent;
-- an externally driven support;
-- a third-body/environment contact with a genuine pre-existing causal history.
-
-Do not place a stop at the current support position merely to harvest reaction, and do not choose wall gaps, spring stiffnesses, support masses or clutch timings to force a preferred architecture.
-
-The purpose is **contextual reaction ownership / environmental causality**: discover when reaction is causally honest, mechanically legible and potentially valuable to gameplay.
-
-A genuinely new physical support mechanism remains admissible if it introduces a capability E6–E10 did not already exercise, but more anatomy is not the default.
-
-The goal remains a controllable physical player with causally meaningful embodiment — not maximal mechanical purity or maximal body-part count.
-
-## Public build
-
-Normal current player:
-
-`https://jozzpoly.github.io/Box3d-Character-Controler/`
-
-Experimental E3 balance playground:
-
-`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=balance`
-
-E3.2–E13 are machine research only.
+Experiment-specific diagnostics belong to the experiment branch/workflow and should not accumulate forever in the canonical deploy workflow. See [`docs/WORKFLOW.md`](docs/WORKFLOW.md).
 
 ## Normal controls
 
@@ -165,12 +132,6 @@ E3.2–E13 are machine research only.
 - `R` / `RESET` — reset;
 - `H` — telemetry.
 
-## Runtime provenance
+Normal/default build:
 
-Current browser substrate:
-
-- `box3d.js@0.1.1`;
-- `three@0.183.0`;
-- `vite@7.0.0`.
-
-For detailed evidence navigation see [`docs/README.md`](docs/README.md).
+`https://jozzpoly.github.io/Box3d-Character-Controler/`
