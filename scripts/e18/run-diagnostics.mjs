@@ -29,6 +29,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-0d-intent-contract.mjs',
     out: 'e18-0d-intent-contract.json',
   },
+  {
+    name: 'E18.0e screen-delta geometry',
+    script: 'scripts/e18/e18-0e-screen-delta-geometry.mjs',
+    out: 'e18-0e-screen-delta-geometry.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
