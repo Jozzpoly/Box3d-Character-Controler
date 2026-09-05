@@ -54,6 +54,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-1b-intent-assisted-contact-ranking.mjs',
     out: 'e19-1b-intent-assisted-contact-ranking.json',
   },
+  {
+    name: 'E19.1c contact-earned live grip bridge',
+    script: 'scripts/e19/e19-1c-contact-earned-live-grip-bridge.mjs',
+    out: 'e19-1c-contact-earned-live-grip-bridge.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
