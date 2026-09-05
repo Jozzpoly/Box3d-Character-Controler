@@ -64,6 +64,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-1d-nonimpulsive-swept-reach.mjs',
     out: 'e19-1d-nonimpulsive-swept-reach.json',
   },
+  {
+    name: 'E19.1e swept reach live grip',
+    script: 'scripts/e19/e19-1e-swept-reach-live-grip.mjs',
+    out: 'e19-1e-swept-reach-live-grip.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
