@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - experiment/e18-manipulation-v0
+      - experiment/e18-p3-coupled-two-point
   workflow_dispatch:
 
 permissions:
