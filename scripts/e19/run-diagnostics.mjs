@@ -59,6 +59,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-1c-contact-earned-live-grip-bridge.mjs',
     out: 'e19-1c-contact-earned-live-grip-bridge.json',
   },
+  {
+    name: 'E19.1d non-impulsive swept reach',
+    script: 'scripts/e19/e19-1d-nonimpulsive-swept-reach.mjs',
+    out: 'e19-1d-nonimpulsive-swept-reach.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
