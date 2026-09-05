@@ -84,6 +84,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-p3-0f-contact-failure-release-stress.mjs',
     out: 'e18-p3-0f-contact-failure-release-stress.json',
   },
+  {
+    name: 'E18 P3.0g full-hybrid blocked-reaction audit',
+    script: 'scripts/e18/e18-p3-0g-full-hybrid-blocked-reaction-audit.mjs',
+    out: 'e18-p3-0g-full-hybrid-blocked-reaction-audit.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
