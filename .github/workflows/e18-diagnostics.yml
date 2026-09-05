@@ -1,0 +1,36 @@
+name: E18 branch diagnostics
+
+on:
+  push:
+    branches:
+      - experiment/e18-manipulation-v0
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e18-diagnostics-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run E18 branch diagnostics
+        run: node scripts/e18/run-diagnostics.mjs --out-dir=e18-diagnostics
+      - name: Upload E18 diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e18-diagnostics
+          path: e18-diagnostics/
+          if-no-files-found: error
