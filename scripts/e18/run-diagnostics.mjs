@@ -79,6 +79,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-p3-0e-free-twist-audit.mjs',
     out: 'e18-p3-0e-free-twist-audit.json',
   },
+  {
+    name: 'E18 P3.0f contact failure and release stress',
+    script: 'scripts/e18/e18-p3-0f-contact-failure-release-stress.mjs',
+    out: 'e18-p3-0f-contact-failure-release-stress.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
