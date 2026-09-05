@@ -19,6 +19,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-0b-box3d-virtual-player-response.mjs',
     out: 'e19-0b-box3d-virtual-player-response.json',
   },
+  {
+    name: 'E19.0c static-grip gravity capacity',
+    script: 'scripts/e19/e19-0c-static-grip-gravity-capacity.mjs',
+    out: 'e19-0c-static-grip-gravity-capacity.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
