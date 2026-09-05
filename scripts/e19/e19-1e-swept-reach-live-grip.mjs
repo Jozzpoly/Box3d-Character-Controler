@@ -253,9 +253,18 @@ function runDynamicPull() {
   assert.ok(hit, 'dynamic swept reach missed target');
   assert.equal(hit.body.index1, target.body.index1, 'dynamic swept reach hit wrong body');
   assert.equal(hit.bodyKind, 'DYNAMIC');
-  assert.ok(norm3(sub3(bodyPosition(target.body), beforeReach.position)) < 1e-12);
-  assert.ok(norm3(sub3(bodyVelocity(target.body), beforeReach.velocity)) < 1e-12);
-  assert.ok(norm3(sub3(bodyAngularVelocity(target.body), beforeReach.angularVelocity)) < 1e-12);
+
+  const afterReach = {
+    position: bodyPosition(target.body),
+    velocity: bodyVelocity(target.body),
+    angularVelocity: bodyAngularVelocity(target.body),
+  };
+  const queryPositionDelta = norm3(sub3(afterReach.position, beforeReach.position));
+  const queryVelocityDelta = norm3(sub3(afterReach.velocity, beforeReach.velocity));
+  const queryAngularVelocityDelta = norm3(sub3(afterReach.angularVelocity, beforeReach.angularVelocity));
+  assert.ok(queryPositionDelta < 1e-12, `swept reach changed dynamic target position: ${queryPositionDelta}`);
+  assert.ok(queryVelocityDelta < 1e-12, `swept reach changed dynamic target velocity: ${queryVelocityDelta}`);
+  assert.ok(queryAngularVelocityDelta < 1e-12, `swept reach changed dynamic target angular velocity: ${queryAngularVelocityDelta}`);
 
   const grip = actuatorGripFromE19Latch(hit);
   const acquiredOffset = desiredOffsetAtE19Acquisition(hit, character.position);
@@ -308,10 +317,11 @@ function runDynamicPull() {
       localAnchor: [...hit.localAnchor],
     },
     preGripTargetContamination: {
-      positionDelta: norm3(sub3(bodyPosition(target.body), bodyPosition(target.body))),
-      queryPositionDelta: 0,
-      queryVelocityDelta: 0,
-      queryAngularVelocityDelta: 0,
+      beforeReach,
+      afterReach,
+      queryPositionDelta,
+      queryVelocityDelta,
+      queryAngularVelocityDelta,
     },
     acquiredOffset,
     noSnapPlayerDelta,
@@ -335,7 +345,7 @@ const staticOverhead = runStaticOverheadPull();
 const dynamicPull = runDynamicPull();
 
 const report = {
-  schema: 'e19-1e-swept-reach-live-grip-v1',
+  schema: 'e19-1e-swept-reach-live-grip-v2',
   hypothesis: 'The non-impulsive first-obstruction swept reach can directly mint the same E19 body/local-anchor grip descriptor used by the reciprocal actuator: static overhead reach can support and pull the Donor upward under normal gravity, while dynamic reach can pull a real target with mass-derived reaction, without a physical acquisition probe or acquisition snap.',
   boundary: 'Headless single-grip straight reach. Static case is a bounded overhead pull, not a complete climb. Dynamic case is zero-gravity isolation. No hand-return animation, continuously moving reach trajectory, two-hand coordination, input mapping, visual embodiment or Owner feel is qualified.',
   staticOverhead,
