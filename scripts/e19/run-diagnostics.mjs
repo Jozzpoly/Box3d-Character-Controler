@@ -44,6 +44,11 @@ const diagnostics = [
     script: 'scripts/e19/e19-0f2-braced-blocked-impossible-task.mjs',
     out: 'e19-0f2-braced-blocked-impossible-task.json',
   },
+  {
+    name: 'E19.1a contact-qualified latch descriptors',
+    script: 'scripts/e19/e19-1a-contact-qualified-latch-descriptors.mjs',
+    out: 'e19-1a-contact-qualified-latch-descriptors.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
