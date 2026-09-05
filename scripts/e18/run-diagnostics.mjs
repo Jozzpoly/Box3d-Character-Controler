@@ -24,6 +24,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-0c-camera-orbit-hold-physical.mjs',
     out: 'e18-0c-camera-orbit-hold.json',
   },
+  {
+    name: 'E18.0d manipulation-intent contract',
+    script: 'scripts/e18/e18-0d-intent-contract.mjs',
+    out: 'e18-0d-intent-contract.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
