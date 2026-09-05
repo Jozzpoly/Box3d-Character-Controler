@@ -130,6 +130,12 @@ export class E17IntentManipulatorCharacter extends E15HybridCharacter {
     return true;
   }
 
+  _computeManipulatorEffectiveMass(requestedAnchorDeltaV) {
+    void requestedAnchorDeltaV;
+    const objectMass = this.b3.b3Body_GetMass(this.manipulatedBody);
+    return 1 / (1 / objectMass + 1 / this.bodyMass);
+  }
+
   preStep(dt, intent) {
     super.preStep(dt, intent);
     if (!this.manipulatedBody) {
@@ -187,8 +193,7 @@ export class E17IntentManipulatorCharacter extends E15HybridCharacter {
       desiredAnchorVelocity[2] - this.manipulatedAnchorVelocity[2],
     ];
 
-    const objectMass = this.b3.b3Body_GetMass(this.manipulatedBody);
-    const effectiveMass = 1 / (1 / objectMass + 1 / this.bodyMass);
+    const effectiveMass = this._computeManipulatorEffectiveMass(requestedAnchorDeltaV);
     const requestedImpulse = [
       effectiveMass * requestedAnchorDeltaV[0],
       effectiveMass * requestedAnchorDeltaV[1],
