@@ -14,6 +14,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-0a-target-frame-diagnostic.mjs',
     out: 'e18-0a-target-frame.json',
   },
+  {
+    name: 'E18.0b hold-frame physical diagnostic',
+    script: 'scripts/e18/e18-0b-hold-frame-physical-diagnostic.mjs',
+    out: 'e18-0b-hold-frame-physical.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
