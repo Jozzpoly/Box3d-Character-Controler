@@ -49,6 +49,11 @@ const diagnostics = [
     script: 'scripts/e18/e18-0h-headless-intent-pipeline-diagnostic.mjs',
     out: 'e18-0h-headless-intent-pipeline.json',
   },
+  {
+    name: 'E18.0i post-carrier target seam diagnostic',
+    script: 'scripts/e18/e18-0i-post-carrier-target-seam-diagnostic.mjs',
+    out: 'e18-0i-post-carrier-target-seam.json',
+  },
 ];
 
 for (const diagnostic of diagnostics) {
