@@ -5,8 +5,8 @@ This directory contains both **current authority** and **historical research evi
 ## Start here
 
 1. [`PROJECT_STATE.md`](PROJECT_STATE.md) — compact canonical orientation and current stop boundary;
-2. [`WORKFLOW.md`](WORKFLOW.md) — branch / evidence / qualification / publication workflow;
-3. [`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md) — current manipulation architecture research map;
+2. [`WORKFLOW.md`](WORKFLOW.md) — branch / evidence / qualification / publication / maintenance policy;
+3. [`E19_STAGE_CLOSURE_2026-09-09.md`](E19_STAGE_CLOSURE_2026-09-09.md) — latest completed embodiment/manipulation stage and exact evidence boundary;
 4. repository [`README.md`](../README.md) — public/current overview.
 
 `main` + exact SHA + source + CI/Pages are implementation/publication truth. Stage-local words such as “current” and “next” inside old ledgers are historical unless `PROJECT_STATE.md` explicitly promotes them again.
@@ -17,10 +17,12 @@ This directory contains both **current authority** and **historical research evi
 
 - [`PROJECT_STATE.md`](PROJECT_STATE.md)
 - [`WORKFLOW.md`](WORKFLOW.md)
-- [`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md)
+- [`E19_STAGE_CLOSURE_2026-09-09.md`](E19_STAGE_CLOSURE_2026-09-09.md)
 - [`DONOR_CONTRACT.md`](DONOR_CONTRACT.md)
 
-### Recent experimental lineage
+There is currently **no endorsed active manipulation frontier**. E19 is a closed technical checkpoint; a future stage should begin from a newly framed problem rather than treating an old stage's `next` section as a live queue.
+
+### Recent experimental lineage — E14 through E19
 
 - [`E14_CONTEXTUAL_AUTHORITY_LAB.md`](E14_CONTEXTUAL_AUTHORITY_LAB.md) — contextual authority / one-leg laboratory; narrow tuning line later closed by Owner judgement;
 - [`E14_OWNER_PIN_CAUSAL_CHECKPOINT_2026-09-03.md`](E14_OWNER_PIN_CAUSAL_CHECKPOINT_2026-09-03.md) — corrected E14 causal checkpoint;
@@ -28,9 +30,15 @@ This directory contains both **current authority** and **historical research evi
 - [`E15_PUBLICATION_OWNER_BOUNDARY_2026-09-04.md`](E15_PUBLICATION_OWNER_BOUNDARY_2026-09-04.md) — E15 publication / Owner boundary;
 - [`E16_CAPABILITY_YARD_2026-09-04.md`](E16_CAPABILITY_YARD_2026-09-04.md) — capability-first embodiment yard;
 - [`E16_2A_PUBLIC_OWNER_BOUNDARY_2026-09-04.md`](E16_2A_PUBLIC_OWNER_BOUNDARY_2026-09-04.md) — E16 public Owner boundary;
-- [`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md) — E17 Owner evidence and E18 candidate architectures.
+- [`E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](E18_MANIPULATION_LANDSCAPE_2026-09-04.md) — E17 Owner evidence and the E18 candidate-architecture landscape;
+- [`E18_P3_MECHANICAL_QUALIFICATION_2026-09-05.md`](E18_P3_MECHANICAL_QUALIFICATION_2026-09-05.md) — coupled two-point mechanical evidence retained as a donor;
+- [`E18_P3_1_OWNER_INTERACTION_CONTRACT_2026-09-05.md`](E18_P3_1_OWNER_INTERACTION_CONTRACT_2026-09-05.md) — P3.1 Owner probe contract; historically important but no longer current;
+- [`E19_DUAL_GRIP_EMBODIED_INTERACTION_REFRAME_2026-09-05.md`](E19_DUAL_GRIP_EMBODIED_INTERACTION_REFRAME_2026-09-05.md) — post-P3 reframe from remote object target to left/right semantic grips;
+- [`E19_REVIEW_CHECKPOINT_2026-09-05.md`](E19_REVIEW_CHECKPOINT_2026-09-05.md) — critical correction after the first E19 probes;
+- [`E19_HEADLESS_MECHANICS_CLOSURE_2026-09-05.md`](E19_HEADLESS_MECHANICS_CLOSURE_2026-09-05.md) — reciprocal mechanics closure through E19.0f2;
+- [`E19_STAGE_CLOSURE_2026-09-09.md`](E19_STAGE_CLOSURE_2026-09-09.md) — final project-level closure incorporating acquisition/publication provenance and the missing Owner-verdict boundary.
 
-E17 and E17-depth implementation/publication provenance also lives in their merged PRs and exact-main Actions runs. Do not infer Owner acceptance from publication alone.
+E17, E17-depth and E19 implementation/publication provenance also lives in merged PRs and exact Actions runs. Do not infer Owner acceptance from publication alone.
 
 ## Earlier research lineage
 
@@ -52,9 +60,9 @@ These are evidence/provenance, not a checklist that every future experiment must
 Canonical commands:
 
 - `npm run smoke` — foundation + accepted historical green regressions;
-- `npm run smoke:research` — the historical research portion of that spine;
+- `npm run smoke:research` — historical research portion of that spine;
 - `npm run smoke:donor` — Donor contract/equivalence/input;
-- `npm run smoke:current` — promoted E16/E17/E17-depth regressions;
+- `npm run smoke:current` — representative promoted/current regressions;
 - `npm run build` — browser build.
 
 Suite membership lives in [`../scripts/smoke-suite.mjs`](../scripts/smoke-suite.mjs).
@@ -71,11 +79,9 @@ The canonical GitHub Actions workflow is intentionally boring:
 
 `locked install → historical/foundation smoke → current smoke → build → main-only Pages`
 
-Stage-specific diagnostics, sweeps and qualification artifacts belong to bounded experiment branches. If a dedicated temporary workflow is useful, it may live on that branch and be removed before the clean publication/maintenance merge. Historical Actions runs remain provenance.
+Stage-specific diagnostics, sweeps and qualification artifacts belong to bounded experiment branches/history. Historical Actions runs remain provenance after a temporary stage workflow is removed.
 
-This prevents the canonical deploy workflow from becoming an ever-growing archive of old branch names and one-off conditions.
-
-See [`WORKFLOW.md`](WORKFLOW.md) for the full compact policy.
+See [`WORKFLOW.md`](WORKFLOW.md) for the compact canonical policy.
 
 ## Repository hygiene
 
@@ -88,3 +94,9 @@ See [`WORKFLOW.md`](WORKFLOW.md) for the full compact policy.
 - exact dependency graph is committed in `package-lock.json`;
 - Node is pinned by `.nvmrc` and CI currently uses Node `22.23.2` + `npm ci`;
 - do not introduce process ceremony without an observed failure mode it fixes.
+
+The repository currently has a large historical branch forest. **No branch deletion is authorized by this closure.** Branch cleanup is a separate maintenance campaign: first review/adapt the dedicated `jv_web` cleanup workflow package, classify provenance and retention needs, then perform deletion under that explicit process.
+
+## Conversation/repository boundary
+
+The browser thread containing the final Character Controller E19 work later moved into `Jozzpoly/Jozzue_Vehicles_Sandbox` Family C / Spatial Compass research. That later JV material belongs to that repository and is not part of this project's evidence lineage merely because the chat thread continued.
