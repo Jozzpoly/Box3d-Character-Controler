@@ -55,21 +55,31 @@ const baseline = evaluateDeletePolicy({
   expected: clone(expected),
 });
 assert(baseline.allowed, `Baseline policy unexpectedly blocked: ${JSON.stringify(baseline.blockers)}`);
-assert(baseline.deleteReady.length === expected.historicalBranchCount, `Baseline ready ${baseline.deleteReady.length}`);
-assert(baseline.alreadyAbsent.length === 0, `Baseline absent ${baseline.alreadyAbsent.length}`);
+assert(baseline.deleteReady.length + baseline.alreadyAbsent.length === expected.historicalBranchCount,
+  `Baseline coverage ${baseline.deleteReady.length}+${baseline.alreadyAbsent.length} != ${expected.historicalBranchCount}`);
 results.push({
   name: 'baseline-live-state',
   allowed: true,
   blockerCodes: [],
   deleteReadyCount: baseline.deleteReady.length,
-  alreadyAbsentCount: 0,
+  alreadyAbsentCount: baseline.alreadyAbsent.length,
 });
 
 const firstHistorical = baselineManifest.historicalBranches[0];
 assert(firstHistorical, 'No historical branch fixture available');
+const liveReadyFixture = baseline.deleteReady[0] ?? firstHistorical;
 
 runCase('moved-candidate-ref', ({ classification }) => {
-  const record = classification.records.find((item) => item.ref === firstHistorical.ref);
+  let record = classification.records.find((item) => item.ref === liveReadyFixture.ref);
+  if (!record) {
+    record = {
+      ref: liveReadyFixture.ref,
+      branch: liveReadyFixture.ref.replace(/^refs\/heads\//, ''),
+      expectedSha: liveReadyFixture.expectedSha,
+      proofClass: liveReadyFixture.proofClass ?? 'ANCESTOR_OF_CANONICAL',
+    };
+    classification.records.push(record);
+  }
   record.expectedSha = '1111111111111111111111111111111111111111';
 }, (result) => {
   assert(!result.allowed && codes(result).has('REF_MOVED'), 'Moved candidate did not fail closed');
@@ -143,12 +153,15 @@ runCase('manifest-branch-tip-not-covered', ({ manifest }) => {
   assert(!result.allowed && codes(result).has('MANIFEST_BRANCH_TIP_NOT_COVERED'), 'Uncovered branch tip did not fail closed');
 });
 
-runCase('partial-prior-deletion-is-idempotent', ({ classification }) => {
-  classification.records = classification.records.filter((item) => item.ref !== firstHistorical.ref);
+runCase('one-more-prior-deletion-is-idempotent', ({ classification }) => {
+  const removable = baseline.deleteReady[0];
+  if (removable) classification.records = classification.records.filter((item) => item.ref !== removable.ref);
 }, (result) => {
-  assert(result.allowed, `Partial prior deletion should pass: ${JSON.stringify(result.blockers)}`);
-  assert(result.alreadyAbsent.length === 1, `Expected one already-absent ref, got ${result.alreadyAbsent.length}`);
-  assert(result.deleteReady.length === expected.historicalBranchCount - 1, `Expected ${expected.historicalBranchCount - 1} ready refs`);
+  assert(result.allowed, `Additional prior deletion should pass: ${JSON.stringify(result.blockers)}`);
+  const expectedReady = baseline.deleteReady.length > 0 ? baseline.deleteReady.length - 1 : 0;
+  const expectedAbsent = baseline.alreadyAbsent.length + (baseline.deleteReady.length > 0 ? 1 : 0);
+  assert(result.deleteReady.length === expectedReady, `Expected ${expectedReady} ready refs, got ${result.deleteReady.length}`);
+  assert(result.alreadyAbsent.length === expectedAbsent, `Expected ${expectedAbsent} absent refs, got ${result.alreadyAbsent.length}`);
 });
 
 runCase('all-historical-already-absent-is-idempotent', ({ classification }) => {
@@ -161,15 +174,17 @@ runCase('all-historical-already-absent-is-idempotent', ({ classification }) => {
 });
 
 const report = {
-  schema: 'box3d-character-controller-delete-adversarial-v1',
+  schema: 'box3d-character-controller-delete-adversarial-v2',
   status: 'PASS_ALL_ADVERSARIAL_POLICY_CASES_NO_DELETIONS',
+  baselineReadyCount: baseline.deleteReady.length,
+  baselineAlreadyAbsentCount: baseline.alreadyAbsent.length,
   caseCount: results.length,
   results,
   destructiveActionsPerformed: 0,
 };
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
-console.log(`DELETE_ADVERSARIAL status=${report.status} cases=${report.caseCount} deletions=0`);
+console.log(`DELETE_ADVERSARIAL status=${report.status} baselineReady=${report.baselineReadyCount} baselineAbsent=${report.baselineAlreadyAbsentCount} cases=${report.caseCount} deletions=0`);
 for (const item of results) {
   console.log(`CASE ${item.name} allowed=${item.allowed} blockers=${item.blockerCodes.join(',') || 'none'} ready=${item.deleteReadyCount} absent=${item.alreadyAbsentCount}`);
 }

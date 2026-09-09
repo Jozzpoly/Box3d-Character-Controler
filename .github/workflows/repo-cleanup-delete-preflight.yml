@@ -10,6 +10,8 @@ on:
       - scripts/repo-cleanup-delete-adversarial.mjs
       - scripts/repo-cleanup-delete-apply.mjs
       - scripts/repo-cleanup-delete-transport-qualify.mjs
+      - scripts/repo-cleanup-delete-batch20-qualify.mjs
+      - scripts/repo-cleanup-delete-batch-plan.mjs
       - .github/workflows/repo-cleanup-delete-preflight.yml
 
 permissions:
@@ -26,6 +28,8 @@ jobs:
       CLEANUP_CANONICAL_REF: main
       CLEANUP_ACTIVE_BRANCH: maintenance/repo-cleanup-adaptation-2026-09-09
       CLEANUP_ARCHIVE_BRANCH: archive/pre-cleanup-2026-09-09-dca388f4
+      CLEANUP_CANARY_REF: refs/heads/tmp-noop
+      CLEANUP_MAX_DELETE_BATCH: '20'
       EXPECTED_CANONICAL_SHA: b0eac372035ca12a63f808eb3201edd3605a163c
       EXPECTED_ARCHIVE_SHA: fd5cae330fb80280617ce7b241347f1edafdb875
       EXPECTED_FREEZE_SHA: dca388f456480489492ea2069c2ce8ecd5930d3ab41028cda88f25fe72cc9584
@@ -70,6 +74,12 @@ jobs:
             --classification=evidence/repo-cleanup/delete-preflight/live-classification.json \
             --out=evidence/repo-cleanup/delete-preflight/delete-preflight.json
 
+      - name: Generate deterministic bounded deletion batches without executing
+        run: |
+          node scripts/repo-cleanup-delete-batch-plan.mjs \
+            --preflight=evidence/repo-cleanup/delete-preflight/delete-preflight.json \
+            --out=evidence/repo-cleanup/delete-preflight/delete-batch-plan.json
+
       - name: Falsify policy with adversarial state mutations
         env:
           EXPECTED_HELPER_SHA: ${{ github.sha }}
@@ -84,22 +94,39 @@ jobs:
           node scripts/repo-cleanup-delete-transport-qualify.mjs \
             --out=evidence/repo-cleanup/delete-preflight/delete-transport-qualification.json
 
+      - name: Qualify full 20-ref batch transport on disposable bare remote
+        run: |
+          node scripts/repo-cleanup-delete-batch20-qualify.mjs \
+            --out=evidence/repo-cleanup/delete-preflight/delete-batch20-qualification.json
+
       - name: Assert workflow itself remained non-destructive
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const preflight = JSON.parse(fs.readFileSync('evidence/repo-cleanup/delete-preflight/delete-preflight.json', 'utf8'));
+          const plan = JSON.parse(fs.readFileSync('evidence/repo-cleanup/delete-preflight/delete-batch-plan.json', 'utf8'));
           const adversarial = JSON.parse(fs.readFileSync('evidence/repo-cleanup/delete-preflight/delete-adversarial.json', 'utf8'));
           const transport = JSON.parse(fs.readFileSync('evidence/repo-cleanup/delete-preflight/delete-transport-qualification.json', 'utf8'));
+          const batch20 = JSON.parse(fs.readFileSync('evidence/repo-cleanup/delete-preflight/delete-batch20-qualification.json', 'utf8'));
+          const historical = Number(process.env.EXPECTED_HISTORICAL_BRANCHES);
           if (preflight.status !== 'PASS_DRY_RUN_NO_DELETIONS') throw new Error(`preflight ${preflight.status}`);
           if (preflight.destructiveActionsPerformed !== 0) throw new Error('preflight destructive count nonzero');
-          if (preflight.policy.deleteReady.length !== 86) throw new Error(`expected 86 delete-ready refs, got ${preflight.policy.deleteReady.length}`);
-          if (preflight.policy.alreadyAbsent.length !== 0) throw new Error(`unexpected already-absent refs: ${preflight.policy.alreadyAbsent.length}`);
+          if (preflight.policy.blockers.length !== 0) throw new Error(`preflight blockers ${JSON.stringify(preflight.policy.blockers)}`);
+          if (preflight.policy.deleteReady.length + preflight.policy.alreadyAbsent.length !== historical) {
+            throw new Error(`historical accounting ${preflight.policy.deleteReady.length}+${preflight.policy.alreadyAbsent.length} != ${historical}`);
+          }
+          if (preflight.archiveReachabilityCheckedTipCount !== Number(process.env.EXPECTED_HISTORICAL_TIPS)) throw new Error('archive reachability count mismatch');
+          if (plan.destructiveAuthorized !== false) throw new Error('batch plan unexpectedly authorizes destruction');
+          if (plan.readyCount !== preflight.policy.deleteReady.length || plan.alreadyAbsentCount !== preflight.policy.alreadyAbsent.length) throw new Error('batch plan current-state counts mismatch');
+          if (plan.historicalBranchCount !== historical) throw new Error('batch plan historical count mismatch');
+          if (plan.maxBatch !== 20 || plan.batches.some((batch) => batch.count > 20)) throw new Error('batch plan exceeded bounded size');
           if (adversarial.status !== 'PASS_ALL_ADVERSARIAL_POLICY_CASES_NO_DELETIONS') throw new Error(`adversarial ${adversarial.status}`);
           if (adversarial.destructiveActionsPerformed !== 0) throw new Error('adversarial destructive count nonzero');
           if (transport.status !== 'PASS_DISPOSABLE_LOCAL_REMOTE_ONLY') throw new Error(`transport ${transport.status}`);
           if (transport.productionRemoteTouched !== false || transport.destructiveProductionActionsPerformed !== 0) throw new Error('transport qualification touched production');
-          console.log(`DELETE_GATE_PASS ready=${preflight.policy.deleteReady.length} adversarialCases=${adversarial.caseCount} transportCases=${transport.caseCount} productionDeletions=0`);
+          if (batch20.status !== 'PASS_PRODUCTION_SIZED_BATCH_ON_DISPOSABLE_REMOTE' || batch20.batchSize !== 20) throw new Error(`batch20 ${batch20.status}`);
+          if (batch20.productionRemoteTouched !== false || batch20.destructiveProductionActionsPerformed !== 0) throw new Error('batch20 qualification touched production');
+          console.log(`DELETE_GATE_PASS ready=${preflight.policy.deleteReady.length} absent=${preflight.policy.alreadyAbsent.length} adversarialCases=${adversarial.caseCount} transportCases=${transport.caseCount} batch20Cases=${batch20.caseCount} plannedBulkBatches=${plan.batches.length} productionDeletions=0`);
           NODE
 
       - name: Upload delete gate evidence
