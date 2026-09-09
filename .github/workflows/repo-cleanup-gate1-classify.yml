@@ -7,6 +7,7 @@ on:
     paths:
       - scripts/repo-cleanup-gate1-classify.mjs
       - scripts/repo-cleanup-gate1-plan.mjs
+      - scripts/repo-cleanup-archive-qualify.mjs
       - .github/workflows/repo-cleanup-gate1-classify.yml
   workflow_dispatch:
 
@@ -49,6 +50,12 @@ jobs:
             --in=evidence/repo-cleanup/gate1-classification.json \
             --out=evidence/repo-cleanup/gate1-preliminary-plan.json
 
+      - name: Qualify exact archive anchor locally without remote write
+        run: |
+          node scripts/repo-cleanup-archive-qualify.mjs \
+            --plan=evidence/repo-cleanup/gate1-preliminary-plan.json \
+            --out=evidence/repo-cleanup/archive-anchor-qualification.json
+
       - name: Upload Gate 1 evidence
         uses: actions/upload-artifact@v4
         with:
@@ -56,4 +63,5 @@ jobs:
           path: |
             evidence/repo-cleanup/gate1-classification.json
             evidence/repo-cleanup/gate1-preliminary-plan.json
+            evidence/repo-cleanup/archive-anchor-qualification.json
           if-no-files-found: error
