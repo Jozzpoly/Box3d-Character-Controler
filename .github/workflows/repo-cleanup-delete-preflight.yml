@@ -8,6 +8,8 @@ on:
       - scripts/repo-cleanup-delete-policy.mjs
       - scripts/repo-cleanup-delete-preflight.mjs
       - scripts/repo-cleanup-delete-adversarial.mjs
+      - scripts/repo-cleanup-delete-apply.mjs
+      - scripts/repo-cleanup-delete-transport-qualify.mjs
       - .github/workflows/repo-cleanup-delete-preflight.yml
 
 permissions:
@@ -77,19 +79,27 @@ jobs:
             --classification=evidence/repo-cleanup/delete-preflight/live-classification.json \
             --out=evidence/repo-cleanup/delete-preflight/delete-adversarial.json
 
+      - name: Qualify exact delete transport on disposable bare remote
+        run: |
+          node scripts/repo-cleanup-delete-transport-qualify.mjs \
+            --out=evidence/repo-cleanup/delete-preflight/delete-transport-qualification.json
+
       - name: Assert workflow itself remained non-destructive
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const preflight = JSON.parse(fs.readFileSync('evidence/repo-cleanup/delete-preflight/delete-preflight.json', 'utf8'));
           const adversarial = JSON.parse(fs.readFileSync('evidence/repo-cleanup/delete-preflight/delete-adversarial.json', 'utf8'));
+          const transport = JSON.parse(fs.readFileSync('evidence/repo-cleanup/delete-preflight/delete-transport-qualification.json', 'utf8'));
           if (preflight.status !== 'PASS_DRY_RUN_NO_DELETIONS') throw new Error(`preflight ${preflight.status}`);
           if (preflight.destructiveActionsPerformed !== 0) throw new Error('preflight destructive count nonzero');
           if (preflight.policy.deleteReady.length !== 86) throw new Error(`expected 86 delete-ready refs, got ${preflight.policy.deleteReady.length}`);
           if (preflight.policy.alreadyAbsent.length !== 0) throw new Error(`unexpected already-absent refs: ${preflight.policy.alreadyAbsent.length}`);
           if (adversarial.status !== 'PASS_ALL_ADVERSARIAL_POLICY_CASES_NO_DELETIONS') throw new Error(`adversarial ${adversarial.status}`);
           if (adversarial.destructiveActionsPerformed !== 0) throw new Error('adversarial destructive count nonzero');
-          console.log(`DELETE_GATE_PASS ready=${preflight.policy.deleteReady.length} adversarialCases=${adversarial.caseCount} deletions=0`);
+          if (transport.status !== 'PASS_DISPOSABLE_LOCAL_REMOTE_ONLY') throw new Error(`transport ${transport.status}`);
+          if (transport.productionRemoteTouched !== false || transport.destructiveProductionActionsPerformed !== 0) throw new Error('transport qualification touched production');
+          console.log(`DELETE_GATE_PASS ready=${preflight.policy.deleteReady.length} adversarialCases=${adversarial.caseCount} transportCases=${transport.caseCount} productionDeletions=0`);
           NODE
 
       - name: Upload delete gate evidence
