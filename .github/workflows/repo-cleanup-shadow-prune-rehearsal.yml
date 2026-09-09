@@ -1,0 +1,217 @@
+name: Repo cleanup shadow-prune recovery rehearsal
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - .github/workflows/repo-cleanup-shadow-prune-rehearsal.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rehearsal:
+    runs-on: ubuntu-latest
+    env:
+      CANONICAL_REF: refs/heads/main
+      CANONICAL_SHA: b0eac372035ca12a63f808eb3201edd3605a163c
+      ARCHIVE_REF: refs/heads/archive/pre-cleanup-2026-09-09-dca388f4
+      ARCHIVE_BRANCH: archive/pre-cleanup-2026-09-09-dca388f4
+      ARCHIVE_SHA: fd5cae330fb80280617ce7b241347f1edafdb875
+      HELPER_REF: refs/heads/maintenance/repo-cleanup-adaptation-2026-09-09
+      EXPECTED_FREEZE_SHA: dca388f456480489492ea2069c2ce8ecd5930d3ab41028cda88f25fe72cc9584
+      EXPECTED_HISTORICAL_BRANCHES: '86'
+      EXPECTED_DISTINCT_TIPS: '75'
+
+    steps:
+      - name: Checkout exact helper commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch complete remote branch graph and PR heads
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --prune origin \
+            '+refs/heads/*:refs/remotes/origin/*' \
+            '+refs/pull/*/head:refs/remotes/pull/*/head'
+          git fetch --tags --force origin || true
+
+      - name: Materialize frozen recovery manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/repo-cleanup/shadow-rehearsal
+          git show "refs/remotes/origin/${ARCHIVE_BRANCH}:archive/recovery-manifest.json" \
+            > evidence/repo-cleanup/shadow-rehearsal/recovery-manifest.json
+
+      - name: Build isolated bare shadow from remote heads only
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/repo-cleanup-shadow.git /tmp/repo-cleanup-reclone
+          git init --bare /tmp/repo-cleanup-shadow.git
+          git --git-dir=/tmp/repo-cleanup-shadow.git fetch --force --no-tags "$GITHUB_WORKSPACE/.git" \
+            '+refs/remotes/origin/*:refs/heads/*'
+          git --git-dir=/tmp/repo-cleanup-shadow.git fetch --force "$GITHUB_WORKSPACE/.git" \
+            '+refs/tags/*:refs/tags/*' || true
+          git --git-dir=/tmp/repo-cleanup-shadow.git symbolic-ref HEAD refs/heads/main
+
+      - name: Simulate exact frozen prune locally and aggressively garbage collect
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import crypto from 'node:crypto';
+          import fs from 'node:fs';
+          import { spawnSync } from 'node:child_process';
+
+          const repo = '/tmp/repo-cleanup-shadow.git';
+          const manifestPath = 'evidence/repo-cleanup/shadow-rehearsal/recovery-manifest.json';
+          const outPath = 'evidence/repo-cleanup/shadow-rehearsal/shadow-rehearsal.json';
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          const expectedCanonical = process.env.CANONICAL_SHA;
+          const expectedArchive = process.env.ARCHIVE_SHA;
+          const expectedFreeze = process.env.EXPECTED_FREEZE_SHA;
+          const helperSha = process.env.GITHUB_SHA;
+
+          const run = (args, allowFailure = false) => {
+            const r = spawnSync('git', [`--git-dir=${repo}`, ...args], { encoding: 'utf8' });
+            if (r.status !== 0 && !allowFailure) throw new Error(`git ${args.join(' ')} failed: ${r.stderr || r.stdout}`);
+            return r;
+          };
+          const resolve = (ref) => {
+            const r = run(['rev-parse', '--verify', ref], true);
+            return r.status === 0 ? r.stdout.trim() : null;
+          };
+          const assert = (x, m) => { if (!x) throw new Error(m); };
+          const sha256 = (text) => crypto.createHash('sha256').update(text).digest('hex');
+
+          assert(manifest.historicalArchiveFreezeSha256 === expectedFreeze, 'freeze hash mismatch');
+          assert(manifest.canonicalSha === expectedCanonical, 'canonical manifest SHA mismatch');
+          assert(manifest.historicalBranches.length === Number(process.env.EXPECTED_HISTORICAL_BRANCHES), 'historical branch count mismatch');
+          assert(manifest.historicalArchiveTipShas.length === Number(process.env.EXPECTED_DISTINCT_TIPS), 'distinct tip count mismatch');
+          assert(resolve(process.env.CANONICAL_REF) === expectedCanonical, 'shadow canonical mismatch');
+          assert(resolve(process.env.ARCHIVE_REF) === expectedArchive, 'shadow archive mismatch');
+          assert(resolve(process.env.HELPER_REF) === helperSha, 'shadow helper mismatch');
+
+          const parentLine = run(['rev-list', '--parents', '-n', '1', expectedArchive]).stdout.trim().split(/\s+/);
+          const archiveParents = parentLine.slice(1);
+          assert(JSON.stringify(archiveParents) === JSON.stringify(manifest.archiveAnchorParentShas), 'archive parent vector differs from manifest');
+
+          const beforeTrees = new Map();
+          const liveExact = [];
+          const alreadyAbsent = [];
+          for (const entry of manifest.historicalBranches) {
+            const actual = resolve(entry.ref);
+            if (actual === null) alreadyAbsent.push(entry.ref);
+            else {
+              assert(actual === entry.expectedSha, `pre-simulation CAS mismatch ${entry.ref}: ${actual}`);
+              liveExact.push(entry.ref);
+            }
+            const tree = run(['rev-parse', `${entry.expectedSha}^{tree}`]).stdout.trim();
+            beforeTrees.set(entry.ref, tree);
+          }
+
+          for (const entry of manifest.historicalBranches) {
+            const actual = resolve(entry.ref);
+            if (actual !== null) {
+              run(['update-ref', '-d', entry.ref, entry.expectedSha]);
+              assert(resolve(entry.ref) === null, `local prune failed ${entry.ref}`);
+            }
+          }
+
+          const survivingHeads = run(['for-each-ref', '--format=%(refname)\t%(objectname)', 'refs/heads/']).stdout.trim().split('\n').filter(Boolean);
+          const unknownSurvivors = survivingHeads.map(line => line.split('\t')[0]).filter(ref => ![process.env.CANONICAL_REF, process.env.ARCHIVE_REF, process.env.HELPER_REF].includes(ref));
+
+          run(['reflog', 'expire', '--expire=now', '--all'], true);
+          run(['gc', '--prune=now', '--aggressive']);
+          const fsck = run(['fsck', '--full', '--no-reflogs'], true);
+          assert(fsck.status === 0, `shadow fsck failed: ${fsck.stderr || fsck.stdout}`);
+
+          for (const sha of manifest.historicalArchiveTipShas) {
+            const type = run(['cat-file', '-t', sha]).stdout.trim();
+            assert(type === 'commit', `archive tip vanished after GC ${sha}`);
+          }
+          for (const entry of manifest.historicalBranches) {
+            const type = run(['cat-file', '-t', entry.expectedSha]).stdout.trim();
+            assert(type === 'commit', `historical commit vanished after GC ${entry.ref}`);
+            const tree = run(['rev-parse', `${entry.expectedSha}^{tree}`]).stdout.trim();
+            assert(tree === beforeTrees.get(entry.ref), `tree identity changed ${entry.ref}`);
+          }
+
+          let restored = 0;
+          for (const entry of manifest.historicalBranches) {
+            assert(resolve(entry.ref) === null, `unexpected live historical ref before restore ${entry.ref}`);
+            run(['update-ref', entry.ref, entry.expectedSha]);
+            assert(resolve(entry.ref) === entry.expectedSha, `exact recovery failed ${entry.ref}`);
+            run(['update-ref', '-d', entry.ref, entry.expectedSha]);
+            assert(resolve(entry.ref) === null, `cleanup after recovery test failed ${entry.ref}`);
+            restored += 1;
+          }
+
+          const archiveManifestText = run(['show', `${process.env.ARCHIVE_REF}:archive/recovery-manifest.json`]).stdout;
+          assert(JSON.parse(archiveManifestText).historicalArchiveFreezeSha256 === expectedFreeze, 'archive manifest unreadable after GC');
+
+          const report = {
+            schema: 'box3d-character-controller-shadow-prune-rehearsal-v1',
+            status: 'PASS_LOCAL_SHADOW_PRUNE_GC_AND_EXACT_RECOVERY',
+            remoteMutations: 0,
+            helperSha,
+            canonical: { ref: process.env.CANONICAL_REF, sha: expectedCanonical },
+            archive: { ref: process.env.ARCHIVE_REF, sha: expectedArchive, parentCount: archiveParents.length },
+            historicalBranchCount: manifest.historicalBranches.length,
+            historicalDistinctTipCount: manifest.historicalArchiveTipShas.length,
+            preSimulationLiveExactCount: liveExact.length,
+            preSimulationAlreadyAbsentCount: alreadyAbsent.length,
+            preSimulationAlreadyAbsent: alreadyAbsent,
+            postPruneUnknownHeadSurvivors: unknownSurvivors,
+            aggressiveGcPerformed: true,
+            fsckExitCode: fsck.status,
+            exactBranchRestoreTests: restored,
+            archiveManifestSha256: sha256(archiveManifestText),
+          };
+          fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
+          console.log(JSON.stringify(report));
+          NODE
+
+      - name: Fresh-clone disaster-recovery proof without historical branch refs or PR refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --no-local /tmp/repo-cleanup-shadow.git /tmp/repo-cleanup-reclone
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { spawnSync } from 'node:child_process';
+          const manifest = JSON.parse(fs.readFileSync('evidence/repo-cleanup/shadow-rehearsal/recovery-manifest.json', 'utf8'));
+          const reportPath = 'evidence/repo-cleanup/shadow-rehearsal/shadow-rehearsal.json';
+          const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+          const run = (args) => {
+            const r = spawnSync('git', ['-C', '/tmp/repo-cleanup-reclone', ...args], { encoding: 'utf8' });
+            if (r.status !== 0) throw new Error(`git ${args.join(' ')} failed: ${r.stderr || r.stdout}`);
+            return r.stdout.trim();
+          };
+          for (const sha of manifest.historicalArchiveTipShas) {
+            const type = run(['cat-file', '-t', sha]);
+            if (type !== 'commit') throw new Error(`fresh clone lacks historical tip ${sha}`);
+          }
+          const remoteBranches = run(['for-each-ref', '--format=%(refname)', 'refs/remotes/origin/']).split('\n').filter(Boolean);
+          const historicalNames = new Set(manifest.historicalBranches.map(e => `refs/remotes/origin/${e.branch}`));
+          const leakedHistoricalNames = remoteBranches.filter(ref => historicalNames.has(ref));
+          if (leakedHistoricalNames.length) throw new Error(`fresh clone unexpectedly advertises pruned historical names: ${leakedHistoricalNames.join(',')}`);
+          report.freshCloneHistoricalTipChecks = manifest.historicalArchiveTipShas.length;
+          report.freshClonePrunedHistoricalNamesVisible = 0;
+          report.freshCloneStatus = 'PASS_ARCHIVE_TRANSFERS_HISTORY_WITHOUT_OLD_BRANCH_OR_PR_REFS';
+          fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+          console.log(`FRESH_CLONE_PASS tips=${report.freshCloneHistoricalTipChecks} oldNames=${report.freshClonePrunedHistoricalNamesVisible}`);
+          NODE
+
+      - name: Upload rehearsal evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-cleanup-shadow-prune-rehearsal
+          path: evidence/repo-cleanup/shadow-rehearsal/
+          if-no-files-found: error
