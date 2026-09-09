@@ -16,16 +16,16 @@ Implementation probes may be disposable; accepted observations are not.
 
 ## Fresh takeover
 
-Do not reconstruct the project from stage numbers or old branch names.
+Do not reconstruct the project from stage numbers, branch names or chat chronology.
 
 Read in this order:
 
-1. [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) — compact current truth and active boundary;
-2. [`docs/WORKFLOW.md`](docs/WORKFLOW.md) — how research, qualification, publication and maintenance are separated;
-3. [`docs/E18_MANIPULATION_LANDSCAPE_2026-09-04.md`](docs/E18_MANIPULATION_LANDSCAPE_2026-09-04.md) — current manipulation research map;
+1. [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) — compact live orientation and stop boundary;
+2. [`docs/WORKFLOW.md`](docs/WORKFLOW.md) — research / qualification / publication / maintenance policy;
+3. [`docs/E19_STAGE_CLOSURE_2026-09-09.md`](docs/E19_STAGE_CLOSURE_2026-09-09.md) — latest completed embodiment/manipulation stage and evidence boundary;
 4. [`docs/README.md`](docs/README.md) — navigation into historical evidence only when needed.
 
-Live `main` + exact SHA + CI/Pages remain implementation/publication truth.
+Live `main` + exact SHA + source + CI/Pages remain implementation/publication truth.
 
 ## Accepted/default player
 
@@ -43,17 +43,44 @@ Reference contract:
 
 Do not silently weaken `31/36` to make embodiment easier.
 
-## Current experimental portfolio
+Normal/default build:
 
-### E17 — intent-first physical manipulation
+`https://jozzpoly.github.io/Box3d-Character-Controler/`
 
-E17 changed the interaction boundary from low-level organ piloting to:
+## Current checkpoint — post-E19
+
+There is currently **no automatically endorsed next manipulation architecture**.
+
+The latest completed line is E19, which reframed remote object manipulation around independent semantic left/right grips that can address both static world and dynamic matter.
+
+E19 earned a bounded technical result:
+
+> **semantic reach intent → finite swept volume → first physical obstruction → exact anchor → finite reciprocal grip → physics determines whether player, target or both move**
+
+The mechanics/acquisition path is technically qualified and the public Owner probe was successfully promoted. A confirmed post-publication Owner gameplay verdict is not present in the grounded Character Controller record, so E19's controls, feel and climbing quality are **not accepted by inference**.
+
+Stage status:
+
+- mechanics / acquisition — **technical PASS**;
+- publication — **complete**;
+- gameplay / UX acceptance — **not established**;
+- research status — **closed / frozen checkpoint**.
+
+Detailed closure:
+
+[`docs/E19_STAGE_CLOSURE_2026-09-09.md`](docs/E19_STAGE_CLOSURE_2026-09-09.md)
+
+A future stage should begin from a fresh Owner/problem question and may reuse E17, P3, E19 or earlier mechanisms as donors without preselecting any one of them as architecture.
+
+## Preserved manipulation probes
+
+### E17 — intent-first object manipulation
+
+E17 changed the abstraction boundary from low-level physical-organ piloting to:
 
 > **select nearby dynamic object / exact surface point → express 3D target intent → finite physical actuator attempts it**
 
-The object is not teleported. Finite impulse is applied at the selected point, with equal-and-opposite reaction on the finite physical core. Mass, collisions, leverage, orientation drift and release momentum remain physical consequences.
-
-Owner free play showed the strongest positive gameplay evidence of the post-E14 line so far: one capability generated lift, carry, drag, throw, leverage, piling, stack attempts and object↔object play despite the executor still being crude and unstable.
+Owner free play produced the strongest positive manipulation evidence before E19: lift, carry, drag, throw, leverage, piling/stack attempts and object↔object play emerged despite a crude executor.
 
 Public route:
 
@@ -61,11 +88,13 @@ Public route:
 
 alias: `?mode=intent`
 
-### E17-depth — inertia-aware one-point A/B probe
+E17 remains an important gameplay/evidence donor, not the current architecture.
 
-E17-depth keeps the same one-point grammar, input, reach and force budget, but computes requested impulse from the directional effective mass of the grabbed rigid-body point using world COM + inverse rotational inertia.
+### E17-depth — inertia-aware one-point executor evidence
 
-It is a bounded executor correction, **not** orientation control, a two-hand system, extra damping or a new gameplay architecture.
+E17-depth keeps the same one-point grammar but accounts for directional rigid-body point effective mass including rotational inertia.
+
+Machine evidence established a real local mechanical distinction; Owner comparison did not show a reliably distinguishable gameplay improvement.
 
 Public route:
 
@@ -73,24 +102,25 @@ Public route:
 
 alias: `?mode=pointmass`
 
-E17 remains the one-point chaos baseline. E17-depth is an Owner-facing A/B candidate, not an automatic replacement.
+### E18 / P3 — coupled two-point mechanical donor
 
-## Current research frontier — E18
+P3.0 qualified bounded coupled two-point leverage/orientation under one finite shared authority scale. P3.1 then exposed it as a special precision/orientation clutch.
 
-E18 asks a larger question than “how do we add rotation?”:
+The mechanical result remains useful. The interaction direction was superseded after Owner feedback showed the remote object-centric/clutch grammar remained too raw, indirect and restrictive.
 
-> **What interaction grammar lets a player express useful 6-DoF object intent while finite physics, mass, leverage, contacts, body reaction and failure remain meaningful parts of execution?**
+Do not describe P3.1 as the current frontier.
 
-Current candidate portfolio:
+### E19 — reciprocal semantic-grip probe
 
-- **P1** — E17 one-point chaos baseline;
-- **P2** — finite 6-DoF pose coupling;
-- **P3** — bounded two-point / virtual two-hand grip;
-- **P4** — one-point manipulation plus a separate precision/rotation clutch.
+E19 preserved useful P3 mathematics but changed the ontology from remote object target to independent grips that can address both world and matter.
 
-Current-best architectural candidate from E18-R0 remains **P3**, but E17-depth should be judged as the bounded one-point A/B before its evidence is overinterpreted.
+Public route:
 
-The sphere self-lift behavior remains deliberately unpatched during exploratory work: it is both a generative toy and a closed-loop authority debt.
+`https://jozzpoly.github.io/Box3d-Character-Controler/?mode=e19`
+
+alias: `?mode=grip`
+
+The public probe uses independent `Q/E` grips, cursor-directed bounded swept reach and `LMB` relation retraction. It is preserved as research evidence, **not** the default player and not a final control scheme.
 
 ## Durable lessons
 
@@ -100,6 +130,8 @@ The sphere self-lift behavior remains deliberately unpatched during exploratory 
 - **E15:** a passive physical body can become little more than a reactive appendage if it owns no useful player capability.
 - **E16:** giving a physical subsystem a capability is insufficient if the player must micromanage the subsystem itself.
 - **E17:** high-level intent + finite physical execution can generate a family of verbs and persistent scene history even before the executor is good.
+- **E18/P3:** coupled two-point mechanics can add deliberate orientation leverage without full pose ownership, but a useful mechanic can still be wrapped in a poor interaction grammar.
+- **E19:** static and dynamic grip targets can share one finite reciprocal relation; intent assistance at acquisition can coexist with physical authority after latch; technical qualification still does not substitute for Owner feel.
 
 ## Validation
 
@@ -112,15 +144,15 @@ Reproducible toolchain:
 - `three@0.183.0`;
 - `vite@7.0.0`.
 
-Commands:
+Canonical commands:
 
-- `npm run smoke` — existing foundation + accepted historical green regressions;
-- `npm run smoke:current` — current promoted E16/E17/E17-depth regressions;
+- `npm run smoke` — foundation + accepted historical green regressions;
+- `npm run smoke:current` — promoted/current representative regressions;
 - `npm run build` — browser build.
 
-The canonical GitHub Actions workflow runs locked install → both smoke layers → build, then deploys Pages only from `main`.
+The canonical GitHub Actions workflow runs locked install → smoke layers → build, then deploys Pages only from `main`.
 
-Experiment-specific diagnostics belong to the experiment branch/workflow and should not accumulate forever in the canonical deploy workflow. See [`docs/WORKFLOW.md`](docs/WORKFLOW.md).
+Experiment-specific diagnostics belong to bounded research workflows/history rather than accumulating forever in canonical CI. See [`docs/WORKFLOW.md`](docs/WORKFLOW.md).
 
 ## Normal controls
 
@@ -132,6 +164,6 @@ Experiment-specific diagnostics belong to the experiment branch/workflow and sho
 - `R` / `RESET` — reset;
 - `H` — telemetry.
 
-Normal/default build:
+## Maintenance boundary
 
-`https://jozzpoly.github.io/Box3d-Character-Controler/`
+Repository branch hygiene is intentionally pending after the E19 closure. Historical branches must not be deleted ad hoc. The next maintenance campaign will first import/review the dedicated cleanup workflow used in `jv_web`, adapt it to this repository's provenance needs, and only then classify branches for retention or deletion.
