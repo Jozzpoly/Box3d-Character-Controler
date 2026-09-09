@@ -1,0 +1,83 @@
+name: Repo cleanup GitHub provenance snapshot
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - scripts/repo-cleanup-provenance-snapshot.mjs
+      - .github/workflows/repo-cleanup-provenance-snapshot.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: repo-cleanup-provenance-snapshot
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    env:
+      CANONICAL_REF: refs/heads/main
+      ARCHIVE_REF: refs/heads/archive/pre-cleanup-2026-09-09-dca388f4
+      ARCHIVE_BRANCH: archive/pre-cleanup-2026-09-09-dca388f4
+      ARCHIVE_SHA: fd5cae330fb80280617ce7b241347f1edafdb875
+      EXPECTED_HISTORICAL_BRANCHES: '86'
+      EXPECTED_DISTINCT_TIPS: '75'
+
+    steps:
+      - name: Checkout exact helper commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch complete heads and PR-head graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --prune origin \
+            '+refs/heads/*:refs/remotes/origin/*' \
+            '+refs/pull/*/head:refs/remotes/pull/*/head'
+
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+
+      - name: Recover frozen branch identity manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/repo-cleanup/provenance-snapshot
+          git show "refs/remotes/origin/${ARCHIVE_BRANCH}:archive/recovery-manifest.json" \
+            > evidence/repo-cleanup/provenance-snapshot/recovery-manifest.json
+
+      - name: Snapshot GitHub-native research provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/repo-cleanup-provenance-snapshot.mjs \
+            --manifest=evidence/repo-cleanup/provenance-snapshot/recovery-manifest.json \
+            --out=evidence/repo-cleanup/provenance-snapshot
+
+      - name: Hash portable snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum \
+            evidence/repo-cleanup/provenance-snapshot/github-provenance-snapshot.json \
+            evidence/repo-cleanup/provenance-snapshot/github-provenance-summary.md \
+            > evidence/repo-cleanup/provenance-snapshot/SHA256SUMS.txt
+
+      - name: Upload provenance snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-cleanup-github-provenance-snapshot
+          path: evidence/repo-cleanup/provenance-snapshot/
+          if-no-files-found: error
+          retention-days: 90
