@@ -1,0 +1,510 @@
+{
+  "schema": "box3d-character-controller-pre-cleanup-recovery-manifest-v2",
+  "historicalArchiveFreezeSha256": "dca388f456480489492ea2069c2ce8ecd5930d3ab41028cda88f25fe72cc9584",
+  "repository": "Jozzpoly/Box3d-Character-Controler",
+  "canonicalRef": "refs/heads/main",
+  "canonicalSha": "b0eac372035ca12a63f808eb3201edd3605a163c",
+  "historicalBranchCount": 86,
+  "historicalDistinctTipCount": 75,
+  "historicalArchiveTipShas": [
+    "016bce6fe2a46290a0ad4d2de7875f7f2b61129a",
+    "03f305849f15fe98228074efd9a4ff2011031b4a",
+    "0685ff7e7b5c0462ae0f5362d6103f6440e00949",
+    "082418efc5236c8b52a98036aa2d0c581eac31bb",
+    "08cddf74d21ed836b2aa76d6994eb741c4535e80",
+    "0c7ff0cd81b8c6b6360549c0f905f69ecbbcd7af",
+    "0ccfda0330f528027f0dd6e7b934cbe6596e1b60",
+    "0ef97543ac97bcc648f773412d2ae3e130bd5fe5",
+    "119ae4c53a678becfb454bc9322f437b043ad20c",
+    "12841bd5c095827092ee5aae0acc19981a848490",
+    "1416c2b7dc618fa99e5a3916326414178414997f",
+    "1ac3c910fe4867972eb1a453665bcef1fb858777",
+    "2347bdd27ecdd3b21970bde9eb43b4bca6535b03",
+    "24edba4ba72a1422640e56a923254d9899d5029c",
+    "273679fdcbb39d55929e2880ddf4a6de26947d15",
+    "29426ac7aa22cebff7b33ba02fba7c7fa444c634",
+    "2d414f7cd431a8c872409de59783157a39edc27c",
+    "2ef25bced3140a24223d9a29157f7a8b2ba017af",
+    "2f341aed904ecdccf61b1264a77f849aeaa236fd",
+    "3266c1231f132ff7d5a4c5f97d97a35539272334",
+    "3ae20ca67fa60553fbbdfbc643cc6d317fc0b0f4",
+    "3df46a6e1cbd81e60f9a5520c87bf80845754054",
+    "3f668b8fb6216c9e9110d6d8ed530a620e9823d3",
+    "42306b6a91a75ac0857e123537b0051ae6cdc373",
+    "450c1141c9402ee7f7ff98727d7620eccffe794a",
+    "459a95d13246a28b3519f30bfcf9ad0f14a475a6",
+    "47768b4037e17d938814f067c8644f84b7ecd83f",
+    "4bab203ad3c575cd93bce20a7df22da2f7166d82",
+    "4bf6e66318eb50fae4878525ba84703855dfce2e",
+    "4c3f043731b06e20c2dca0bc46421b974de5aefa",
+    "4c70f60912fe32a4fa2f9ff44af8c8c927691248",
+    "4de0cd71f06245fe95663ae5fbef962c2e2dd0cf",
+    "554b9f5278178ea32b85785f36af2a7beb598d49",
+    "596e2138fc830f858613927fd2ffcbb9935d90d1",
+    "5ae102f3d1ca1103dc45187b3d742ca5241b385d",
+    "6323f62de2792c12458df112a915383876397cea",
+    "71073e59caaa7291d49f20c97213f9ac55bd23b0",
+    "71a0fc538d50c638e8ee26a21e0b93e8c0db0c10",
+    "73ef9105c2910b3450e9c64c5c636e89d942a102",
+    "85fb48f3d9f3f96f09040d6b75faf1064a1a5c3c",
+    "87f5196e636b8e665d782d0fa7a17883c8a0a51f",
+    "8ac009c053e0a78f9216d92502218ada98d2418e",
+    "8eb747ccaa19a012657243c35af4f7e618ab8890",
+    "922cb4227fdde19235802472eb39ee2451aa2181",
+    "924e84eeec9d3fbb857b27c7135c3404782bc6fe",
+    "991a679ff23bec68d61d1c16b7642f42e835571f",
+    "9c6c2782e069f7677bec00b440cc5a24863e8201",
+    "9d6e8ca77d024e784ed6aa5d71786ee3e223733d",
+    "9ef5a520266076ebb61faee9901b4a4beb65e5d5",
+    "a31daa868b7fc58a64bbc0865d3f332b7c37b763",
+    "a385f26fc2fc8fb831a59fb1f341a330fffedde9",
+    "a7e17c591270aef2d022f7b33286014489e2b026",
+    "a97905bf82e90d94ab1bfe9f3bbc6b807b6f821d",
+    "b3e534331dc0c2d59b1122e63c7aa8032bae9f5d",
+    "b84628dec6e38df981f21dcd6ec609af6738a9a2",
+    "b858bf48e300b8c9297cd22ac86357f658fedccc",
+    "b93dec7dfaf72e63c4e7ff33b5c35b8c3a587208",
+    "bb5405895bd43af68c1741d9b745ec4e0490b2db",
+    "bbb2fcfec21cd44c3e0beba1dd2472e25149d9a8",
+    "bd05ac2aa8ad256e53a09a65b8d3bb6cb5454fd7",
+    "c195f1be5aacc271f74cfaaa8556414c82e6ac3a",
+    "c9931f7cebabf630f2aed6bc3b6e0cf916452c28",
+    "cf93b5c2da2cbf181887ee1c4a8cd4250a1926e0",
+    "d314633a2ff3921867c1bec332d447dca590ef46",
+    "d5a6fcaed7b5c07d9947388316b8252cbb830e95",
+    "d69a5dd371c88a513be3c5c9c5fdd8ecf882a89c",
+    "d786c0882aed950a64ada583ae521a878b48c09c",
+    "d83e67bcea61d2b0fb362a76c49e26bd580970ce",
+    "df66c8fab1c790f8480d9c7f873da4b46e80fd26",
+    "dfaee79cf7ab1f0e077150e06ff6308aad191b54",
+    "e0297c945889abfec7c56c4f51fab68aaaab1064",
+    "f4a79f583cfaf90e66ffbe9e33e922f4832b5ef8",
+    "f5079a99521f974354ef370454032f5148a1b204",
+    "f7e15d2f3e8815b6fd8091f4b523fe8b9f30d62d",
+    "f8c4126f3f6a32eb80a0d87349e8d2e75e02438a"
+  ],
+  "archiveAnchorParentShas": [
+    "b0eac372035ca12a63f808eb3201edd3605a163c",
+    "016bce6fe2a46290a0ad4d2de7875f7f2b61129a",
+    "03f305849f15fe98228074efd9a4ff2011031b4a",
+    "0685ff7e7b5c0462ae0f5362d6103f6440e00949",
+    "082418efc5236c8b52a98036aa2d0c581eac31bb",
+    "08cddf74d21ed836b2aa76d6994eb741c4535e80",
+    "0c7ff0cd81b8c6b6360549c0f905f69ecbbcd7af",
+    "0ccfda0330f528027f0dd6e7b934cbe6596e1b60",
+    "0ef97543ac97bcc648f773412d2ae3e130bd5fe5",
+    "119ae4c53a678becfb454bc9322f437b043ad20c",
+    "12841bd5c095827092ee5aae0acc19981a848490",
+    "1416c2b7dc618fa99e5a3916326414178414997f",
+    "1ac3c910fe4867972eb1a453665bcef1fb858777",
+    "2347bdd27ecdd3b21970bde9eb43b4bca6535b03",
+    "24edba4ba72a1422640e56a923254d9899d5029c",
+    "273679fdcbb39d55929e2880ddf4a6de26947d15",
+    "29426ac7aa22cebff7b33ba02fba7c7fa444c634",
+    "2d414f7cd431a8c872409de59783157a39edc27c",
+    "2ef25bced3140a24223d9a29157f7a8b2ba017af",
+    "2f341aed904ecdccf61b1264a77f849aeaa236fd",
+    "3266c1231f132ff7d5a4c5f97d97a35539272334",
+    "3ae20ca67fa60553fbbdfbc643cc6d317fc0b0f4",
+    "3df46a6e1cbd81e60f9a5520c87bf80845754054",
+    "3f668b8fb6216c9e9110d6d8ed530a620e9823d3",
+    "42306b6a91a75ac0857e123537b0051ae6cdc373",
+    "450c1141c9402ee7f7ff98727d7620eccffe794a",
+    "459a95d13246a28b3519f30bfcf9ad0f14a475a6",
+    "47768b4037e17d938814f067c8644f84b7ecd83f",
+    "4bab203ad3c575cd93bce20a7df22da2f7166d82",
+    "4bf6e66318eb50fae4878525ba84703855dfce2e",
+    "4c3f043731b06e20c2dca0bc46421b974de5aefa",
+    "4c70f60912fe32a4fa2f9ff44af8c8c927691248",
+    "4de0cd71f06245fe95663ae5fbef962c2e2dd0cf",
+    "554b9f5278178ea32b85785f36af2a7beb598d49",
+    "596e2138fc830f858613927fd2ffcbb9935d90d1",
+    "5ae102f3d1ca1103dc45187b3d742ca5241b385d",
+    "6323f62de2792c12458df112a915383876397cea",
+    "71073e59caaa7291d49f20c97213f9ac55bd23b0",
+    "71a0fc538d50c638e8ee26a21e0b93e8c0db0c10",
+    "73ef9105c2910b3450e9c64c5c636e89d942a102",
+    "85fb48f3d9f3f96f09040d6b75faf1064a1a5c3c",
+    "87f5196e636b8e665d782d0fa7a17883c8a0a51f",
+    "8ac009c053e0a78f9216d92502218ada98d2418e",
+    "8eb747ccaa19a012657243c35af4f7e618ab8890",
+    "922cb4227fdde19235802472eb39ee2451aa2181",
+    "924e84eeec9d3fbb857b27c7135c3404782bc6fe",
+    "991a679ff23bec68d61d1c16b7642f42e835571f",
+    "9c6c2782e069f7677bec00b440cc5a24863e8201",
+    "9d6e8ca77d024e784ed6aa5d71786ee3e223733d",
+    "9ef5a520266076ebb61faee9901b4a4beb65e5d5",
+    "a31daa868b7fc58a64bbc0865d3f332b7c37b763",
+    "a385f26fc2fc8fb831a59fb1f341a330fffedde9",
+    "a7e17c591270aef2d022f7b33286014489e2b026",
+    "a97905bf82e90d94ab1bfe9f3bbc6b807b6f821d",
+    "b3e534331dc0c2d59b1122e63c7aa8032bae9f5d",
+    "b84628dec6e38df981f21dcd6ec609af6738a9a2",
+    "b858bf48e300b8c9297cd22ac86357f658fedccc",
+    "b93dec7dfaf72e63c4e7ff33b5c35b8c3a587208",
+    "bb5405895bd43af68c1741d9b745ec4e0490b2db",
+    "bbb2fcfec21cd44c3e0beba1dd2472e25149d9a8",
+    "bd05ac2aa8ad256e53a09a65b8d3bb6cb5454fd7",
+    "c195f1be5aacc271f74cfaaa8556414c82e6ac3a",
+    "c9931f7cebabf630f2aed6bc3b6e0cf916452c28",
+    "cf93b5c2da2cbf181887ee1c4a8cd4250a1926e0",
+    "d314633a2ff3921867c1bec332d447dca590ef46",
+    "d5a6fcaed7b5c07d9947388316b8252cbb830e95",
+    "d69a5dd371c88a513be3c5c9c5fdd8ecf882a89c",
+    "d786c0882aed950a64ada583ae521a878b48c09c",
+    "d83e67bcea61d2b0fb362a76c49e26bd580970ce",
+    "df66c8fab1c790f8480d9c7f873da4b46e80fd26",
+    "dfaee79cf7ab1f0e077150e06ff6308aad191b54",
+    "e0297c945889abfec7c56c4f51fab68aaaab1064",
+    "f4a79f583cfaf90e66ffbe9e33e922f4832b5ef8",
+    "f5079a99521f974354ef370454032f5148a1b204",
+    "f7e15d2f3e8815b6fd8091f4b523fe8b9f30d62d",
+    "f8c4126f3f6a32eb80a0d87349e8d2e75e02438a"
+  ],
+  "historicalBranches": [
+    {
+      "ref": "refs/heads/diagnostic/e13-2b-log-probe",
+      "expectedSha": "119ae4c53a678becfb454bc9322f437b043ad20c"
+    },
+    {
+      "ref": "refs/heads/docs/e14-1c-owner-boundary",
+      "expectedSha": "6323f62de2792c12458df112a915383876397cea"
+    },
+    {
+      "ref": "refs/heads/docs/e14-owner-pin-causal-checkpoint",
+      "expectedSha": "4bab203ad3c575cd93bce20a7df22da2f7166d82"
+    },
+    {
+      "ref": "refs/heads/docs/e14-world-transfer-mass-boundary",
+      "expectedSha": "4c70f60912fe32a4fa2f9ff44af8c8c927691248"
+    },
+    {
+      "ref": "refs/heads/docs/e15-publication-owner-boundary",
+      "expectedSha": "0685ff7e7b5c0462ae0f5362d6103f6440e00949"
+    },
+    {
+      "ref": "refs/heads/docs/project-state-regrounding-2026-09-02",
+      "expectedSha": "03f305849f15fe98228074efd9a4ff2011031b4a"
+    },
+    {
+      "ref": "refs/heads/experiment/e10-one-piece-support-brace",
+      "expectedSha": "3f668b8fb6216c9e9110d6d8ed530a620e9823d3"
+    },
+    {
+      "ref": "refs/heads/experiment/e11-physics-first-residual",
+      "expectedSha": "8ac009c053e0a78f9216d92502218ada98d2418e"
+    },
+    {
+      "ref": "refs/heads/experiment/e12-capacity-entitled-residual",
+      "expectedSha": "a31daa868b7fc58a64bbc0865d3f332b7c37b763"
+    },
+    {
+      "ref": "refs/heads/experiment/e13-world-braced-placement",
+      "expectedSha": "b93dec7dfaf72e63c4e7ff33b5c35b8c3a587208"
+    },
+    {
+      "ref": "refs/heads/experiment/e14-1c-pinned-boundary-skill",
+      "expectedSha": "3266c1231f132ff7d5a4c5f97d97a35539272334"
+    },
+    {
+      "ref": "refs/heads/experiment/e14-contextual-authority-lab",
+      "expectedSha": "b858bf48e300b8c9297cd22ac86357f658fedccc"
+    },
+    {
+      "ref": "refs/heads/experiment/e14-owner-pin-1180-065-3-36-1000",
+      "expectedSha": "d5a6fcaed7b5c07d9947388316b8252cbb830e95"
+    },
+    {
+      "ref": "refs/heads/experiment/e14-owner-reaction-surface",
+      "expectedSha": "bd05ac2aa8ad256e53a09a65b8d3bb6cb5454fd7"
+    },
+    {
+      "ref": "refs/heads/experiment/e14-world-transfer-mass-800",
+      "expectedSha": "f5079a99521f974354ef370454032f5148a1b204"
+    },
+    {
+      "ref": "refs/heads/experiment/e15-donor-physical-body-bridge",
+      "expectedSha": "d83e67bcea61d2b0fb362a76c49e26bd580970ce"
+    },
+    {
+      "ref": "refs/heads/experiment/e16-active-contact-organ",
+      "expectedSha": "cf93b5c2da2cbf181887ee1c4a8cd4250a1926e0"
+    },
+    {
+      "ref": "refs/heads/experiment/e16-body-owned-feasibility",
+      "expectedSha": "8eb747ccaa19a012657243c35af4f7e618ab8890"
+    },
+    {
+      "ref": "refs/heads/experiment/e16-direct-radial-control",
+      "expectedSha": "9c6c2782e069f7677bec00b440cc5a24863e8201"
+    },
+    {
+      "ref": "refs/heads/experiment/e16-direct-task-space-control",
+      "expectedSha": "a97905bf82e90d94ab1bfe9f3bbc6b807b6f821d"
+    },
+    {
+      "ref": "refs/heads/experiment/e17-intent-first-manipulator",
+      "expectedSha": "bbb2fcfec21cd44c3e0beba1dd2472e25149d9a8"
+    },
+    {
+      "ref": "refs/heads/experiment/e17-one-point-depth",
+      "expectedSha": "2d414f7cd431a8c872409de59783157a39edc27c"
+    },
+    {
+      "ref": "refs/heads/experiment/e18-manipulation-v0",
+      "expectedSha": "2ef25bced3140a24223d9a29157f7a8b2ba017af"
+    },
+    {
+      "ref": "refs/heads/experiment/e18-p3-coupled-two-point",
+      "expectedSha": "08cddf74d21ed836b2aa76d6994eb741c4535e80"
+    },
+    {
+      "ref": "refs/heads/experiment/e18-p3-owner-interaction",
+      "expectedSha": "f7e15d2f3e8815b6fd8091f4b523fe8b9f30d62d"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-1-terrain-support-localization",
+      "expectedSha": "c9931f7cebabf630f2aed6bc3b6e0cf916452c28"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-2-reciprocity-decontamination",
+      "expectedSha": "924e84eeec9d3fbb857b27c7135c3404782bc6fe"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-2-reciprocity-decontamination-stage",
+      "expectedSha": "c9931f7cebabf630f2aed6bc3b6e0cf916452c28"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-2-reciprocity-decontamination-tmp",
+      "expectedSha": "c9931f7cebabf630f2aed6bc3b6e0cf916452c28"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-2b-momentum-persistence",
+      "expectedSha": "a7e17c591270aef2d022f7b33286014489e2b026"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-2c0-residual-slide-reproduction",
+      "expectedSha": "d786c0882aed950a64ada583ae521a878b48c09c"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-2c1-owner-freeplay-capture",
+      "expectedSha": "42306b6a91a75ac0857e123537b0051ae6cdc373"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-2c2-momentum-semantics",
+      "expectedSha": "e0297c945889abfec7c56c4f51fab68aaaab1064"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-3-momentum-preservation-boundary",
+      "expectedSha": "c195f1be5aacc271f74cfaaa8556414c82e6ac3a"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-3d-production-specimen",
+      "expectedSha": "3df46a6e1cbd81e60f9a5520c87bf80845754054"
+    },
+    {
+      "ref": "refs/heads/experiment/e2-authority-ownership",
+      "expectedSha": "450c1141c9402ee7f7ff98727d7620eccffe794a"
+    },
+    {
+      "ref": "refs/heads/experiment/e3-2-bounded-internal-momentum",
+      "expectedSha": "991a679ff23bec68d61d1c16b7642f42e835571f"
+    },
+    {
+      "ref": "refs/heads/experiment/e3-rotational-embodiment",
+      "expectedSha": "273679fdcbb39d55929e2880ddf4a6de26947d15"
+    },
+    {
+      "ref": "refs/heads/experiment/e3-support-dependence-falsifier",
+      "expectedSha": "24edba4ba72a1422640e56a923254d9899d5029c"
+    },
+    {
+      "ref": "refs/heads/experiment/e3-support-transition-semantics",
+      "expectedSha": "f4a79f583cfaf90e66ffbe9e33e922f4832b5ef8"
+    },
+    {
+      "ref": "refs/heads/experiment/e4-locomotion-accel-compatibility",
+      "expectedSha": "922cb4227fdde19235802472eb39ee2451aa2181"
+    },
+    {
+      "ref": "refs/heads/experiment/e5-authority-placement-crucible",
+      "expectedSha": "459a95d13246a28b3519f30bfcf9ad0f14a475a6"
+    },
+    {
+      "ref": "refs/heads/experiment/e6-1-two-body-support-translation",
+      "expectedSha": "016bce6fe2a46290a0ad4d2de7875f7f2b61129a"
+    },
+    {
+      "ref": "refs/heads/experiment/e6-bounded-support-relative-translation",
+      "expectedSha": "df66c8fab1c790f8480d9c7f873da4b46e80fd26"
+    },
+    {
+      "ref": "refs/heads/experiment/e7-inactive-parallel-support-probe",
+      "expectedSha": "4bf6e66318eb50fae4878525ba84703855dfce2e"
+    },
+    {
+      "ref": "refs/heads/experiment/e8-parallel-axial-support",
+      "expectedSha": "b84628dec6e38df981f21dcd6ec609af6738a9a2"
+    },
+    {
+      "ref": "refs/heads/experiment/e8-parallel-axial-support-decomposition-temp",
+      "expectedSha": "596e2138fc830f858613927fd2ffcbb9935d90d1"
+    },
+    {
+      "ref": "refs/heads/experiment/e9-rigid-stow-split",
+      "expectedSha": "4de0cd71f06245fe95663ae5fbef962c2e2dd0cf"
+    },
+    {
+      "ref": "refs/heads/foundation/02-1-closure",
+      "expectedSha": "12841bd5c095827092ee5aae0acc19981a848490"
+    },
+    {
+      "ref": "refs/heads/foundation/donor-contract-v0",
+      "expectedSha": "d314633a2ff3921867c1bec332d447dca590ef46"
+    },
+    {
+      "ref": "refs/heads/foundation/embodied-playground-01",
+      "expectedSha": "1416c2b7dc618fa99e5a3916326414178414997f"
+    },
+    {
+      "ref": "refs/heads/foundation/quality-feel-02",
+      "expectedSha": "9d6e8ca77d024e784ed6aa5d71786ee3e223733d"
+    },
+    {
+      "ref": "refs/heads/foundation/traversal-polish-021",
+      "expectedSha": "b3e534331dc0c2d59b1122e63c7aa8032bae9f5d"
+    },
+    {
+      "ref": "refs/heads/maintenance/ci-skip-deleted-ref-push-2026-09-09",
+      "expectedSha": "082418efc5236c8b52a98036aa2d0c581eac31bb"
+    },
+    {
+      "ref": "refs/heads/maintenance/dependency-lock-probe",
+      "expectedSha": "0c7ff0cd81b8c6b6360549c0f905f69ecbbcd7af"
+    },
+    {
+      "ref": "refs/heads/maintenance/e17-browser-shell-equivalence",
+      "expectedSha": "1ac3c910fe4867972eb1a453665bcef1fb858777"
+    },
+    {
+      "ref": "refs/heads/maintenance/e17-manipulator-refactor",
+      "expectedSha": "2347bdd27ecdd3b21970bde9eb43b4bca6535b03"
+    },
+    {
+      "ref": "refs/heads/maintenance/e18-p3-immersive-key-lock",
+      "expectedSha": "87f5196e636b8e665d782d0fa7a17883c8a0a51f"
+    },
+    {
+      "ref": "refs/heads/maintenance/e19-stage-closure-2026-09-09",
+      "expectedSha": "71073e59caaa7291d49f20c97213f9ac55bd23b0"
+    },
+    {
+      "ref": "refs/heads/maintenance/project-spine-cleanup",
+      "expectedSha": "85fb48f3d9f3f96f09040d6b75faf1064a1a5c3c"
+    },
+    {
+      "ref": "refs/heads/maintenance/repo-cleanup-readiness-2026-09-09",
+      "expectedSha": "d69a5dd371c88a513be3c5c9c5fdd8ecf882a89c"
+    },
+    {
+      "ref": "refs/heads/maintenance/repo-hygiene-2026-09-02",
+      "expectedSha": "0ccfda0330f528027f0dd6e7b934cbe6596e1b60"
+    },
+    {
+      "ref": "refs/heads/maintenance/reproducible-dependencies",
+      "expectedSha": "0ef97543ac97bcc648f773412d2ae3e130bd5fe5"
+    },
+    {
+      "ref": "refs/heads/mobile/pages-touch-donor",
+      "expectedSha": "5ae102f3d1ca1103dc45187b3d742ca5241b385d"
+    },
+    {
+      "ref": "refs/heads/playground/playground-v2",
+      "expectedSha": "f8c4126f3f6a32eb80a0d87349e8d2e75e02438a"
+    },
+    {
+      "ref": "refs/heads/publication/e16-2a-capability-yard",
+      "expectedSha": "bb5405895bd43af68c1741d9b745ec4e0490b2db"
+    },
+    {
+      "ref": "refs/heads/publication/e16-2a-capability-yard-docs-closure-placeholder",
+      "expectedSha": "29426ac7aa22cebff7b33ba02fba7c7fa444c634"
+    },
+    {
+      "ref": "refs/heads/publication/e16-direct-radial-control",
+      "expectedSha": "9c6c2782e069f7677bec00b440cc5a24863e8201"
+    },
+    {
+      "ref": "refs/heads/publication/e16-direct-radial-control-final",
+      "expectedSha": "9c6c2782e069f7677bec00b440cc5a24863e8201"
+    },
+    {
+      "ref": "refs/heads/publication/e16-direct-radial-control-ready",
+      "expectedSha": "9c6c2782e069f7677bec00b440cc5a24863e8201"
+    },
+    {
+      "ref": "refs/heads/publication/e16-direct-radial-control-validated",
+      "expectedSha": "9c6c2782e069f7677bec00b440cc5a24863e8201"
+    },
+    {
+      "ref": "refs/heads/publication/e16-direct-task-space-control",
+      "expectedSha": "a97905bf82e90d94ab1bfe9f3bbc6b807b6f821d"
+    },
+    {
+      "ref": "refs/heads/publication/e16-direct-task-space-control-final",
+      "expectedSha": "a97905bf82e90d94ab1bfe9f3bbc6b807b6f821d"
+    },
+    {
+      "ref": "refs/heads/publication/e16-direct-task-space-control-validated",
+      "expectedSha": "a97905bf82e90d94ab1bfe9f3bbc6b807b6f821d"
+    },
+    {
+      "ref": "refs/heads/publication/e17-one-point-depth-owner-probe",
+      "expectedSha": "3ae20ca67fa60553fbbdfbc643cc6d317fc0b0f4"
+    },
+    {
+      "ref": "refs/heads/publication/e18-p3-owner-probe",
+      "expectedSha": "71a0fc538d50c638e8ee26a21e0b93e8c0db0c10"
+    },
+    {
+      "ref": "refs/heads/publication/e18-p3-owner-probe-tmp",
+      "expectedSha": "f8c4126f3f6a32eb80a0d87349e8d2e75e02438a"
+    },
+    {
+      "ref": "refs/heads/research/e18-manipulation-landscape",
+      "expectedSha": "554b9f5278178ea32b85785f36af2a7beb598d49"
+    },
+    {
+      "ref": "refs/heads/research/e19-hand-grip-reframe",
+      "expectedSha": "73ef9105c2910b3450e9c64c5c636e89d942a102"
+    },
+    {
+      "ref": "refs/heads/research/e2-3b-constraint-release-relevance",
+      "expectedSha": "a385f26fc2fc8fb831a59fb1f341a330fffedde9"
+    },
+    {
+      "ref": "refs/heads/research/e2-3c-constraint-velocity-policy",
+      "expectedSha": "dfaee79cf7ab1f0e077150e06ff6308aad191b54"
+    },
+    {
+      "ref": "refs/heads/stabilize/a-double-prime-donor-candidate",
+      "expectedSha": "9ef5a520266076ebb61faee9901b4a4beb65e5d5"
+    },
+    {
+      "ref": "refs/heads/stabilize/e2-3e-current-donor-v1",
+      "expectedSha": "47768b4037e17d938814f067c8644f84b7ecd83f"
+    },
+    {
+      "ref": "refs/heads/tmp",
+      "expectedSha": "a97905bf82e90d94ab1bfe9f3bbc6b807b6f821d"
+    },
+    {
+      "ref": "refs/heads/tmp-invalid",
+      "expectedSha": "4c3f043731b06e20c2dca0bc46421b974de5aefa"
+    },
+    {
+      "ref": "refs/heads/tmp-noop",
+      "expectedSha": "2f341aed904ecdccf61b1264a77f849aeaa236fd"
+    }
+  ]
+}
