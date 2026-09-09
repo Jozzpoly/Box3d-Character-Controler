@@ -1,0 +1,135 @@
+name: Repo cleanup final pre-bulk red-team
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - scripts/repo-cleanup-final-red-team.mjs
+      - .github/workflows/repo-cleanup-final-red-team.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: repo-cleanup-final-red-team
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      CLEANUP_CANONICAL_REF: main
+      CLEANUP_ACTIVE_BRANCH: maintenance/repo-cleanup-adaptation-2026-09-09
+      CLEANUP_ARCHIVE_BRANCH: archive/pre-cleanup-2026-09-09-dca388f4
+      CLEANUP_ARCHIVE_REF: refs/heads/archive/pre-cleanup-2026-09-09-dca388f4
+      CLEANUP_CANARY_REF: refs/heads/tmp-noop
+      EXPECTED_CANONICAL_SHA: b0eac372035ca12a63f808eb3201edd3605a163c
+      EXPECTED_ARCHIVE_SHA: fd5cae330fb80280617ce7b241347f1edafdb875
+      EXPECTED_FREEZE_SHA: dca388f456480489492ea2069c2ce8ecd5930d3ab41028cda88f25fe72cc9584
+      EXPECTED_HISTORICAL_BRANCHES: '86'
+      EXPECTED_HISTORICAL_TIPS: '75'
+      EXPECTED_ANCHOR_PARENTS: '76'
+
+    steps:
+      - name: Checkout exact helper commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch complete heads, PR-heads and tags graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --prune origin \
+            '+refs/heads/*:refs/remotes/origin/*' \
+            '+refs/pull/*/head:refs/remotes/pull/*/head'
+          git fetch --tags --force origin || true
+
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+
+      - name: Capture best-effort GitHub platform probes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/repo-cleanup/final-red-team/platform
+          base="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          probe() {
+            name="$1"; url="$2"
+            code=$(curl -L -sS -o "evidence/repo-cleanup/final-red-team/platform/${name}.json" \
+              -w '%{http_code}' \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "$url" || true)
+            printf '%s\t%s\t%s\n' "$name" "$code" "$url" >> evidence/repo-cleanup/final-red-team/platform/status.tsv
+          }
+          probe repository "$base"
+          probe open-pulls "$base/pulls?state=open&per_page=100"
+          probe open-issues "$base/issues?state=open&per_page=100"
+          probe releases "$base/releases?per_page=100"
+          probe workflows "$base/actions/workflows?per_page=100"
+          probe rulesets "$base/rulesets?per_page=100"
+          probe main-protection "$base/branches/main/protection"
+          probe archive-protection "$base/branches/archive%2Fpre-cleanup-2026-09-09-dca388f4/protection"
+          cat evidence/repo-cleanup/final-red-team/platform/status.tsv
+
+      - name: Recover frozen archive authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/repo-cleanup/final-red-team
+          git show "refs/remotes/origin/${CLEANUP_ARCHIVE_BRANCH}:archive/recovery-manifest.json" \
+            > evidence/repo-cleanup/final-red-team/recovery-manifest.json
+
+      - name: Classify current live refs
+        run: |
+          node scripts/repo-cleanup-gate1-classify.mjs \
+            --out=evidence/repo-cleanup/final-red-team/live-classification.json
+
+      - name: Re-run immutable delete preflight without mutation
+        env:
+          EXPECTED_HELPER_SHA: ${{ github.sha }}
+        run: |
+          node scripts/repo-cleanup-delete-preflight.mjs \
+            --manifest=evidence/repo-cleanup/final-red-team/recovery-manifest.json \
+            --classification=evidence/repo-cleanup/final-red-team/live-classification.json \
+            --out=evidence/repo-cleanup/final-red-team/delete-preflight.json
+
+      - name: Run semantic and navigational final red-team
+        run: |
+          node scripts/repo-cleanup-final-red-team.mjs \
+            --manifest=evidence/repo-cleanup/final-red-team/recovery-manifest.json \
+            --classification=evidence/repo-cleanup/final-red-team/live-classification.json \
+            --out=evidence/repo-cleanup/final-red-team/final-red-team.json \
+            --markdown=evidence/repo-cleanup/final-red-team/final-red-team.md
+
+      - name: Assert no hidden hard blocker is being normalized away
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const r = JSON.parse(fs.readFileSync('evidence/repo-cleanup/final-red-team/final-red-team.json', 'utf8'));
+          if (r.blockerCount !== 0 || r.bulkDecision === 'BLOCKED') {
+            throw new Error(`Final red-team BLOCKED: ${JSON.stringify(r.globalFindings)}`);
+          }
+          if (r.currentDeleteCandidateCount !== 85 || r.expectedAbsentCanaryCount !== 1) {
+            throw new Error(`Historical accounting mismatch: candidates=${r.currentDeleteCandidateCount}, canaryAbsent=${r.expectedAbsentCanaryCount}`);
+          }
+          console.log(`FINAL_RED_TEAM_GATE decision=${r.bulkDecision} candidates=${r.currentDeleteCandidateCount} repairs=${r.repairCount} semanticReview=${r.semanticReviewCount}`);
+          NODE
+
+      - name: Upload complete final-red-team evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-cleanup-final-pre-bulk-red-team
+          path: evidence/repo-cleanup/final-red-team/
+          if-no-files-found: error
