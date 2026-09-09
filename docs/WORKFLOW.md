@@ -58,11 +58,11 @@ The permanent workflow runs:
 Where:
 
 - `npm run smoke` preserves the established foundation + historical accepted green regressions and Donor contract;
-- `npm run smoke:current` protects the small representative promoted-runtime spine currently implemented in `scripts/smoke-suite.mjs` (E16 capability, E17 manipulation and one E18 P3 lifecycle regression at the 2026-09-09 checkpoint).
+- `npm run smoke:current` protects the small representative promoted-runtime spine currently implemented in `scripts/smoke-suite.mjs` (E16 capability, E17 manipulation, one E18 P3 lifecycle regression and one representative E19 swept-reach/reciprocal-grip regression at the 2026-09-09 checkpoint).
 
 Suite membership is source truth; this prose should describe it, not silently become a second manifest.
 
-This is regression protection, not the full research archive. E19's deeper diagnostics remain stage evidence rather than being forced into the permanent smoke spine merely because E19 was publicly published.
+This is regression protection, not the full research archive. E19's deeper diagnostics remain stage evidence; only one representative end-to-end seam is retained permanently rather than forcing the full E19 diagnostic campaign into canonical CI.
 
 ### Branch-local qualification
 
