@@ -27,7 +27,8 @@ assert(Number.isInteger(maxBatch) && maxBatch > 0 && maxBatch <= 20, `Invalid bo
 
 const ready = [...preflight.policy.deleteReady];
 const absent = [...preflight.policy.alreadyAbsent];
-const totalHistorical = preflight.expectedHistoricalBranchCount;
+const totalHistorical = preflight.policy.expectedHistoricalBranchCount;
+assert(Number.isInteger(totalHistorical) && totalHistorical > 0, `Invalid expected historical count ${totalHistorical}`);
 assert(ready.length + absent.length === totalHistorical, `Ready + absent ${ready.length + absent.length} != historical ${totalHistorical}`);
 
 const hardDeny = new Set(preflight.policy.hardDenyRefs ?? []);
