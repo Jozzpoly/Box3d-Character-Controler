@@ -14,6 +14,8 @@ permissions:
   actions: read
   issues: read
   pull-requests: read
+  deployments: read
+  pages: read
 
 concurrency:
   group: repo-cleanup-final-red-team
@@ -74,14 +76,61 @@ jobs:
             printf '%s\t%s\t%s\n' "$name" "$code" "$url" >> evidence/repo-cleanup/final-red-team/platform/status.tsv
           }
           probe repository "$base"
+          probe branches "$base/branches?per_page=100"
           probe open-pulls "$base/pulls?state=open&per_page=100"
           probe open-issues "$base/issues?state=open&per_page=100"
           probe releases "$base/releases?per_page=100"
           probe workflows "$base/actions/workflows?per_page=100"
           probe rulesets "$base/rulesets?per_page=100"
+          probe deployments "$base/deployments?per_page=100"
+          probe environments "$base/environments?per_page=100"
+          probe pages "$base/pages"
+          probe page-builds "$base/pages/builds?per_page=100"
+          probe hooks "$base/hooks?per_page=100"
           probe main-protection "$base/branches/main/protection"
           probe archive-protection "$base/branches/archive%2Fpre-cleanup-2026-09-09-dca388f4/protection"
           cat evidence/repo-cleanup/final-red-team/platform/status.tsv
+
+      - name: Summarize observable platform state without inventing inaccessible facts
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const dir = 'evidence/repo-cleanup/final-red-team/platform';
+          const status = Object.fromEntries(fs.readFileSync(`${dir}/status.tsv`, 'utf8').trim().split('\n').map(line => {
+            const [name, code] = line.split('\t'); return [name, Number(code)];
+          }));
+          const read = (name) => {
+            try { return JSON.parse(fs.readFileSync(`${dir}/${name}.json`, 'utf8')); } catch { return null; }
+          };
+          const branches = status.branches === 200 ? read('branches') : null;
+          const pulls = status['open-pulls'] === 200 ? read('open-pulls') : null;
+          const issues = status['open-issues'] === 200 ? read('open-issues') : null;
+          const releases = status.releases === 200 ? read('releases') : null;
+          const workflows = status.workflows === 200 ? read('workflows') : null;
+          const rulesets = status.rulesets === 200 ? read('rulesets') : null;
+          const deployments = status.deployments === 200 ? read('deployments') : null;
+          const environments = status.environments === 200 ? read('environments') : null;
+          const pages = status.pages === 200 ? read('pages') : null;
+          const summary = {
+            status,
+            branchCount: Array.isArray(branches) ? branches.length : null,
+            protectedBranches: Array.isArray(branches) ? branches.filter(b => b.protected).map(b => b.name) : null,
+            openPullCount: Array.isArray(pulls) ? pulls.length : null,
+            openIssueCount: Array.isArray(issues) ? issues.length : null,
+            releaseCount: Array.isArray(releases) ? releases.length : null,
+            workflowRegistryCount: workflows?.total_count ?? null,
+            activeWorkflows: workflows?.workflows?.filter(w => w.state === 'active').map(w => ({id:w.id,name:w.name,path:w.path})) ?? null,
+            rulesetCount: Array.isArray(rulesets) ? rulesets.length : null,
+            deploymentCount: Array.isArray(deployments) ? deployments.length : null,
+            deploymentRefs: Array.isArray(deployments) ? [...new Set(deployments.map(d => d.ref))].sort() : null,
+            environmentCount: environments?.total_count ?? null,
+            environments: environments?.environments?.map(e => e.name) ?? null,
+            pages: pages ? {status: pages.status, buildType: pages.build_type, source: pages.source, htmlUrl: pages.html_url} : null,
+            unobservable: Object.entries(status).filter(([,code]) => code === 403 || code === 404).map(([name,code]) => ({name,httpStatus:code})),
+          };
+          fs.writeFileSync(`${dir}/summary.json`, `${JSON.stringify(summary, null, 2)}\n`);
+          console.log(`PLATFORM_SUMMARY branches=${summary.branchCount} protected=${JSON.stringify(summary.protectedBranches)} openPR=${summary.openPullCount} openIssues=${summary.openIssueCount} releases=${summary.releaseCount} activeWorkflows=${summary.activeWorkflows?.length ?? 'n/a'} rulesets=${summary.rulesetCount} deployments=${summary.deploymentCount} deploymentRefs=${JSON.stringify(summary.deploymentRefs)} environments=${JSON.stringify(summary.environments)} pages=${JSON.stringify(summary.pages)} unobservable=${JSON.stringify(summary.unobservable)}`);
+          NODE
 
       - name: Recover frozen archive authority
         shell: bash
