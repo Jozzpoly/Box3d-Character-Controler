@@ -1,36 +1,36 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-05, after E17-depth Owner closure, E18.0 intent/proxy qualification and P3.0 mechanical qualification; P3.1 prepared as the next Owner-facing probe**
+Grounded: **2026-09-09 — post-E19 stage closure / pre-repository-hygiene checkpoint**
 
-This is the compact canonical orientation layer. Before any future write, re-fetch live `main` and exact SHA. Recorded SHAs are provenance, not permission to assume the repository has not moved.
+This is the compact canonical orientation layer. Before any future write, re-fetch live `main`, exact SHA and relevant CI/Pages. Recorded SHAs below are provenance, not permission to assume the repository has not moved.
 
 ## 0. Current snapshot
 
+- The repository remains an **Embodied Player Laboratory**, not a realistic-ragdoll project.
 - Accepted public/default player remains **A‴ / Donor v1**.
-- Accepted reference ground agency remains `31 m/s²` acceleration / `36 m/s²` braking.
-- E14 narrow contextual tuning is closed by Owner judgement; its causal evidence remains provenance.
-- E15 established a bounded body-response → player-consequence bridge but the passive torso was judged too gameplay-irrelevant.
-- E16 established capability-first embodiment and useful manipulation mechanics, but end-effector-first control was judged far too awkward.
-- **E17 intent-first physical manipulation** remains the strongest Owner-positive manipulation direction and is preserved as **P1 — one-point chaos baseline**.
-- **E17-depth** is a mechanically legitimate local correction, but Owner could not reliably distinguish it from E17 in blind/free play after several minutes. Preserve it as technical executor evidence, not as a gameplay winner.
-- **E18.0** qualified the persistent 3D manipulation-intent boundary: no frozen click plane, explicit screen/depth deltas, camera observation separated from command, Donor `character.position` as the current transport origin, and no naive pre-solve carrier prediction.
-- **P3.0 — coupled two-point mechanics is mechanically qualified.** It demonstrated deliberate position + axis control under one shared finite authority budget while preserving mass cost, contact failure, release momentum, a real free-twist DOF and bounded player-side reaction through E15.
-- **P3.1 is the current Owner-facing experiment**, not the new default player. It stages E17-like rough one-point manipulation with a temporary coupled two-point precision/orientation clutch and explicit depth control.
-- The next unresolved questions are gameplay questions: whether P3.1 is easier and more generative, whether free twist is useful or irritating, whether recoil is readable/fun, and whether the clutch avoids recreating E16-style micromanagement.
+- Accepted reference ground agency remains `31 m/s²` acceleration / `36 m/s²` braking. Do not silently weaken it to make embodiment easier.
+- **E17** remains the strongest earlier Owner-positive manipulation evidence: high-level object intent plus finite physical execution generated a family of verbs despite a crude executor.
+- **E17-depth** is mechanically legitimate but did not earn a reliably distinguishable Owner gameplay advantage.
+- **E18/P3** supplied important persistent-3D-intent and coupled two-point mechanical evidence, but P3.1's remote object-centric precision-clutch interaction was superseded after negative Owner judgement.
+- **E19** reframed manipulation around independent semantic left/right grips that can address both static world and dynamic matter.
+- E19 reciprocal mechanics and bounded swept-reach acquisition are **technically qualified and closed as a research stage**.
+- E19's public browser probe was successfully promoted to `main`, but **no confirmed post-publication Owner gameplay verdict is present in the grounded Character Controller record**. Therefore E19 gameplay/UX is not accepted by inference.
+- There is currently **no endorsed next manipulation architecture and no automatic E20**. The next research stage should start from a newly framed Owner/problem question.
+- Repository branch hygiene is intentionally **pending**. Do not delete historical branches ad hoc; a dedicated cleanup workflow will be applied separately.
 
-Publication preparation base:
+Grounding provenance before this maintenance closure:
 
-- canonical `main` at preparation time: `f8c4126f3f6a32eb80a0d87349e8d2e75e02438a`;
-- publication branch: `publication/e18-p3-owner-probe`;
-- P3.0 mechanical qualification branch checkpoint before closure docs: `f3bbae48d9db51848307fc034f872d65edc4b635`;
-- P3.1 interaction branch qualified build: `f7e15d2f3e8815b6fd8091f4b523fe8b9f30d62d`;
-- that P3.1 checkpoint passed branch diagnostics, historical/current smoke and Vite build.
+- live `main`: `425a55451ba223a83ef000ae69d0ed7dd5bb0a95`;
+- E19 research head: `73ef9105c2910b3450e9c64c5c636e89d942a102`;
+- E19 diagnostics run: `33970842840` — success;
+- promotion: PR `#48`;
+- exact-main verify/deploy run: `33970942169` — success.
 
-After merge, **live `main` + exact workflow/Pages state is authoritative**. Do not infer the final merge SHA from this prose.
+Detailed closure:
+
+[`E19_STAGE_CLOSURE_2026-09-09.md`](E19_STAGE_CLOSURE_2026-09-09.md)
 
 ## 1. Project identity
-
-This repository is an **Embodied Player Laboratory**, not a realistic-ragdoll project.
 
 Central question:
 
@@ -54,13 +54,13 @@ Mechanical/controller complexity must pay rent in agency, embodiment, causal rea
 
 1. **Owner hands-on judgement** — feel, artificiality, readability, fun, strategy generation and whether a mechanism is worth pursuing.
 2. **Live `main` + exact SHA + source + CI/Pages** — implementation/publication truth.
-3. Current research/frontier docs — experiment intent and evidence boundary.
+3. Current project/frontier/closure docs — research intent, state and evidence boundary.
 4. Stage ledgers/docs — provenance and prior qualification.
 5. Historical branches/conversations/recommendations — context only.
 
 Machine PASS proves declared mechanics, not fun. Owner fun does not prove a causal claim.
 
-## 3. Accepted Donor boundaries
+## 3. Accepted Donor boundary
 
 Normal/default player remains **A‴ / Donor v1**.
 
@@ -71,22 +71,22 @@ Reference values:
 - ground acceleration `31 m/s²`;
 - ground braking `36 m/s²`;
 - gravity `20 m/s²`;
-- outer `dt=1/60 s`;
+- outer `dt = 1/60 s`;
 - `4` Box3D substeps.
 
-Do not silently weaken `31/36` to make embodiment easier.
-
-E13 durable rule remains:
+Durable authority rule from E13:
 
 > **Do not create an external reaction path at authority time and then call it causally neutral plumbing.**
 
+The default Donor is a fair provisional comparison specimen, not a claim that controller-owned traversal is the final embodiment architecture.
+
 ## 4. Durable E14 → E17 lesson
 
-E14 showed that a more physical representation can still lose when it removes too much agency or strategy space.
+E14 showed that a more physical representation can still be worse gameplay when it removes too much agency or strategy space.
 
 E15 preserved Donor traversal but the physical torso mostly reacted after the interesting player action had already happened.
 
-E16 gave a solver-owned subsystem a deliberate capability, but Owner attention became dominated by operating the subsystem itself.
+E16 gave a solver-owned subsystem deliberate capability, but Owner attention became dominated by operating the subsystem itself.
 
 E17 reset the abstraction boundary:
 
@@ -98,13 +98,13 @@ Durable lesson:
 
 > **Embodiment should add useful verbs and consequences without forcing the player to micromanage low-level physics merely to express intent.**
 
-## 5. E17 — P1 one-point chaos baseline
+## 5. E17 — preserved intent-first baseline
 
 Interaction contract:
 
 > **select nearby dynamic object / exact surface point → express target intent → finite physical actuator attempts it**
 
-The object is not teleported. Finite impulse acts at the selected point and equal/opposite reaction acts on the finite physical core.
+The object is not teleported. Finite impulse acts at the selected point and equal/opposite reaction acts on the finite player-side representation.
 
 Owner-positive evidence:
 
@@ -122,131 +122,134 @@ Owner-negative evidence:
 
 Interpretation:
 
-> **E17 does not prove the manipulator is good. It proves the intent-first abstraction is promising enough to generate play despite a bad executor.**
+> **E17 did not prove the manipulator was good. It proved the intent-first abstraction was promising enough to generate play despite a bad executor.**
 
-Preserve E17 as **P1 — one-point chaos baseline**.
+Preserve it as a gameplay/evidence donor, not the current architecture.
 
-## 6. E17-depth — bounded correction, Owner-closed
+## 6. E18 / P3 — mechanically useful, interaction direction superseded
 
-E17-depth preserves E17 grammar, acquisition/release, reach and the `900 N` cap. Only requested impulse accounting changes to directional rigid-body point effective mass including rotational inertia.
+E18 qualified a persistent 3D manipulation-intent boundary that does not freeze control onto a click-time drag plane and separates camera observation from explicit manipulation command.
 
-Machine evidence establishes a real local mechanical distinction. Owner blind/free comparison on 2026-09-05 found the difference too subtle to identify reliably after several minutes.
+P3.0 qualified a coupled two-point rigid-body task under one shared finite authority budget. It demonstrated deliberate axis/orientation leverage, finite saturation, mass/inertia cost, blocked-task failure, release momentum and a real free-twist DOF.
+
+P3.1 then staged that capability as a precision/orientation clutch on top of rough one-point manipulation.
+
+Owner judgement did **not** justify retaining P3.1 as the main gameplay direction. Its interaction remained too raw, indirect and restrictive; much of the world could not be grabbed and static scenery could not become a handhold. The special precision clutch also recreated control/micromanagement problems.
 
 Therefore:
 
-> **E17-depth is mechanically valid but gameplay-insufficient as a local refinement.**
+- preserve P3.0 as a mechanical donor;
+- preserve E18 intent/proxy work as interaction-mechanics evidence;
+- do not describe P3.1 as the current frontier.
 
-Do not repeat that Owner A/B or call E17-depth a gameplay winner.
+## 7. E19 — closed technical checkpoint
 
-## 7. Self-lift / authority debt
+E19 changed the primary interaction noun from remote object target to **semantic grip**:
 
-Standing on a manipulated dynamic object can let the closed player↔object system lift itself through the hybrid Donor/manipulation authority arrangement.
+> **left/right reach intent → bounded acquisition → exact latch → finite reciprocal relation → physics answers**
 
-Current classification:
+Key hypothesis:
 
-- **generative exploit** — funny and potentially valuable play;
-- **authority exploit / causal debt** — not yet physically legitimized.
+> **Static versus dynamic changes the physical consequence, not basic grip eligibility.**
 
-Do not remove it merely because it is an exploit during exploratory work. Also do not call it physically valid merely because it is fun.
+### Mechanics closure
 
-## 8. E18 qualified architecture boundary
+E19 qualified one finite relative-grip law across static, dynamic, two-grip and mixed cases.
 
-### E18.0 — persistent 3D manipulation intent
+Important evidence includes:
 
-Qualified rules for the current hybrid architecture:
+- mass-derived player/object motion split without a light/heavy behavior branch;
+- two grips on one dynamic body generating rotational leverage without object pose ownership;
+- static grip bracing materially changing how a dynamic pull resolves;
+- genuinely impossible mixed tasks remaining finite, saturated and geometrically residual;
+- grip reaction entering accepted Donor velocity without becoming stored `externalVelocity`;
+- a scoped vertical blocked-velocity correction that preserves ungripped Donor behavior.
 
-1. manipulation intent is explicit persistent 3D state, not an absolute frozen click-time drag plane;
-2. camera motion alone does not mutate the target;
-3. explicit screen/depth input changes intent incrementally using the current camera basis;
-4. high-level transport origin is Donor `character.position`, not raw physical `bodyPosition`;
-5. transport follows **realized** Donor displacement at normal update boundaries;
-6. the known within-outer-step phase separation remains explicit debt;
-7. do not hide it with pre-solve velocity prediction;
-8. reach, force, saturation and physical failure remain downstream executor concerns.
+### Acquisition closure
 
-### P3.0 — coupled two-point mechanics
+E19.1 separated physics provenance from intention ranking, then found that a physical acquisition probe can causally disturb dynamic targets before the player has actually gripped them.
 
-P3.0 solves two point constraints as **one coupled rigid-body task**, not two independent E17 springs. A single shared authority cap applies:
+The stronger bounded acquisition candidate became:
 
-`|J1| + |J2| <= 900 N * dt`
+> **semantic left/right reach → finite swept hand volume → first physical obstruction → exact body/local anchor → finite reciprocal grip**
 
-Qualified evidence includes:
+The swept query is non-impulsive; repeated acquisition queries do not alter dynamic target motion before latch. E19.1e bridged this representation into live overhead-static and dynamic-target grip behavior with no initial snap and no measured pre-grip contamination.
 
-- separated two-point operator rank `5` — translation + one deliberate axis, with twist around that axis unowned;
-- strong axis control under the same authority scale where one-point control cannot own orientation;
-- mass/inertia still increase saturation and execution cost;
-- static world contact can defeat the requested task without teleportation;
-- release preserves momentum;
-- free twist is a real null DOF, not solver self-excitation;
-- real E15 follow/feedback keeps the physical core bounded while translating manipulation reaction into material Donor recoil.
+### Publication / Owner boundary
 
-Detailed canonical provenance:
+PR #48 promoted a minimal `?mode=e19` / `?mode=grip` browser probe with independent `Q/E` grips, cursor-directed swept reach and `LMB` retraction.
 
-[`E18_P3_MECHANICAL_QUALIFICATION_2026-09-05.md`](E18_P3_MECHANICAL_QUALIFICATION_2026-09-05.md)
+Publication and CI are complete. A confirmed post-publication Owner gameplay verdict is not available in the grounded Character Controller record.
 
-Do **not** silently add full quaternion/twist ownership or tune recoil away from headless metrics alone.
+Therefore:
 
-## 9. Current frontier — P3.1 Owner interaction probe
+> **E19 mechanics/acquisition = technical PASS. E19 gameplay/UX = not accepted by evidence. Stage closed and frozen rather than left as an implicit active frontier.**
 
-P3.1 combines already-qualified components into one deliberately larger gameplay delta:
+See [`E19_STAGE_CLOSURE_2026-09-09.md`](E19_STAGE_CLOSURE_2026-09-09.md).
 
-- **rough/default:** E17-depth-equivalent one-point finite manipulation;
-- persistent incremental screen-plane translation without frozen-plane drift;
-- explicit depth channel;
-- temporary **precision/orientation clutch** that promotes the hold to the P3 coupled two-point executor;
-- automatically derived second virtual anchor — no second click and no literal two-hand simulation;
-- precision entry captures current physical pose, avoiding target snap;
-- precision exit resumes rough mode at the current physical primary anchor without zeroing momentum;
-- free twist remains free;
-- one shared `900 N` authority scale remains;
-- mass, contact failure, recoil and release consequences remain physical;
-- Owner-facing visuals expose grip, target/proxy, precision axis and saturation;
-- an orientation yard adds a long beam/gate, shelf/cubby, heavy slab, stacking pieces and bridge-placement affordances.
+## 8. Held debts — not automatic tasks
 
-Provisional desktop mapping:
+Preserved open questions include:
 
-- `LMB hold` — acquire / manipulate / release;
-- pointer while rough — translate target in the current camera plane;
-- wheel while holding — explicit depth; wheel zooms camera when not manipulating;
-- `Ctrl` while holding — precision/orientation clutch;
-- pointer while `Ctrl` is held — rotate the target axis instead of translating;
-- `RMB` — camera orbit and does not silently mutate manipulation intent.
+- final reach mapping/radius/rates/strength;
+- good two-grip UX and actual climbing/hanging feel;
+- physical hand/arm masses and collision bodies;
+- player angular response/body torque;
+- arbitrary sloped and moving-kinematic grip constraints;
+- constrained allocation under asymmetric multi-grip saturation;
+- final character/hand visuals and the recorded cap/silhouette debt;
+- multiplayer/network behavior;
+- final embodiment architecture.
 
-Detailed interaction boundary:
+These debts are not a queued roadmap. Reopen only when a future Owner/problem question makes them relevant.
 
-[`E18_P3_1_OWNER_INTERACTION_CONTRACT_2026-09-05.md`](E18_P3_1_OWNER_INTERACTION_CONTRACT_2026-09-05.md)
+## 9. Known authority/exploit debt
 
-### Owner question
+Standing on a manipulated dynamic object can let the closed player↔object system lift itself through hybrid authority arrangements.
 
-> **Does this let you manipulate the world more deliberately without making manipulation itself the chore?**
+Classification remains:
 
-Useful observations include, without turning free play into a checklist:
+- **generative exploit** — potentially valuable play;
+- **authority / causal debt** — not automatically physically legitimate.
 
-- whether depth feels immediately understandable;
-- whether rough mode preserves the fun/chaos of E17;
-- whether precision feels like a useful clutch rather than operating a subsystem;
-- whether the uncontrolled twist creates useful physical looseness or mostly frustration;
-- whether recoil creates strategy/fun or merely loss of control;
-- whether orientation-dependent objects create genuinely new strategies;
-- whether switching rough ↔ precision becomes natural after a few minutes.
+Do not remove it merely because it is an exploit during research. Do not call it valid merely because it is fun.
 
-### Stop rule
+## 10. Current stop boundary
 
-Do **not** resume a long headless tuning series before Owner evidence. Reopen mechanics only if the Owner build exposes a concrete causal failure that current P3.0 evidence cannot explain.
+The project is intentionally at a **post-E19 checkpoint**.
 
-Do not promote P3.1 to default merely because CI is green.
+Do not automatically:
 
-## 10. Workflow / maintenance state
+- continue E19 tuning;
+- start E20;
+- build a full humanoid/ragdoll;
+- promote E19 controls to the default player;
+- infer Owner acceptance from green CI;
+- delete historical research branches before repository-hygiene review.
+
+A future execution stage should first ask:
+
+> **What embodiment/gameplay unknown is now most valuable to separate, given the preserved E14–E19 evidence?**
+
+That question may reuse E17, P3, E19 or older mechanisms as donors without making any one of them the preselected architecture.
+
+## 11. Workflow / maintenance state
 
 Canonical workflow policy remains in [`WORKFLOW.md`](WORKFLOW.md).
 
 Important rules:
 
 - `main` is canonical/public truth;
-- dependencies are reproduced with Node `22.23.2` + committed lockfile + `npm ci`;
-- `npm run smoke` preserves foundation/historical regression;
-- `npm run smoke:current` protects promoted/current experimental runtime boundaries, including one representative P3.1 lifecycle regression;
-- heavy branch-local diagnostics remain research provenance rather than permanent canonical CI;
-- negative/confounded experiments remain evidence and need not be converted into permanent green tests;
-- separate playground/map work remains a parallel lane and must not contaminate E18 manipulation causality;
-- Owner attention is reserved for qualitative gameplay deltas, not subtle mechanistic A/Bs.
+- Node/dependencies remain pinned and reproduced with the committed lockfile + `npm ci`;
+- permanent smoke protects accepted regression contracts, not every historical diagnostic;
+- E19 stage-specific diagnostics remain evidence/provenance and are no longer an active frontier;
+- Owner attention is reserved for qualitative gameplay deltas rather than subtle machine A/Bs;
+- documentation should keep this file, root `README.md` and `docs/README.md` synchronized when the frontier changes.
+
+Repository branch cleanup is the **next maintenance campaign after this closure**, but its deletion policy is intentionally not invented here. First import/review the dedicated `jv_web` cleanup workflow package, adapt it to this repo, inventory evidence/provenance, then delete only what that explicit process qualifies as safe.
+
+## 12. Conversation/repository boundary note
+
+The browser conversation that contained the final E19 work later moved into `Jozzpoly/Jozzue_Vehicles_Sandbox` and its Family C / Spatial Compass builder research.
+
+That later JV work is useful in its own project, but it is **not** Character Controller evidence and must not be treated as a continuation of E19 merely because it occurred in the same chat thread.
