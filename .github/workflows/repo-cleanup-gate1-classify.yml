@@ -6,6 +6,7 @@ on:
       - maintenance/repo-cleanup-adaptation-2026-09-09
     paths:
       - scripts/repo-cleanup-gate1-classify.mjs
+      - scripts/repo-cleanup-gate1-plan.mjs
       - .github/workflows/repo-cleanup-gate1-classify.yml
   workflow_dispatch:
 
@@ -40,9 +41,19 @@ jobs:
           node scripts/repo-cleanup-gate1-classify.mjs \
             --out=evidence/repo-cleanup/gate1-classification.json
 
-      - name: Upload classification evidence
+      - name: Generate deterministic preliminary plan
+        env:
+          CLEANUP_ACTIVE_BRANCH: maintenance/repo-cleanup-adaptation-2026-09-09
+        run: |
+          node scripts/repo-cleanup-gate1-plan.mjs \
+            --in=evidence/repo-cleanup/gate1-classification.json \
+            --out=evidence/repo-cleanup/gate1-preliminary-plan.json
+
+      - name: Upload Gate 1 evidence
         uses: actions/upload-artifact@v4
         with:
-          name: repo-cleanup-gate1-classification
-          path: evidence/repo-cleanup/gate1-classification.json
+          name: repo-cleanup-gate1-evidence
+          path: |
+            evidence/repo-cleanup/gate1-classification.json
+            evidence/repo-cleanup/gate1-preliminary-plan.json
           if-no-files-found: error
