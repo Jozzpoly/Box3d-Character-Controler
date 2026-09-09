@@ -137,3 +137,5 @@ console.log(`GATE1_PLAN branches=${records.length} historicalBranches=${historic
 console.log(`GATE1_PLAN dispositions=${JSON.stringify(dispositionCounts)}`);
 console.log(`GATE1_PLAN historicalArchiveFreezeSha256=${historicalArchiveFreezeSha256}`);
 console.log(`GATE1_PLAN livePlanSha256=${livePlanSha256}`);
+
+// Deliberate no-op drift witness: changing cleanup helper code must not change the historical archive freeze.
