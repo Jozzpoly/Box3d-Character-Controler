@@ -9,6 +9,8 @@ const inPath = inArg.slice('--in='.length);
 const outPath = outArg.slice('--out='.length);
 const activeCleanupBranch = process.env.CLEANUP_ACTIVE_BRANCH ?? 'maintenance/repo-cleanup-adaptation-2026-09-09';
 const activeCleanupRef = `refs/heads/${activeCleanupBranch}`;
+const targetArchiveBranch = process.env.CLEANUP_ARCHIVE_BRANCH ?? 'archive/pre-cleanup-2026-09-09-dca388f4';
+const targetArchiveRef = `refs/heads/${targetArchiveBranch}`;
 
 const sha256 = (value) => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
@@ -34,6 +36,10 @@ const activeCleanupRecords = classification.records.filter((record) => record.re
 if (activeCleanupRecords.length !== 1) {
   throw new Error(`Active cleanup ref must appear exactly once: ${activeCleanupRef}`);
 }
+const targetArchiveRecords = classification.records.filter((record) => record.ref === targetArchiveRef);
+if (targetArchiveRecords.length > 1) {
+  throw new Error(`Target archive ref appears more than once: ${targetArchiveRef}`);
+}
 
 const records = classification.records.map((record) => {
   let preliminaryDisposition;
@@ -44,6 +50,9 @@ const records = classification.records.map((record) => {
   } else if (record.ref === activeCleanupRef) {
     preliminaryDisposition = 'KEEP_UNTIL_CLOSURE';
     reason = 'Active cleanup branch; terminal disposition required after campaign closure.';
+  } else if (record.ref === targetArchiveRef) {
+    preliminaryDisposition = 'KEEP_ARCHIVE';
+    reason = 'Dedicated pre-cleanup recovery archive; exact anchor SHA must be verified by archive materialization/postflight before destructive authorization.';
   } else {
     preliminaryDisposition = 'ARCHIVE_THEN_DELETE_CANDIDATE';
     reason = 'Historical/non-live ref; exact tip must be covered by the historical archive before branch-name deletion can be considered.';
@@ -65,8 +74,9 @@ const historicalArchiveRecords = records
   .map((record) => ({ ref: record.ref, expectedSha: record.expectedSha }))
   .sort((a, b) => a.ref.localeCompare(b.ref));
 
-if (historicalArchiveRecords.length !== records.length - 2) {
-  throw new Error(`Expected exactly canonical + active helper outside historical archive set; got ${historicalArchiveRecords.length}/${records.length}`);
+const nonHistoricalRecordCount = 2 + targetArchiveRecords.length;
+if (historicalArchiveRecords.length !== records.length - nonHistoricalRecordCount) {
+  throw new Error(`Expected canonical + active helper + optional archive outside historical set; got ${historicalArchiveRecords.length}/${records.length}`);
 }
 
 const historicalArchiveTipShas = [...new Set(historicalArchiveRecords.map((record) => record.expectedSha))].sort();
@@ -78,7 +88,7 @@ for (const record of historicalArchiveRecords) {
 
 // Canonical stays live, but is also an explicit anchor parent so the archive commit is
 // connected to the exact canonical state that authorized the freeze. The moving cleanup
-// helper is deliberately excluded so preparation commits do not destabilize the archive.
+// helper and the archive ref itself are deliberately excluded from the historical freeze.
 const archiveAnchorParentShas = [
   classification.canonicalSha,
   ...historicalArchiveTipShas.filter((sha) => sha !== classification.canonicalSha),
@@ -87,6 +97,8 @@ if (new Set(archiveAnchorParentShas).size !== archiveAnchorParentShas.length) {
   throw new Error('Archive anchor parent set contains duplicates');
 }
 
+// Keep this core independent of helper/archive live topology. It is the preservation
+// identity and must remain stable before and after archive materialization.
 const historicalArchiveFreezeCore = {
   schema: 'box3d-character-controller-historical-archive-freeze-v1',
   repository: classification.repository,
@@ -99,13 +111,16 @@ const historicalArchiveFreezeCore = {
 const historicalArchiveFreezeSha256 = sha256(historicalArchiveFreezeCore);
 
 const livePlanDeterministicCore = {
-  schema: 'box3d-character-controller-repo-cleanup-preliminary-plan-v2',
+  schema: 'box3d-character-controller-repo-cleanup-preliminary-plan-v3',
   status: 'PRELIMINARY_NON_DESTRUCTIVE',
   repository: classification.repository,
   canonicalRef: classification.canonicalRef,
   canonicalSha: classification.canonicalSha,
   activeCleanupRef,
   activeCleanupSha: activeCleanupRecords[0].expectedSha,
+  targetArchiveRef,
+  targetArchivePresent: targetArchiveRecords.length === 1,
+  targetArchiveSha: targetArchiveRecords[0]?.expectedSha ?? null,
   observedBranchCount: classification.branchCount,
   distinctBranchTipCount: classification.distinctBranchTipCount,
   archivePolicyCandidate: 'UNIVERSAL_HISTORICAL_CANDIDATE_TIP_COVERAGE',
@@ -134,8 +149,7 @@ const dispositionCounts = records.reduce((acc, record) => {
   return acc;
 }, {});
 console.log(`GATE1_PLAN branches=${records.length} historicalBranches=${historicalArchiveRecords.length} historicalTips=${historicalArchiveTipShas.length} anchorParents=${archiveAnchorParentShas.length}`);
+console.log(`GATE1_PLAN archive=${targetArchiveRecords.length ? targetArchiveRecords[0].expectedSha : 'ABSENT'} ref=${targetArchiveRef}`);
 console.log(`GATE1_PLAN dispositions=${JSON.stringify(dispositionCounts)}`);
 console.log(`GATE1_PLAN historicalArchiveFreezeSha256=${historicalArchiveFreezeSha256}`);
 console.log(`GATE1_PLAN livePlanSha256=${livePlanSha256}`);
-
-// Deliberate no-op drift witness: changing cleanup helper code must not change the historical archive freeze.

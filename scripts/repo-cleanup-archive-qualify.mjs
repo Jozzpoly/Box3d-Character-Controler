@@ -28,7 +28,7 @@ function assert(condition, message) {
 }
 
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
-assert(plan.schema === 'box3d-character-controller-repo-cleanup-preliminary-plan-v2', `Unexpected plan schema ${plan.schema}`);
+assert(plan.schema === 'box3d-character-controller-repo-cleanup-preliminary-plan-v3', `Unexpected plan schema ${plan.schema}`);
 assert(plan.status === 'PRELIMINARY_NON_DESTRUCTIVE', `Unexpected plan status ${plan.status}`);
 assert(plan.destructiveAuthorized === false, 'Qualification refuses a plan marked destructiveAuthorized=true');
 assert(Array.isArray(plan.historicalArchiveRecords), 'Missing historicalArchiveRecords');
@@ -41,6 +41,10 @@ assert(new Set(plan.archiveAnchorParentShas).size === plan.archiveAnchorParentSh
 assert(plan.archiveAnchorParentShas[0] === plan.canonicalSha, 'Canonical SHA must be the first archive anchor parent');
 assert(!plan.historicalArchiveRecords.some((record) => record.ref === plan.activeCleanupRef), 'Active cleanup ref leaked into historical archive records');
 assert(!plan.historicalArchiveTipShas.includes(plan.activeCleanupSha), 'Active cleanup tip leaked into historical archive tips');
+if (plan.targetArchivePresent) {
+  assert(!plan.historicalArchiveRecords.some((record) => record.ref === plan.targetArchiveRef), 'Archive ref leaked into historical archive records');
+  assert(!plan.historicalArchiveTipShas.includes(plan.targetArchiveSha), 'Archive anchor leaked into historical archive tip set');
+}
 
 const expectedHistoricalRecords = plan.records
   .filter((record) => record.preliminaryDisposition === 'ARCHIVE_THEN_DELETE_CANDIDATE')
@@ -123,7 +127,7 @@ assert(recoveredManifest.historicalDistinctTipCount === plan.historicalArchiveTi
 assert(JSON.stringify(recoveredManifest.historicalBranches) === JSON.stringify(plan.historicalArchiveRecords), 'Recovered branch mapping mismatch');
 
 const result = {
-  schema: 'box3d-character-controller-archive-anchor-qualification-v2',
+  schema: 'box3d-character-controller-archive-anchor-qualification-v3',
   status: 'PASS_LOCAL_ONLY_NO_REMOTE_REF',
   historicalArchiveFreezeSha256: plan.historicalArchiveFreezeSha256,
   livePlanSha256: plan.livePlanSha256,
@@ -136,6 +140,9 @@ const result = {
   canonicalSha: plan.canonicalSha,
   excludedActiveCleanupRef: plan.activeCleanupRef,
   excludedActiveCleanupSha: plan.activeCleanupSha,
+  targetArchiveRef: plan.targetArchiveRef,
+  targetArchivePresentAtQualification: plan.targetArchivePresent,
+  targetArchiveShaAtQualification: plan.targetArchiveSha,
   remoteWritePerformed: false,
 };
 
@@ -146,3 +153,4 @@ console.log(`ARCHIVE_QUALIFICATION anchor=${anchorSha} tree=${treeSha}`);
 console.log(`ARCHIVE_QUALIFICATION parents=${result.parentCount} historicalReachable=${result.verifiedHistoricalReachableTipCount} historicalBranches=${result.historicalBranchCount}`);
 console.log(`ARCHIVE_QUALIFICATION historicalArchiveFreezeSha256=${plan.historicalArchiveFreezeSha256}`);
 console.log(`ARCHIVE_QUALIFICATION excludedHelper=${plan.activeCleanupRef}@${plan.activeCleanupSha}`);
+console.log(`ARCHIVE_QUALIFICATION targetArchive=${plan.targetArchivePresent ? plan.targetArchiveSha : 'ABSENT'} ref=${plan.targetArchiveRef}`);
