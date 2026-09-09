@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   verify:
+    if: github.event_name != 'push' || github.event.deleted != true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
