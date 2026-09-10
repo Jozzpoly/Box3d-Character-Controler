@@ -32,7 +32,7 @@ function steady60(duration) {
 
 function withStall(stallStart, resumeAt, duration) {
   const out = [0];
-  for (let t = FIXED_DT; t < stallStart - 1e-12; t += FIXED_DT) out.push(Number(t.toFixed(12)));
+  for (let t = FIXED_DT; t <= stallStart + 1e-12; t += FIXED_DT) out.push(Number(t.toFixed(12)));
   out.push(resumeAt);
   for (let t = resumeAt + FIXED_DT; t <= duration + 1e-12; t += FIXED_DT) out.push(Number(t.toFixed(12)));
   return out;
@@ -44,6 +44,7 @@ const hidden = simulateFrames([0, FIXED_DT, 2.0, 2.0 + FIXED_DT, 2.0 + 2 * FIXED
 
 const stallResume = stalled.find((r) => Math.abs(r.now - 0.6) < 1e-9);
 if (!stallResume) throw new Error('stall resume frame missing');
+if (Math.abs(stallResume.rawDt - 0.5) > 1e-9) throw new Error(`expected 500 ms raw gap, got ${stallResume.rawDt}`);
 if (Math.abs(stallResume.discardedDt - 0.4) > 1e-9) throw new Error(`expected 400 ms discarded time, got ${stallResume.discardedDt}`);
 if (stallResume.ticks !== 6) throw new Error(`100 ms clamp should permit six 60 Hz ticks, got ${stallResume.ticks}`);
 
