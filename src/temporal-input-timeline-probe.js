@@ -7,15 +7,27 @@ export class TemporalInputTimelineProbe {
     this.lastHardCutWallTime = null;
   }
 
-  observeFrame(frame) {
+  registerFrame(frame) {
     if (!frame || !Number.isFinite(frame.simTickEnd)) throw new TypeError('valid frame required');
-    this.consumedSimTime = Math.max(this.consumedSimTime, frame.simTickEnd);
     if (frame.kind === 'hard-cut') {
       this.frames.length = 0;
       this.lastHardCutWallTime = frame.retainedWallStart;
     }
     this.frames.push(frame);
     if (this.frames.length > this.maxFrames) this.frames.splice(0, this.frames.length - this.maxFrames);
+    return frame;
+  }
+
+  consumeFrame(frame) {
+    if (!frame || !Number.isFinite(frame.simTickEnd)) throw new TypeError('valid frame required');
+    this.consumedSimTime = Math.max(this.consumedSimTime, frame.simTickEnd);
+    return frame;
+  }
+
+  observeFrame(frame) {
+    this.registerFrame(frame);
+    this.consumeFrame(frame);
+    return frame;
   }
 
   classifyDelivered(event, mapper) {
@@ -60,6 +72,31 @@ export class TemporalInputTimelineProbe {
       missedTicks,
       deliveryDelay: event.deliveryDelay,
       event,
+      frameKind: frame.kind,
+      frameEpoch: frame.epoch,
+    };
+  }
+
+  auditCurrentFrameApplication(event, frame, mapper) {
+    if (!frame?.ticks || !mapper) throw new TypeError('frame and mapper required');
+    const mapped = mapper.classifyEvent(frame, event.occurrenceTime, { afterFrameConsumed: false });
+    if (mapped.entitlement == null || frame.ticks.length === 0) {
+      return {
+        classification: mapped.classification,
+        entitlement: mapped.entitlement,
+        firstCatchupTick: frame.ticks[0] ?? null,
+        earliestEligibleTick: null,
+        prematureTicks: 0,
+      };
+    }
+    const earliestEligibleTick = frame.ticks.find((tick) => tick + 1e-12 >= mapped.entitlement) ?? null;
+    const prematureTicks = frame.ticks.filter((tick) => tick < mapped.entitlement - 1e-12).length;
+    return {
+      classification: prematureTicks > 0 ? 'would-apply-too-early' : mapped.classification,
+      entitlement: mapped.entitlement,
+      firstCatchupTick: frame.ticks[0] ?? null,
+      earliestEligibleTick,
+      prematureTicks,
       frameKind: frame.kind,
       frameEpoch: frame.epoch,
     };
