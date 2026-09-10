@@ -1,0 +1,37 @@
+name: Repo cleanup exact-main qualification dispatch
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - .github/workflows/repo-cleanup-exact-main-qualification.yml
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  dispatch-exact-main:
+    runs-on: ubuntu-latest
+    env:
+      EXPECTED_MAIN_SHA: e7a98beaca4c010e056c31db97b33c05b4610e38
+    steps:
+      - name: Verify exact main and dispatch canonical workflow
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const main = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
+            if (main.data.commit.sha !== process.env.EXPECTED_MAIN_SHA) {
+              throw new Error(`main drift: expected ${process.env.EXPECTED_MAIN_SHA}, got ${main.data.commit.sha}`);
+            }
+            await github.rest.actions.createWorkflowDispatch({
+              owner,
+              repo,
+              workflow_id: 'deploy-pages.yml',
+              ref: 'main',
+            });
+            core.info(`DISPATCHED_CANONICAL_QUALIFICATION main=${main.data.commit.sha}`);
