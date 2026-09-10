@@ -2,7 +2,7 @@
 
 ## Status
 
-**R2 TEMPORAL SUBSTRATE QUALIFIED IN ISOLATION / DISCONTINUITY POLICY CHARACTERIZED / RUNTIME INTEGRATION NOT STARTED**
+**R2 TEMPORAL SUBSTRATE QUALIFIED IN ISOLATION / FRAME-EPOCH MAPPER QUALIFIED IN ISOLATION / BROWSER INTEGRATION NOT STARTED**
 
 This checkpoint extends the R2 temporal-input work beyond ordinary event-to-tick entitlement. It records the discovered interaction between browser wall-clock delivery, the existing 100 ms frame clamp, fixed simulation time and explicit temporal epochs.
 
@@ -32,7 +32,7 @@ The branch retains the earlier R2 findings:
 - timestamped history maps to the existing Donor intent contract invariantly across 30/60/144 Hz and a 100 ms hitch specimen;
 - prior temporal-policy comparison supported earliest-causal assignment for continuous epochs.
 
-## New finding D1 — the runtime already contains a temporal discontinuity policy
+## D1 — the runtime already contains a temporal discontinuity policy
 
 Current `src/main.js` computes:
 
@@ -53,7 +53,7 @@ A hidden-tab-style ~1.983 s pause specimen discarded ~1.883 s and likewise produ
 
 **Bounded conclusion:** bounded catch-up is already part of runtime behavior, but its relationship to input-event time was previously implicit.
 
-## New finding D2 — preserving the old wall→simulation epoch creates stale latency
+## D2 — preserving the old wall→simulation epoch creates stale latency
 
 For a 500 ms gap ending at wall time 600 ms, with simulation only advancing from 100 ms to 200 ms:
 
@@ -66,9 +66,9 @@ Applying such events immediately avoids the delay but retroactively assigns them
 
 **Conclusion:** once wall duration is discarded, exact old-epoch mapping and immediate responsiveness cannot both be preserved. A discontinuity policy is required.
 
-## New candidate D3 — tail-window bounded catch-up
+## D3 — tail-window bounded catch-up
 
-A stronger candidate interpretation of the existing 100 ms clamp is:
+The strongest current candidate interpretation of the existing 100 ms clamp is:
 
 > When a visible long frame gap exceeds the accepted catch-up budget, treat the retained simulation interval as corresponding to the most recent accepted wall-time tail, not the earliest part of the lost gap.
 
@@ -98,13 +98,13 @@ This policy survived an adversarial phase stress:
 - quantization latency remained bounded by one 60 Hz fixed tick;
 - the 100 ms accepted window consistently contributed six physics ticks without changing accumulator phase.
 
-**Status:** strong candidate, not yet promoted runtime architecture.
+**Status:** qualified as an isolated policy specimen, not yet a promoted runtime architecture.
 
-## New candidate D4 — visibility/session discontinuity should be stronger than an ordinary visible hitch
+## D4 — visibility/session discontinuity should be stronger than an ordinary visible hitch
 
 Browser platform behavior makes hidden/background operation qualitatively different from an ordinary frame stall: rendering callbacks can be paused/throttled and visibility transitions provide an explicit lifecycle boundary.
 
-Candidate policy:
+Current candidate policy:
 
 - continuous visible frames: earliest-causal mapping inside the same epoch;
 - visible long stall with discarded wall time: tail-window bounded catch-up;
@@ -112,38 +112,79 @@ Candidate policy:
 
 This distinction is deliberate. A hidden-tab resume should not necessarily replay six ticks of stale interaction merely because the generic frame clamp is 100 ms.
 
+## D5 — isolated frame/epoch mapper now makes those semantics executable
+
+`src/temporal-frame-epoch.js` introduces an isolated `TemporalFrameEpochMapper` with no DOM or Donor dependency.
+
+It makes three frame states explicit:
+
+- `continuous`;
+- `tail-window`;
+- `hard-cut`.
+
+It also classifies event timestamps explicitly as:
+
+- `retained`;
+- `discarded-past`;
+- `future`;
+- `late-after-consume`;
+- `epoch-boundary`.
+
+The mapper owns bounded wall-time accounting, fixed-step accumulator phase and epoch identity without changing the actual character controller.
+
+Its crucible passed:
+
+- deterministic continuous-frame contract;
+- explicit 500 ms gap → 100 ms retained tail;
+- stale/recent event classification;
+- late-after-consume exposure;
+- hard-cut accumulator reset without advancing simulation;
+- 256 seeded randomized schedules × 180 frame transitions;
+- repeated long stalls and hard cuts;
+- monotonic simulation tick time;
+- frame accounting identity `raw = accepted + discarded`;
+- retained event entitlement remained inside the accepted clock window.
+
+The complete R2 workflow, including all earlier buffer/intent/discontinuity tests, remained green at mapper qualification.
+
+**Bounded conclusion:** the project now has an executable temporal boundary capable of representing the policy discovered by the research. This does not yet prove that browser event delivery and existing controls can be integrated without semantic loss.
+
 ## Important unresolved seam — delivery order around the first resume frame
 
 The browser event loop can queue user-interaction tasks separately from rendering work. An event may carry a historical occurrence timestamp yet its handler can execute only after other work has advanced.
 
-The isolated R2 buffer now detects and rejects events behind the consumed simulation frontier, but the real runtime still needs a policy for event handlers arriving around a discontinuity boundary.
+The R2 buffer and frame mapper now expose this condition rather than silently retiming it, but the real runtime still needs a policy for event handlers arriving around a discontinuity boundary.
 
 Do not hide this by clamping timestamps silently.
 
-The next integration specimen should explicitly model:
+The next integration specimen should explicitly observe/model:
 
 1. wall-time occurrence (`Event.timeStamp`);
 2. handler/delivery time;
 3. retained wall-time window for the frame;
 4. simulation frontier before and after catch-up;
 5. temporal epoch id;
-6. classification of events as retained, boundary-state reconciliation, stale edge, or late-after-consume.
+6. event classification;
+7. whether a state event is reconciliation vs ordinary retained history;
+8. whether an edge is stale, retained, or late-after-consume.
 
 ## Next gate
 
-Do not wire the full existing `PlayerInput` directly to the R2 buffer yet.
+Do not wire the full existing `PlayerInput` directly into production runtime yet.
 
-First create a narrow **temporal frame/epoch mapper** independent of DOM controls and Donor mechanics. It should make frame policy executable and inspectable:
+Create one narrow **browser delivery specimen** that uses real DOM-style event timestamps and the isolated mapper/buffer without changing Donor mechanics. Its purpose is to falsify the seam between browser delivery order and the already-qualified temporal substrate.
 
-- continuous frame → same epoch;
-- visible gap <= 100 ms → continuous bounded progression;
-- visible gap > 100 ms → explicit tail-window discontinuity metadata;
-- visibility/session cut → hard new epoch;
-- map retained wall timestamps into simulation entitlement;
-- classify stale/cross-epoch input rather than silently retiming it;
-- preserve fixed-step accumulator phase.
+At minimum cover:
 
-Then falsify that mapper against randomized frame schedules, repeated discontinuities and visibility cuts before browser integration.
+- normal continuous key transitions;
+- visible long main-thread stall;
+- event occurrence inside the retained tail;
+- event occurrence inside discarded past;
+- event handler arriving after a frame has consumed its entitlement;
+- `blur`/visibility hard cut;
+- held state reconciliation vs stale edge behavior.
+
+Only if this survives should `PlayerInput` integration be designed.
 
 ## Scope boundary
 
@@ -157,4 +198,4 @@ This checkpoint does not:
 - implement rollback;
 - begin A3/A3b repair or E20 gameplay work.
 
-**Current stage: TEMPORAL DISCONTINUITY SEMANTICS CHARACTERIZED / FRAME-EPOCH MAPPER NEXT.**
+**Current stage: TEMPORAL SUBSTRATE + FRAME-EPOCH MAPPER QUALIFIED IN ISOLATION / BROWSER DELIVERY SPECIMEN NEXT.**
