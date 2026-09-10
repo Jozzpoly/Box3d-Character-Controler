@@ -12,6 +12,7 @@ on:
       - scripts/r2-temporal-intent-boundary-crucible.mjs
       - scripts/r2-late-delivery-reality-crucible.mjs
       - scripts/r2-discontinuity-policy-crucible.mjs
+      - scripts/r2-tail-window-phase-stress.mjs
       - .github/workflows/r2-temporal-input-substrate.yml
   workflow_dispatch:
 
@@ -40,3 +41,5 @@ jobs:
         run: node scripts/r2-late-delivery-reality-crucible.mjs
       - name: Compare temporal discontinuity policies
         run: node scripts/r2-discontinuity-policy-crucible.mjs
+      - name: Stress tail window across accumulator phases
+        run: node scripts/r2-tail-window-phase-stress.mjs
