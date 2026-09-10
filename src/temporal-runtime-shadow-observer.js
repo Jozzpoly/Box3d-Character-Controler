@@ -14,7 +14,14 @@ export class TemporalRuntimeShadowObserver {
     this.shadow = new TemporalInputShadow(now ? { now } : {}).install({ windowTarget: target, touchRoot });
     this.recentLimit = recentLimit;
     this.recent = [];
-    this.counts = { frames: 0, events: 0, lifecycleCuts: 0, missedTicks: 0, prematureTicks: 0 };
+    this.counts = {
+      frames: 0,
+      events: 0,
+      lifecycleCuts: 0,
+      missedTicks: 0,
+      prematureTicks: 0,
+      frameTickMismatches: 0,
+    };
     this.classifications = Object.create(null);
     this.controls = Object.create(null);
     this.maxDeliveryDelay = 0;
@@ -62,7 +69,17 @@ export class TemporalRuntimeShadowObserver {
     return { frame, audits };
   }
 
-  endFrame(frame) {
+  endFrame(frame, { actualTicks = null } = {}) {
+    if (Number.isInteger(actualTicks) && actualTicks >= 0 && actualTicks !== frame.ticks.length) {
+      this.counts.frameTickMismatches += 1;
+      this._remember({
+        classification: 'frame-tick-mismatch',
+        predictedTicks: frame.ticks.length,
+        actualTicks,
+        frameKind: frame.kind,
+        frameEpoch: frame.epoch,
+      });
+    }
     this.probe.consumeFrame(frame);
   }
 
@@ -77,6 +94,7 @@ export class TemporalRuntimeShadowObserver {
       simulationEpoch: this.mapper.epoch,
       lifecycleEpoch: this.shadow.lifecycleEpoch,
       pendingEvents: this.shadow.summary().pending,
+      trustworthyTimeline: this.counts.frameTickMismatches === 0,
     };
   }
 
