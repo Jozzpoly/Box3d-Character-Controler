@@ -10,6 +10,7 @@ on:
       - scripts/r2-temporal-input-buffer-contract.mjs
       - scripts/r2-temporal-input-buffer-stress.mjs
       - scripts/r2-temporal-intent-boundary-crucible.mjs
+      - scripts/r2-late-delivery-reality-crucible.mjs
       - .github/workflows/r2-temporal-input-substrate.yml
   workflow_dispatch:
 
@@ -34,3 +35,5 @@ jobs:
         run: node scripts/r2-temporal-input-buffer-stress.mjs
       - name: Verify temporal Donor intent boundary
         run: node scripts/r2-temporal-intent-boundary-crucible.mjs
+      - name: Characterize late delivery and temporal discontinuity
+        run: node scripts/r2-late-delivery-reality-crucible.mjs
