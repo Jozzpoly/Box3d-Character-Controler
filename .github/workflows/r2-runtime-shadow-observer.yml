@@ -44,5 +44,7 @@ jobs:
           node scripts/r2-real-input-timeline-probe-crucible.mjs
       - name: Verify runtime shadow observer
         run: node scripts/r2-runtime-shadow-observer-contract.mjs
+      - name: Guard runtime shadow non-authority boundary
+        run: node scripts/r2-runtime-shadow-integration-boundary.mjs
       - name: Build runtime
         run: npm run build
