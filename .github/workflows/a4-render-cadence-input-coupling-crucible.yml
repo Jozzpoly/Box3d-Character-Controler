@@ -1,0 +1,42 @@
+name: A4 render-cadence input coupling crucible
+
+on:
+  push:
+    branches:
+      - research/donor-foundation-falsification-2026-09-10
+    paths:
+      - scripts/a4-render-cadence-input-coupling-crucible.mjs
+      - .github/workflows/a4-render-cadence-input-coupling-crucible.yml
+      - src/follow-camera.js
+      - src/player-input.js
+      - src/character.js
+      - src/constraint-velocity-character.js
+      - src/constraint-velocity.js
+      - src/donor/**
+      - package.json
+      - package-lock.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  characterize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run A4 characterization
+        run: node scripts/a4-render-cadence-input-coupling-crucible.mjs
+      - name: Upload A4 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: a4-render-cadence-input-coupling-evidence
+          path: tmp/a4/results.json
+          retention-days: 90
