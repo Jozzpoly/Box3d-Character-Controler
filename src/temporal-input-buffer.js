@@ -26,6 +26,9 @@ export class TemporalInputBuffer {
 
   _enqueue(event) {
     requireFiniteTime(event.time, 'event time');
+    if (event.time <= this.lastSampleTime) {
+      throw new Error(`late event at ${event.time} arrived after simulation consumed through ${this.lastSampleTime}`);
+    }
     const order = this._claimOrder(event.order);
     this.events.push({ ...event, order });
     this.events.sort((a, b) => a.time - b.time || a.order - b.order);
