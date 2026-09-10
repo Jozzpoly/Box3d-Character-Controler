@@ -4,14 +4,16 @@ export class TemporalInputTimelineProbe {
     this.maxFrames = maxFrames;
     this.frames = [];
     this.consumedSimTime = 0;
-    this.epoch = 0;
+    this.lastHardCutWallTime = null;
   }
 
   observeFrame(frame) {
     if (!frame || !Number.isFinite(frame.simTickEnd)) throw new TypeError('valid frame required');
     this.consumedSimTime = Math.max(this.consumedSimTime, frame.simTickEnd);
-    this.epoch = frame.epoch;
-    if (frame.kind === 'hard-cut') this.frames.length = 0;
+    if (frame.kind === 'hard-cut') {
+      this.frames.length = 0;
+      this.lastHardCutWallTime = frame.retainedWallStart;
+    }
     this.frames.push(frame);
     if (this.frames.length > this.maxFrames) this.frames.splice(0, this.frames.length - this.maxFrames);
   }
@@ -22,18 +24,29 @@ export class TemporalInputTimelineProbe {
     }
     if (!mapper || typeof mapper.classifyEvent !== 'function') throw new TypeError('frame mapper required');
 
-    if (event.epoch < this.epoch) {
-      return { classification: 'old-epoch', entitlement: null, missedTicks: null, event };
+    if (this.lastHardCutWallTime != null && event.occurrenceTime < this.lastHardCutWallTime - 1e-12) {
+      return { classification: 'discarded-hard-cut', entitlement: null, missedTicks: null, event };
     }
 
-    const frame = this._findOwningFrame(event.occurrenceTime, event.epoch);
+    const frame = this._findOwningFrame(event.occurrenceTime);
     if (!frame) {
+      const gap = this._findDiscardedGap(event.occurrenceTime);
+      if (gap) {
+        return {
+          classification: 'discarded-gap',
+          entitlement: null,
+          missedTicks: null,
+          event,
+          frameKind: gap.kind,
+          frameEpoch: gap.epoch,
+        };
+      }
       return { classification: 'unresolved-history', entitlement: null, missedTicks: null, event };
     }
 
     const mapped = mapper.classifyEvent(frame, event.occurrenceTime, { afterFrameConsumed: false });
     if (mapped.entitlement == null) {
-      return { ...mapped, missedTicks: null, event, frameKind: frame.kind };
+      return { ...mapped, missedTicks: null, event, frameKind: frame.kind, frameEpoch: frame.epoch };
     }
 
     const fixedDt = mapper.fixedDt;
@@ -52,11 +65,20 @@ export class TemporalInputTimelineProbe {
     };
   }
 
-  _findOwningFrame(wallTime, epoch) {
+  _findOwningFrame(wallTime) {
     for (let i = this.frames.length - 1; i >= 0; i--) {
       const frame = this.frames[i];
-      if (frame.epoch !== epoch) continue;
       if (wallTime >= frame.retainedWallStart - 1e-12 && wallTime <= frame.retainedWallEnd + 1e-12) return frame;
+    }
+    return null;
+  }
+
+  _findDiscardedGap(wallTime) {
+    for (let i = this.frames.length - 1; i >= 0; i--) {
+      const frame = this.frames[i];
+      if (frame.kind !== 'tail-window' || !(frame.discardedDt > 0)) continue;
+      const rawWallStart = frame.retainedWallEnd - frame.rawDt;
+      if (wallTime >= rawWallStart - 1e-12 && wallTime < frame.retainedWallStart - 1e-12) return frame;
     }
     return null;
   }
