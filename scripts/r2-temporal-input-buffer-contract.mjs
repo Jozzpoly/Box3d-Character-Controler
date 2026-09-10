@@ -36,6 +36,8 @@ const d = new TemporalInputBuffer({ held: false });
 d.enqueueState('held', true, 0.5);
 d.sampleAt(0.5);
 expectThrow(() => d.sampleAt(0.49), 'simulation rewind was silently accepted');
+expectThrow(() => d.enqueueState('held', false, 0.49), 'late event before consumed simulation time was silently accepted');
+expectThrow(() => d.enqueueEdge('jump', null, 0.5), 'late event exactly on an already-consumed tick was silently accepted');
 d.clear({ held: false });
 if (d.sampleAt(0.1).state.held !== false) throw new Error('clear did not reset epoch time/state');
 
