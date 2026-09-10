@@ -6,8 +6,11 @@ on:
       - research/donor-foundation-repair-a4-2026-09-10
     paths:
       - scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
+      - scripts/r1-a4-browser-integration-contract.mjs
       - .github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml
       - src/follow-camera.js
+      - src/main.js
+      - src/e19-owner-browser.js
       - src/player-input.js
       - src/character.js
       - src/constraint-velocity-character.js
@@ -32,6 +35,8 @@ jobs:
           node-version: 22.23.2
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Verify R1 A4 browser integration contract
+        run: node scripts/r1-a4-browser-integration-contract.mjs
       - name: Run R1 A4 fixed-step camera basis crucible
         run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
       - name: Upload R1 A4 evidence
