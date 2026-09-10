@@ -48,7 +48,7 @@ probe.observeFrame(cut);
 const beforeHardCut = probe.classifyDelivered(event(0.900, 1.001, 0), mapper);
 assert.equal(beforeHardCut.classification, 'discarded-hard-cut');
 const atBoundary = probe.classifyDelivered(event(1.000, 1.001, 1), mapper);
-assert.equal(atBoundary.classification, 'retained');
+assert.equal(atBoundary.classification, 'epoch-boundary');
 assert.equal(atBoundary.frameKind, 'hard-cut');
 
 console.log('R2 REAL INPUT TIMELINE PROBE CRUCIBLE PASS');
