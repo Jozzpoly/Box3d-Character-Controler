@@ -13,20 +13,32 @@ export class TemporalInputShadow {
     const recordKey = (kind) => (event) => {
       const key = event.key?.toLowerCase?.() ?? '';
       if (!['w', 'a', 's', 'd', 'shift', ' '].includes(key)) return;
-      this.record({ source: 'keyboard', kind, control: event.code === 'Space' ? 'jump' : key, repeat: Boolean(event.repeat) });
+      this.record({
+        source: 'keyboard',
+        kind,
+        control: event.code === 'Space' ? 'jump' : key,
+        repeat: Boolean(event.repeat),
+        occurrenceTime: this._eventTime(event),
+      });
     };
     this._listen(windowTarget, 'keydown', recordKey('down'), true);
     this._listen(windowTarget, 'keyup', recordKey('up'), true);
-    this._listen(windowTarget, 'blur', () => this.cut('blur'), true);
-    this._listen(windowTarget.document ?? document, 'visibilitychange', () => {
-      if ((windowTarget.document ?? document).hidden) this.cut('hidden');
+    this._listen(windowTarget, 'blur', (event) => this.cut('blur', this._eventTime(event)), true);
+    this._listen(windowTarget.document ?? document, 'visibilitychange', (event) => {
+      if ((windowTarget.document ?? document).hidden) this.cut('hidden', this._eventTime(event));
     }, true);
 
     if (touchRoot) {
       const pointer = (kind) => (event) => {
         const control = event.target?.closest?.('[id]')?.id ?? 'touch';
         if (!control.startsWith('touch-')) return;
-        this.record({ source: 'pointer', kind, control, pointerId: event.pointerId });
+        this.record({
+          source: 'pointer',
+          kind,
+          control,
+          pointerId: event.pointerId,
+          occurrenceTime: this._eventTime(event),
+        });
       };
       for (const kind of ['pointerdown', 'pointerup', 'pointercancel']) this._listen(touchRoot, kind, pointer(kind), true);
     }
@@ -38,8 +50,22 @@ export class TemporalInputShadow {
     this.listeners.push(() => target.removeEventListener(type, listener, capture));
   }
 
+  _eventTime(event) {
+    const stamp = event?.timeStamp;
+    return Number.isFinite(stamp) ? stamp / 1000 : this.now();
+  }
+
   record(payload) {
-    const event = Object.freeze({ sequence: ++this.sequence, wallTime: this.now(), epoch: this.epoch, ...payload });
+    const deliveryTime = this.now();
+    const occurrenceTime = Number.isFinite(payload.occurrenceTime) ? payload.occurrenceTime : deliveryTime;
+    const event = Object.freeze({
+      sequence: ++this.sequence,
+      occurrenceTime,
+      deliveryTime,
+      deliveryDelay: Math.max(0, deliveryTime - occurrenceTime),
+      epoch: this.epoch,
+      ...payload,
+    });
     this.events.push(event);
     this.counts.total += 1;
     if (payload.source === 'keyboard') this.counts.key += 1;
@@ -47,10 +73,10 @@ export class TemporalInputShadow {
     return event;
   }
 
-  cut(reason) {
+  cut(reason, occurrenceTime = this.now()) {
     this.epoch += 1;
     this.counts.cut += 1;
-    return this.record({ source: 'epoch', kind: 'cut', control: reason });
+    return this.record({ source: 'epoch', kind: 'cut', control: reason, occurrenceTime });
   }
 
   drain() {
