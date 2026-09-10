@@ -8,7 +8,12 @@ import { FollowCamera } from '../src/follow-camera.js';
 const b3 = await Box3D();
 const FIXED_DT = 1 / 60;
 const SUBSTEPS = 4;
-const DURATION = 1.0;
+const OBSERVATION_DURATION = 1.0;
+// Equal nanosecond pad for every schedule. The production loop keeps its exact
+// `while (accumulator >= FIXED_DT)` condition; this only prevents binary rounding of
+// an exact 1.0 s synthetic schedule from turning one case into a 59-tick experiment.
+const SCHEDULE_PAD = 1e-9;
+const SCHEDULE_DURATION = OBSERVATION_DURATION + SCHEDULE_PAD;
 const TARGET_YAW = Math.PI / 2;
 
 function fakeCanvas() {
@@ -59,7 +64,7 @@ function makeUniformSchedule(hz) {
   const frames = [];
   let elapsed = 0;
   for (let i = 0; i < count; i++) {
-    const dt = i === count - 1 ? DURATION - elapsed : 1 / hz;
+    const dt = i === count - 1 ? SCHEDULE_DURATION - elapsed : 1 / hz;
     frames.push(dt);
     elapsed += dt;
   }
@@ -67,13 +72,13 @@ function makeUniformSchedule(hz) {
 }
 
 function makeHitchSchedule() {
-  // Same accepted wall-clock duration as the uniform schedules. One 100 ms frame is
-  // legal in main.js because frameDt is clamped to 0.1; the remaining 54 frames are
-  // ordinary 60 Hz frames.
+  // One 100 ms frame is legal in main.js because frameDt is clamped to 0.1; the
+  // remaining 54 frames are ordinary 60 Hz frames. The same nanosecond pad used by
+  // every uniform schedule is placed only on the final frame.
   const frames = [0.1];
   for (let i = 0; i < 54; i++) frames.push(1 / 60);
   const sum = frames.reduce((a, v) => a + v, 0);
-  frames[frames.length - 1] += DURATION - sum;
+  frames[frames.length - 1] += SCHEDULE_DURATION - sum;
   return frames;
 }
 
@@ -171,7 +176,7 @@ for (const result of Object.values(results)) {
   if (result.physicsTicks !== 60) {
     throw new Error(`${result.name}: expected exactly 60 physics ticks, got ${result.physicsTicks}`);
   }
-  if (Math.abs(result.acceptedRenderTime - DURATION) > 1e-9) {
+  if (Math.abs(result.acceptedRenderTime - SCHEDULE_DURATION) > 1e-10) {
     throw new Error(`${result.name}: accepted render duration drifted: ${result.acceptedRenderTime}`);
   }
 }
@@ -207,9 +212,11 @@ const payload = {
   donorRevision: CURRENT_DONOR_REVISION,
   fixedDt: FIXED_DT,
   substeps: SUBSTEPS,
-  duration: DURATION,
+  observationDuration: OBSERVATION_DURATION,
+  equalSchedulePadSeconds: SCHEDULE_PAD,
+  scheduleDuration: SCHEDULE_DURATION,
   targetCameraYawRadians: TARGET_YAW,
-  interpretationBoundary: 'Characterization only. Every case executes exactly 60 identical-duration physics ticks with W held; only render-frame cadence controls when the real FollowCamera yaw is updated relative to those ticks. No timing architecture change is applied.',
+  interpretationBoundary: 'Characterization only. Every case executes exactly 60 identical-duration physics ticks with W held; only render-frame cadence controls when the real FollowCamera yaw is updated relative to those ticks. The production accumulator comparison and browser-loop ordering remain unchanged.',
   results,
   pairs,
   uniformEndpointDelta,
