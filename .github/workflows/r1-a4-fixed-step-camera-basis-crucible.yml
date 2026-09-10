@@ -9,6 +9,7 @@ on:
       - scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
       - scripts/r1-a4-browser-integration-contract.mjs
       - scripts/r1-a4-presentation-isolation-stress.mjs
+      - scripts/a4b-wall-clock-input-batching-crucible.mjs
       - .github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml
       - src/follow-camera.js
       - src/main.js
@@ -43,6 +44,8 @@ jobs:
         run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
       - name: Stress presentation isolation invariant
         run: node scripts/r1-a4-presentation-isolation-stress.mjs
+      - name: Characterize wall-clock input batching boundary
+        run: node scripts/a4b-wall-clock-input-batching-crucible.mjs
       - name: Upload R1 A4 evidence
         uses: actions/upload-artifact@v4
         with:
