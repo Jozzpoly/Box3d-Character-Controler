@@ -5,6 +5,13 @@ function damp(current, target, rate, dt) {
   return current + (target - current) * (1 - Math.exp(-rate * dt));
 }
 
+function basisFromYaw(yaw) {
+  return {
+    forward: [-Math.sin(yaw), 0, -Math.cos(yaw)],
+    right: [Math.cos(yaw), 0, -Math.sin(yaw)],
+  };
+}
+
 export class FollowCamera {
   constructor(camera, canvas, options = {}) {
     this.camera = camera;
@@ -15,6 +22,7 @@ export class FollowCamera {
     this.desiredPitch = 0.31;
     this.desiredDistance = 6.0;
     this.yaw = this.desiredYaw;
+    this.controlYaw = this.desiredYaw;
     this.pitch = this.desiredPitch;
     this.distance = this.desiredDistance;
     this.target = new THREE.Vector3();
@@ -67,16 +75,22 @@ export class FollowCamera {
     this.desiredPitch = 0.31;
     this.desiredDistance = 6.0;
     this.yaw = this.desiredYaw;
+    this.controlYaw = this.desiredYaw;
     this.pitch = this.desiredPitch;
     this.distance = this.desiredDistance;
     this.dragPointerId = null;
   }
 
   basis() {
-    return {
-      forward: [-Math.sin(this.yaw), 0, -Math.cos(this.yaw)],
-      right: [Math.cos(this.yaw), 0, -Math.sin(this.yaw)],
-    };
+    return basisFromYaw(this.yaw);
+  }
+
+  controlBasis() {
+    return basisFromYaw(this.controlYaw);
+  }
+
+  advanceControl(dt) {
+    this.controlYaw = damp(this.controlYaw, this.desiredYaw, 17, dt);
   }
 
   snap(target) {
@@ -85,6 +99,7 @@ export class FollowCamera {
     this.smoothedTarget.copy(this.target);
     this.verticalFocus = focusY;
     this.yaw = this.desiredYaw;
+    this.controlYaw = this.desiredYaw;
     this.pitch = this.desiredPitch;
     this.distance = this.desiredDistance;
     this._placeCamera(1);

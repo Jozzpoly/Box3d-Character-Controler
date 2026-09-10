@@ -1,0 +1,42 @@
+name: R1 A4 fixed-step camera basis crucible
+
+on:
+  push:
+    branches:
+      - research/donor-foundation-repair-a4-2026-09-10
+    paths:
+      - scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
+      - .github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml
+      - src/follow-camera.js
+      - src/player-input.js
+      - src/character.js
+      - src/constraint-velocity-character.js
+      - src/constraint-velocity.js
+      - src/donor/**
+      - package.json
+      - package-lock.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  falsify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run R1 A4 fixed-step camera basis crucible
+        run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
+      - name: Upload R1 A4 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: r1-a4-fixed-step-camera-basis-evidence
+          path: tmp/r1-a4/results.json
+          retention-days: 90
