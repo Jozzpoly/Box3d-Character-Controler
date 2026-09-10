@@ -1,0 +1,132 @@
+name: R1 A4 browser integration executor
+
+on:
+  push:
+    branches:
+      - research/donor-foundation-repair-a4-2026-09-10
+    paths:
+      - .github/workflows/r1-a4-browser-integration-executor.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.event.head_commit.message == 'Install one-shot R1 browser integration executor'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Exact preflight and bounded patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_parent='809bb0dead9b065fbd83e31d5913e4a0f689c055'
+          actual_parent="$(git rev-parse HEAD^)"
+          test "$actual_parent" = "$expected_parent"
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected exactly one match, found {count}: {old!r}')
+              p.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              'src/main.js',
+              '    const basis = followCamera.basis();\n    const intent = playerInput.sample(basis);',
+              '    const basis = followCamera.controlBasis();\n    const intent = playerInput.sample(basis);',
+          )
+          replace_once(
+              'src/main.js',
+              '    character.postStep(dt);\n    capture?.record(intent);',
+              '    character.postStep(dt);\n    capture?.record(intent);\n    followCamera.advanceControl(dt);',
+          )
+          replace_once(
+              'src/e19-owner-browser.js',
+              '  function aimForHand(hand) {\n    const basis = followCamera.basis();',
+              '  function aimForHand(hand, basis = followCamera.basis()) {',
+          )
+          replace_once(
+              'src/e19-owner-browser.js',
+              '  function updateReachAndAcquire(hand) {\n    const aim = aimForHand(hand);',
+              '  function updateReachAndAcquire(hand, basis) {\n    const aim = aimForHand(hand, basis);',
+          )
+          replace_once(
+              'src/e19-owner-browser.js',
+              '    const basis = followCamera.basis();\n    const intent = playerInput.sample(basis);',
+              '    const basis = followCamera.controlBasis();\n    const intent = playerInput.sample(basis);',
+          )
+          replace_once(
+              'src/e19-owner-browser.js',
+              '    for (const hand of hands) updateReachAndAcquire(hand);',
+              '    for (const hand of hands) updateReachAndAcquire(hand, basis);',
+          )
+          replace_once(
+              'src/e19-owner-browser.js',
+              '    b3.b3World_Step(playground.world, dt, SUBSTEPS);\n    character.postStep(dt);',
+              '    b3.b3World_Step(playground.world, dt, SUBSTEPS);\n    character.postStep(dt);\n    followCamera.advanceControl(dt);',
+          )
+          replace_once(
+              '.github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml',
+              '      - src/follow-camera.js\n',
+              '      - src/follow-camera.js\n      - src/main.js\n      - src/e19-owner-browser.js\n      - scripts/r1-a4-browser-integration-contract.mjs\n',
+          )
+
+          Path('scripts/r1-a4-browser-integration-contract.mjs').write_text(r'''import fs from 'node:fs';
+
+function count(text, needle) {
+  return text.split(needle).length - 1;
+}
+
+function requireCount(label, text, needle, expected) {
+  const actual = count(text, needle);
+  if (actual !== expected) throw new Error(`${label}: expected ${expected} occurrence(s) of ${needle}, got ${actual}`);
+}
+
+const main = fs.readFileSync('src/main.js', 'utf8');
+const e19 = fs.readFileSync('src/e19-owner-browser.js', 'utf8');
+
+requireCount('main fixed-step basis', main, 'const basis = followCamera.controlBasis();', 1);
+requireCount('main fixed-step advance', main, 'followCamera.advanceControl(dt);', 1);
+requireCount('E19 fixed-step basis', e19, 'const basis = followCamera.controlBasis();', 1);
+requireCount('E19 fixed-step advance', e19, 'followCamera.advanceControl(dt);', 1);
+requireCount('E19 mechanical acquisition basis', e19, 'updateReachAndAcquire(hand, basis)', 2);
+requireCount('E19 render-preview default visual basis', e19, 'function aimForHand(hand, basis = followCamera.basis())', 1);
+
+if (main.includes('const basis = followCamera.basis();\n    const intent = playerInput.sample(basis);')) {
+  throw new Error('main physicsTick still samples render camera basis');
+}
+if (e19.includes('const basis = followCamera.basis();\n    const intent = playerInput.sample(basis);')) {
+  throw new Error('E19 physicsTick still samples render camera basis');
+}
+
+console.log('R1 A4 browser integration contract PASS');
+''')
+
+          replace_once(
+              '.github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml',
+              '      - name: Run R1 A4 fixed-step camera basis crucible\n        run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs\n',
+              '      - name: Verify R1 A4 browser integration contract\n        run: node scripts/r1-a4-browser-integration-contract.mjs\n      - name: Run R1 A4 fixed-step camera basis crucible\n        run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs\n',
+          )
+          PY
+          node scripts/r1-a4-browser-integration-contract.mjs
+          rm .github/workflows/r1-a4-browser-integration-executor.yml
+          git diff --check
+          changed="$(git status --short | sed -E 's/^...//' | sort)"
+          expected="$(printf '%s\n' '.github/workflows/r1-a4-browser-integration-executor.yml' '.github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml' 'scripts/r1-a4-browser-integration-contract.mjs' 'src/e19-owner-browser.js' 'src/main.js' | sort)"
+          test "$changed" = "$expected"
+      - name: Commit bounded integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Integrate R1 fixed-step camera basis into browser runtimes'
+          git push origin HEAD:research/donor-foundation-repair-a4-2026-09-10
