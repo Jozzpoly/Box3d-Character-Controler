@@ -1,0 +1,269 @@
+name: Repo cleanup final transaction specimen
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - .github/workflows/repo-cleanup-final-transaction-specimen.yml
+
+permissions:
+  contents: read
+
+jobs:
+  specimen:
+    runs-on: ubuntu-latest
+    env:
+      ARCHIVE_BRANCH: archive/pre-cleanup-2026-09-09-dca388f4
+      ARCHIVE_SHA: fd5cae330fb80280617ce7b241347f1edafdb875
+      TAG_NAME: archive/pre-cleanup-2026-09-09-dca388f4
+      TAG_OBJECT_SHA: 7423e25ed9532f410a35cc4f7c3ff9c492a7fbc3
+      REHEARSAL_SHA: 452f7b51a7e1b46b08ea74a21affeec33dbe0216
+      HELPER_BRANCH: maintenance/repo-cleanup-adaptation-2026-09-09
+    steps:
+      - name: Checkout exact helper
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch complete branch and tag graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --prune origin \
+            '+refs/heads/*:refs/remotes/origin/*' \
+            '+refs/tags/*:refs/tags/*'
+
+      - name: Build exact 95-entry execution manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/final-transaction
+          git show "refs/remotes/origin/${ARCHIVE_BRANCH}:archive/recovery-manifest.json" > evidence/final-transaction/recovery-manifest.json
+          git ls-remote --heads origin > evidence/final-transaction/live-heads.txt
+          git ls-remote origin "refs/tags/${TAG_NAME}" "refs/tags/${TAG_NAME}^{}" > evidence/final-transaction/live-tag.txt
+          node <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const manifest = JSON.parse(fs.readFileSync('evidence/final-transaction/recovery-manifest.json','utf8'));
+          const headsText = fs.readFileSync('evidence/final-transaction/live-heads.txt','utf8').trim();
+          const headRows = headsText ? headsText.split(/\r?\n/).map(line => {
+            const [oid, ref] = line.split(/\s+/);
+            return { ref, oid };
+          }) : [];
+          const heads = new Map(headRows.map(x => [x.ref, x.oid]));
+          const aliases = [
+            'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10',
+            'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-backup',
+            'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-final',
+            'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-run',
+            'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-v2',
+            'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-v3',
+            'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-v4',
+          ].map(name => `refs/heads/${name}`);
+          const aliasSha = process.env.REHEARSAL_SHA;
+          const archiveRef = `refs/heads/${process.env.ARCHIVE_BRANCH}`;
+          const helperRef = `refs/heads/${process.env.HELPER_BRANCH}`;
+          const mainRef = 'refs/heads/main';
+          const zero = '0000000000000000000000000000000000000000';
+
+          if (manifest.historicalBranchCount !== 86 || manifest.historicalBranches.length !== 86) throw new Error('Frozen manifest count mismatch');
+          if (manifest.canonicalSha !== 'b0eac372035ca12a63f808eb3201edd3605a163c') throw new Error('Frozen canonical SHA mismatch');
+          if (manifest.historicalArchiveFreezeSha256 !== 'dca388f456480489492ea2069c2ce8ecd5930d3ab41028cda88f25fe72cc9584') throw new Error('Frozen archive hash mismatch');
+
+          const historicalDeletes = [];
+          let absentCanary = 0;
+          for (const entry of manifest.historicalBranches) {
+            if (entry.ref === 'refs/heads/tmp-noop') {
+              if (heads.has(entry.ref)) throw new Error(`Canary unexpectedly live: ${heads.get(entry.ref)}`);
+              absentCanary++;
+              continue;
+            }
+            if (heads.get(entry.ref) !== entry.expectedSha) throw new Error(`Historical ref drift ${entry.ref}: expected ${entry.expectedSha}, got ${heads.get(entry.ref) || 'ABSENT'}`);
+            historicalDeletes.push({ name: entry.ref, beforeOid: entry.expectedSha, afterOid: zero, force: true, class: 'frozen-historical-delete' });
+          }
+          if (historicalDeletes.length !== 85 || absentCanary !== 1) throw new Error(`Historical disposition mismatch: deletes=${historicalDeletes.length} absent=${absentCanary}`);
+          const aliasDeletes = aliases.map(name => {
+            if (heads.get(name) !== aliasSha) throw new Error(`Rehearsal alias drift ${name}: ${heads.get(name) || 'ABSENT'}`);
+            return { name, beforeOid: aliasSha, afterOid: zero, force: true, class: 'rehearsal-alias-delete' };
+          });
+          if (heads.get(mainRef) !== manifest.canonicalSha) throw new Error(`main drift: ${heads.get(mainRef)}`);
+          if (heads.get(archiveRef) !== process.env.ARCHIVE_SHA) throw new Error(`archive drift: ${heads.get(archiveRef)}`);
+          if (heads.get(helperRef) !== process.env.GITHUB_SHA) throw new Error(`helper drift: expected ${process.env.GITHUB_SHA}, got ${heads.get(helperRef)}`);
+
+          const retained = [
+            { name: mainRef, beforeOid: manifest.canonicalSha, afterOid: manifest.canonicalSha, class: 'retain-main' },
+            { name: archiveRef, beforeOid: process.env.ARCHIVE_SHA, afterOid: process.env.ARCHIVE_SHA, class: 'retain-archive' },
+            { name: helperRef, beforeOid: process.env.GITHUB_SHA, afterOid: process.env.GITHUB_SHA, class: 'retain-helper' },
+          ];
+          const expectedHeadRefs = new Set([...historicalDeletes.map(x=>x.name), ...aliasDeletes.map(x=>x.name), ...retained.map(x=>x.name)]);
+          const unknown = headRows.filter(x => !expectedHeadRefs.has(x.ref));
+          const missing = [...expectedHeadRefs].filter(ref => !heads.has(ref));
+          if (headRows.length !== 95 || expectedHeadRefs.size !== 95 || unknown.length || missing.length) {
+            throw new Error(`Head namespace mismatch actual=${headRows.length} expected=${expectedHeadRefs.size} unknown=${JSON.stringify(unknown)} missing=${JSON.stringify(missing)}`);
+          }
+
+          const tagText = fs.readFileSync('evidence/final-transaction/live-tag.txt','utf8').trim();
+          const tagRows = tagText ? tagText.split(/\r?\n/).map(line => { const [oid, ref] = line.split(/\s+/); return {oid, ref}; }) : [];
+          const tagRef = `refs/tags/${process.env.TAG_NAME}`;
+          const directTag = tagRows.find(x => x.ref === tagRef);
+          const peeledTag = tagRows.find(x => x.ref === `${tagRef}^{}`);
+          if (!directTag || directTag.oid !== process.env.TAG_OBJECT_SHA) throw new Error(`Annotated tag object mismatch: ${JSON.stringify(tagRows)}`);
+          if (!peeledTag || peeledTag.oid !== process.env.ARCHIVE_SHA) throw new Error(`Annotated tag peel mismatch: ${JSON.stringify(tagRows)}`);
+
+          const refUpdates = [...historicalDeletes, ...aliasDeletes, ...retained]
+            .sort((a,b) => a.name.localeCompare(b.name));
+          if (refUpdates.length !== 95) throw new Error(`Transaction entry count mismatch ${refUpdates.length}`);
+          const executable = refUpdates.map(({class, ...x}) => x);
+          const body = JSON.stringify({
+            schema: 'box3d-repo-cleanup-final-branch-transaction-v1',
+            repositoryId: 'R_kgDOUHjIFQ',
+            expectedHeadCountBefore: 95,
+            expectedHeadCountAfter: 3,
+            deleteCount: 92,
+            retainCount: 3,
+            absentCanary: 'refs/heads/tmp-noop',
+            annotatedTag: { ref: tagRef, objectSha: directTag.oid, peeledCommitSha: peeledTag.oid },
+            helperSha: process.env.GITHUB_SHA,
+            refUpdates: executable,
+          }, null, 2) + '\n';
+          fs.writeFileSync('evidence/final-transaction/final-branch-transaction.json', body);
+          fs.writeFileSync('evidence/final-transaction/final-branch-transaction.sha256', `${crypto.createHash('sha256').update(body).digest('hex')}  final-branch-transaction.json\n`);
+          fs.writeFileSync('evidence/final-transaction/delete-refs.txt', [...historicalDeletes, ...aliasDeletes].map(x=>`${x.name}\t${x.beforeOid}`).sort().join('\n')+'\n');
+          fs.writeFileSync('evidence/final-transaction/retained-refs.txt', retained.map(x=>`${x.name}\t${x.beforeOid}`).sort().join('\n')+'\n');
+          fs.writeFileSync('evidence/final-transaction/preflight.json', JSON.stringify({
+            headCount: headRows.length,
+            historicalDeletes: historicalDeletes.length,
+            rehearsalAliasDeletes: aliasDeletes.length,
+            retainedHeads: retained.length,
+            absentCanary,
+            unknownHeads: unknown,
+            missingHeads: missing,
+            tagObjectSha: directTag.oid,
+            tagPeeledSha: peeledTag.oid,
+            canonicalSha: manifest.canonicalSha,
+            archiveSha: process.env.ARCHIVE_SHA,
+            helperSha: process.env.GITHUB_SHA,
+          }, null, 2)+'\n');
+          console.log(`TRANSACTION_SPECIMEN heads=${headRows.length} deletes=${historicalDeletes.length + aliasDeletes.length} retained=${retained.length} canaryAbsent=${absentCanary} tagObject=${directTag.oid} tagPeeled=${peeledTag.oid}`);
+          NODE
+
+      - name: Build exact real-graph shadow baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHADOW_BASE="$RUNNER_TEMP/repo-cleanup-shadow-base.git"
+          git clone --bare --no-local . "$SHADOW_BASE"
+          while IFS=$'\t' read -r ref oid; do
+            git --git-dir="$SHADOW_BASE" update-ref "$ref" "$oid"
+          done < <(awk '{print $2 "\t" $1}' evidence/final-transaction/live-heads.txt)
+          git --git-dir="$SHADOW_BASE" update-ref "refs/tags/${TAG_NAME}" "$TAG_OBJECT_SHA"
+          test "$(git --git-dir="$SHADOW_BASE" for-each-ref --format='%(refname)' refs/heads | wc -l)" -eq 95
+          test "$(git --git-dir="$SHADOW_BASE" rev-parse "refs/tags/${TAG_NAME}")" = "$TAG_OBJECT_SHA"
+          test "$(git --git-dir="$SHADOW_BASE" rev-parse "refs/tags/${TAG_NAME}^{}")" = "$ARCHIVE_SHA"
+          cp -a "$SHADOW_BASE" "$RUNNER_TEMP/repo-cleanup-shadow-valid.git"
+          cp -a "$SHADOW_BASE" "$RUNNER_TEMP/repo-cleanup-shadow-poison.git"
+
+      - name: Prove poisoned transaction changes zero refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHADOW="$RUNNER_TEMP/repo-cleanup-shadow-poison.git"
+          HELPER_SHA="$GITHUB_SHA"
+          {
+            echo start
+            while IFS=$'\t' read -r ref oid; do echo "delete $ref $oid"; done < evidence/final-transaction/delete-refs.txt
+            while IFS=$'\t' read -r ref oid; do
+              if [ "$ref" = "refs/heads/main" ]; then
+                echo "verify $ref $HELPER_SHA"
+              else
+                echo "verify $ref $oid"
+              fi
+            done < evidence/final-transaction/retained-refs.txt
+            echo prepare
+            echo commit
+          } > evidence/final-transaction/poisoned-update-ref.txt
+          set +e
+          git --git-dir="$SHADOW" update-ref --stdin < evidence/final-transaction/poisoned-update-ref.txt > evidence/final-transaction/poisoned-stdout.txt 2> evidence/final-transaction/poisoned-stderr.txt
+          rc=$?
+          set -e
+          test "$rc" -ne 0
+          test "$(git --git-dir="$SHADOW" for-each-ref --format='%(refname)' refs/heads | wc -l)" -eq 95
+          while IFS=$'\t' read -r ref oid; do
+            test "$(git --git-dir="$SHADOW" rev-parse "$ref")" = "$oid"
+          done < <(awk '{print $2 "\t" $1}' evidence/final-transaction/live-heads.txt)
+          test "$(git --git-dir="$SHADOW" rev-parse "refs/tags/${TAG_NAME}")" = "$TAG_OBJECT_SHA"
+          printf 'poisoned_exit_code=%s\nheads_after=95\ntag_object_after=%s\nresult=ATOMIC_REJECT_ZERO_DELETES\n' "$rc" "$TAG_OBJECT_SHA" > evidence/final-transaction/poisoned-summary.txt
+
+      - name: Prove valid transaction exact shadow outcome and preservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHADOW="$RUNNER_TEMP/repo-cleanup-shadow-valid.git"
+          {
+            echo start
+            while IFS=$'\t' read -r ref oid; do echo "delete $ref $oid"; done < evidence/final-transaction/delete-refs.txt
+            while IFS=$'\t' read -r ref oid; do echo "verify $ref $oid"; done < evidence/final-transaction/retained-refs.txt
+            echo prepare
+            echo commit
+          } > evidence/final-transaction/valid-update-ref.txt
+          git --git-dir="$SHADOW" update-ref --stdin < evidence/final-transaction/valid-update-ref.txt > evidence/final-transaction/valid-stdout.txt 2> evidence/final-transaction/valid-stderr.txt
+          mapfile -t heads < <(git --git-dir="$SHADOW" for-each-ref --format='%(refname)' refs/heads | sort)
+          test "${#heads[@]}" -eq 3
+          test "${heads[0]}" = "refs/heads/archive/pre-cleanup-2026-09-09-dca388f4"
+          test "${heads[1]}" = "refs/heads/main"
+          test "${heads[2]}" = "refs/heads/maintenance/repo-cleanup-adaptation-2026-09-09"
+          test "$(git --git-dir="$SHADOW" rev-parse refs/heads/main)" = "b0eac372035ca12a63f808eb3201edd3605a163c"
+          test "$(git --git-dir="$SHADOW" rev-parse "refs/heads/${ARCHIVE_BRANCH}")" = "$ARCHIVE_SHA"
+          test "$(git --git-dir="$SHADOW" rev-parse "refs/heads/${HELPER_BRANCH}")" = "$GITHUB_SHA"
+          test "$(git --git-dir="$SHADOW" rev-parse "refs/tags/${TAG_NAME}")" = "$TAG_OBJECT_SHA"
+          test "$(git --git-dir="$SHADOW" rev-parse "refs/tags/${TAG_NAME}^{}")" = "$ARCHIVE_SHA"
+          while IFS=$'\t' read -r ref oid; do
+            if git --git-dir="$SHADOW" show-ref --verify --quiet "$ref"; then echo "unexpected live delete ref: $ref" >&2; exit 1; fi
+          done < evidence/final-transaction/delete-refs.txt
+          node <<'NODE'
+          const fs = require('fs');
+          const cp = require('child_process');
+          const manifest = JSON.parse(fs.readFileSync('evidence/final-transaction/recovery-manifest.json','utf8'));
+          const shadow = process.env.RUNNER_TEMP + '/repo-cleanup-shadow-valid.git';
+          const archive = process.env.ARCHIVE_SHA;
+          let reachable = 0;
+          for (const entry of manifest.historicalBranches) {
+            if (entry.ref === 'refs/heads/tmp-noop') continue;
+            cp.execFileSync('git', [`--git-dir=${shadow}`, 'cat-file', '-e', `${entry.expectedSha}^{commit}`]);
+            cp.execFileSync('git', [`--git-dir=${shadow}`, 'merge-base', '--is-ancestor', entry.expectedSha, archive]);
+            reachable++;
+          }
+          if (reachable !== 85) throw new Error(`Expected 85 archive-reachable historical mappings, got ${reachable}`);
+          cp.execFileSync('git', [`--git-dir=${shadow}`, 'merge-base', '--is-ancestor', process.env.REHEARSAL_SHA, process.env.GITHUB_SHA]);
+          fs.writeFileSync('evidence/final-transaction/preservation-summary.json', JSON.stringify({
+            historicalMappingsReachableFromArchive: reachable,
+            rehearsalAliasTipReachableFromHelper: true,
+            tagObjectSha: process.env.TAG_OBJECT_SHA,
+            tagPeeledArchiveSha: archive,
+          }, null, 2)+'\n');
+          NODE
+          git --git-dir="$SHADOW" fsck --full > evidence/final-transaction/valid-fsck.txt 2>&1
+          printf 'heads_after=3\ndeletes_applied=92\nretained_heads=3\ntag_object_after=%s\ntag_peeled_after=%s\nresult=EXACT_SHADOW_CLOSURE\n' "$TAG_OBJECT_SHA" "$ARCHIVE_SHA" > evidence/final-transaction/valid-summary.txt
+
+      - name: Hash complete execution specimen
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd evidence/final-transaction && sha256sum \
+            final-branch-transaction.json \
+            preflight.json \
+            poisoned-update-ref.txt \
+            poisoned-summary.txt \
+            valid-update-ref.txt \
+            valid-summary.txt \
+            preservation-summary.json \
+            valid-fsck.txt > SPECIMEN_SHA256SUMS.txt)
+
+      - name: Upload final transaction specimen
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-cleanup-final-transaction-specimen
+          path: evidence/final-transaction/
+          if-no-files-found: error
+          retention-days: 90
