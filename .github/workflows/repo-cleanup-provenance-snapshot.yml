@@ -6,6 +6,7 @@ on:
       - maintenance/repo-cleanup-adaptation-2026-09-09
     paths:
       - scripts/repo-cleanup-provenance-snapshot.mjs
+      - scripts/repo-cleanup-provenance-augment-v2.mjs
       - .github/workflows/repo-cleanup-provenance-snapshot.yml
   workflow_dispatch:
 
@@ -29,6 +30,8 @@ jobs:
       ARCHIVE_SHA: fd5cae330fb80280617ce7b241347f1edafdb875
       EXPECTED_HISTORICAL_BRANCHES: '86'
       EXPECTED_DISTINCT_TIPS: '75'
+      EXPECTED_UNION_RUN_IDS: '73'
+      EXPECTED_UNION_ARTIFACT_IDS: '7'
 
     steps:
       - name: Checkout exact helper commit
@@ -57,11 +60,18 @@ jobs:
           git show "refs/remotes/origin/${ARCHIVE_BRANCH}:archive/recovery-manifest.json" \
             > evidence/repo-cleanup/provenance-snapshot/recovery-manifest.json
 
-      - name: Snapshot GitHub-native research provenance
+      - name: Snapshot GitHub-native research provenance v1
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           node scripts/repo-cleanup-provenance-snapshot.mjs \
+            --manifest=evidence/repo-cleanup/provenance-snapshot/recovery-manifest.json \
+            --out=evidence/repo-cleanup/provenance-snapshot
+
+      - name: Augment with preserved Git-text evidence union v2
+        run: |
+          node scripts/repo-cleanup-provenance-augment-v2.mjs \
+            --snapshot=evidence/repo-cleanup/provenance-snapshot/github-provenance-snapshot.json \
             --manifest=evidence/repo-cleanup/provenance-snapshot/recovery-manifest.json \
             --out=evidence/repo-cleanup/provenance-snapshot
 
@@ -72,6 +82,8 @@ jobs:
           sha256sum \
             evidence/repo-cleanup/provenance-snapshot/github-provenance-snapshot.json \
             evidence/repo-cleanup/provenance-snapshot/github-provenance-summary.md \
+            evidence/repo-cleanup/provenance-snapshot/github-provenance-snapshot-v2.json \
+            evidence/repo-cleanup/provenance-snapshot/github-provenance-summary-v2.md \
             > evidence/repo-cleanup/provenance-snapshot/SHA256SUMS.txt
 
       - name: Upload provenance snapshot
