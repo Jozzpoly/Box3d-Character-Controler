@@ -14,7 +14,7 @@ jobs:
   witness:
     runs-on: ubuntu-latest
     steps:
-      - name: Create and verify guarded annotated pre-prune tag
+      - name: Complete and verify pre-prune annotated tag witness
         id: witness
         uses: actions/github-script@v8
         with:
@@ -24,15 +24,13 @@ jobs:
             const repo = context.repo.repo;
             const repositoryId = 'R_kgDOUHjIFQ';
             const archiveBranch = 'archive/pre-cleanup-2026-09-09-dca388f4';
-            const archiveRef = `refs/heads/${archiveBranch}`;
             const archiveSha = 'fd5cae330fb80280617ce7b241347f1edafdb875';
             const freezeSha256 = 'dca388f456480489492ea2069c2ce8ecd5930d3ab41028cda88f25fe72cc9584';
             const helperBranch = 'maintenance/repo-cleanup-adaptation-2026-09-09';
-            const helperRef = `refs/heads/${helperBranch}`;
             const helperSha = context.sha;
             const tagName = 'archive/pre-cleanup-2026-09-09-dca388f4';
             const tagRef = `refs/tags/${tagName}`;
-            const zero = '0000000000000000000000000000000000000000';
+            const existingTagObjectSha = '7423e25ed9532f410a35cc4f7c3ff9c492a7fbc3';
             const rehearsalSha = '452f7b51a7e1b46b08ea74a21affeec33dbe0216';
             const rehearsalAliases = [
               'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10',
@@ -45,24 +43,13 @@ jobs:
             ];
 
             const manifestResponse = await github.rest.repos.getContent({
-              owner,
-              repo,
-              path: 'archive/recovery-manifest.json',
-              ref: archiveBranch,
+              owner, repo, path: 'archive/recovery-manifest.json', ref: archiveBranch,
             });
-            if (Array.isArray(manifestResponse.data) || !manifestResponse.data.content) {
-              throw new Error('Recovery manifest was not returned as a file');
-            }
+            if (Array.isArray(manifestResponse.data) || !manifestResponse.data.content) throw new Error('Recovery manifest missing');
             const manifest = JSON.parse(Buffer.from(manifestResponse.data.content, 'base64').toString('utf8'));
-            if (manifest.historicalArchiveFreezeSha256 !== freezeSha256) {
-              throw new Error(`Freeze hash mismatch: ${manifest.historicalArchiveFreezeSha256}`);
-            }
-            if (manifest.canonicalSha !== 'b0eac372035ca12a63f808eb3201edd3605a163c') {
-              throw new Error(`Unexpected canonical manifest SHA: ${manifest.canonicalSha}`);
-            }
-            if (manifest.historicalBranchCount !== 86 || manifest.historicalBranches.length !== 86) {
-              throw new Error(`Historical manifest count mismatch: ${manifest.historicalBranches?.length}`);
-            }
+            if (manifest.historicalArchiveFreezeSha256 !== freezeSha256) throw new Error('Freeze hash mismatch');
+            if (manifest.canonicalSha !== 'b0eac372035ca12a63f808eb3201edd3605a163c') throw new Error('Canonical manifest SHA mismatch');
+            if (manifest.historicalBranchCount !== 86 || manifest.historicalBranches.length !== 86) throw new Error('Historical manifest count mismatch');
 
             async function branches() {
               const rows = await github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 });
@@ -70,168 +57,115 @@ jobs:
             }
             const before = await branches();
             const byName = new Map(before.map((b) => [b.name, b.oid]));
-
+            const historicalNames = new Set();
             let exactHistorical = 0;
             let expectedAbsent = 0;
-            const historicalProblems = [];
-            const historicalNames = new Set();
+            const problems = [];
             for (const entry of manifest.historicalBranches) {
-              if (!entry.ref.startsWith('refs/heads/')) throw new Error(`Unexpected historical ref: ${entry.ref}`);
-              const name = entry.ref.slice('refs/heads/'.length);
+              const name = entry.ref.replace(/^refs\/heads\//, '');
               historicalNames.add(name);
               const current = byName.get(name);
               if (name === 'tmp-noop') {
                 if (current === undefined) expectedAbsent++;
-                else historicalProblems.push({ name, expected: 'ABSENT', current });
-              } else if (current === entry.expectedSha) {
-                exactHistorical++;
-              } else {
-                historicalProblems.push({ name, expected: entry.expectedSha, current: current || 'ABSENT' });
-              }
+                else problems.push({ name, expected: 'ABSENT', current });
+              } else if (current === entry.expectedSha) exactHistorical++;
+              else problems.push({ name, expected: entry.expectedSha, current: current || 'ABSENT' });
             }
-            if (exactHistorical !== 85 || expectedAbsent !== 1 || historicalProblems.length) {
-              throw new Error(`Frozen historical precondition failed: exact=${exactHistorical} absent=${expectedAbsent} problems=${JSON.stringify(historicalProblems)}`);
+            if (exactHistorical !== 85 || expectedAbsent !== 1 || problems.length) {
+              throw new Error(`Frozen historical precondition failed: ${JSON.stringify({exactHistorical, expectedAbsent, problems})}`);
             }
-
             for (const alias of rehearsalAliases) {
-              if (byName.get(alias) !== rehearsalSha) {
-                throw new Error(`Rehearsal alias mismatch ${alias}: ${byName.get(alias) || 'ABSENT'}`);
-              }
+              if (byName.get(alias) !== rehearsalSha) throw new Error(`Rehearsal alias mismatch: ${alias}`);
             }
             if (byName.get('main') !== manifest.canonicalSha) throw new Error(`main drift: ${byName.get('main')}`);
             if (byName.get(archiveBranch) !== archiveSha) throw new Error(`archive drift: ${byName.get(archiveBranch)}`);
-            if (byName.get(helperBranch) !== helperSha) throw new Error(`helper drift: expected ${helperSha}, got ${byName.get(helperBranch)}`);
+            if (byName.get(helperBranch) !== helperSha) throw new Error(`helper drift: ${byName.get(helperBranch)}`);
 
             const expectedNames = new Set([
               ...[...historicalNames].filter((n) => n !== 'tmp-noop'),
               ...rehearsalAliases,
-              'main',
-              archiveBranch,
-              helperBranch,
+              'main', archiveBranch, helperBranch,
             ]);
             const unknownHeads = before.filter((b) => !expectedNames.has(b.name));
             const missingHeads = [...expectedNames].filter((n) => !byName.has(n));
             if (expectedNames.size !== 95 || before.length !== 95 || unknownHeads.length || missingHeads.length) {
-              throw new Error(`Namespace mismatch expected=${expectedNames.size} actual=${before.length} unknown=${JSON.stringify(unknownHeads)} missing=${JSON.stringify(missingHeads)}`);
+              throw new Error(`Namespace mismatch: ${JSON.stringify({expected: expectedNames.size, actual: before.length, unknownHeads, missingHeads})}`);
             }
 
-            let existingTagRef = null;
+            let tagRefBefore = null;
             try {
-              existingTagRef = (await github.rest.git.getRef({ owner, repo, ref: `tags/${tagName}` })).data;
+              tagRefBefore = (await github.rest.git.getRef({ owner, repo, ref: `tags/${tagName}` })).data;
             } catch (error) {
               if (error.status !== 404) throw error;
             }
-            if (existingTagRef) throw new Error(`Pre-prune tag ref already exists at ${existingTagRef.object.sha}`);
+            if (tagRefBefore) throw new Error(`Tag ref already exists unexpectedly: ${tagRefBefore.object.sha}`);
 
-            const tagMessage = [
-              'Immutable pre-prune archive witness for Box3d Character Controller repository cleanup.',
-              '',
-              `archive-commit: ${archiveSha}`,
-              `canonical-main: ${manifest.canonicalSha}`,
-              `historical-archive-freeze-sha256: ${freezeSha256}`,
-              'recovery-manifest: archive/recovery-manifest.json',
-              'purpose: independent durable witness to the exact frozen preservation anchor before historical branch namespace closure',
-            ].join('\n');
+            const tagObject = (await github.rest.git.getTag({ owner, repo, tag_sha: existingTagObjectSha })).data;
+            if (tagObject.sha !== existingTagObjectSha) throw new Error('Recovered tag object SHA mismatch');
+            if (tagObject.tag !== tagName) throw new Error(`Recovered tag name mismatch: ${tagObject.tag}`);
+            if (tagObject.object.type !== 'commit' || tagObject.object.sha !== archiveSha) throw new Error(`Recovered tag peel mismatch: ${JSON.stringify(tagObject.object)}`);
+            if (!tagObject.message.includes(freezeSha256) || !tagObject.message.includes('archive/recovery-manifest.json')) {
+              throw new Error('Recovered tag annotation lacks required provenance');
+            }
 
-            const tagObject = (await github.rest.git.createTag({
-              owner,
-              repo,
-              tag: tagName,
-              message: tagMessage,
-              object: archiveSha,
-              type: 'commit',
-              tagger: {
-                name: 'Repo Cleanup Archive Witness',
-                email: '100104127+Jozzpoly@users.noreply.github.com',
-                date: new Date().toISOString(),
-              },
-            })).data;
-
-            const mutation = `
-              mutation GuardedTag($input: UpdateRefsInput!) {
-                updateRefs(input: $input) { clientMutationId }
-              }
-            `;
+            const mutation = `mutation GuardHeads($input: UpdateRefsInput!) { updateRefs(input: $input) { clientMutationId } }`;
             const retainedHeads = before.map((b) => ({
               name: `refs/heads/${b.name}`,
               beforeOid: b.oid,
               afterOid: b.oid,
             }));
-            const transaction = [
-              ...retainedHeads,
-              { name: tagRef, beforeOid: zero, afterOid: tagObject.sha },
-            ];
             await github.graphql(mutation, {
               input: {
                 repositoryId,
-                clientMutationId: 'guarded-pre-prune-archive-tag-witness',
-                refUpdates: transaction,
+                clientMutationId: 'pre-prune-tag-95-head-guard',
+                refUpdates: retainedHeads,
               },
             });
 
-            const createdRef = (await github.rest.git.getRef({ owner, repo, ref: `tags/${tagName}` })).data;
-            if (createdRef.object.sha !== tagObject.sha || createdRef.object.type !== 'tag') {
-              throw new Error(`Tag ref mismatch: ${JSON.stringify(createdRef.object)}`);
+            const createdRef = (await github.rest.git.createRef({
+              owner,
+              repo,
+              ref: tagRef,
+              sha: existingTagObjectSha,
+            })).data;
+            if (createdRef.object.sha !== existingTagObjectSha || createdRef.object.type !== 'tag') {
+              throw new Error(`Created tag ref mismatch: ${JSON.stringify(createdRef.object)}`);
             }
-            const fetchedTag = (await github.rest.git.getTag({ owner, repo, tag_sha: tagObject.sha })).data;
-            if (fetchedTag.object.type !== 'commit' || fetchedTag.object.sha !== archiveSha) {
-              throw new Error(`Tag peel mismatch: ${JSON.stringify(fetchedTag.object)}`);
-            }
-            if (!fetchedTag.message.includes(freezeSha256) || !fetchedTag.message.includes('archive/recovery-manifest.json')) {
-              throw new Error('Tag annotation is missing required freeze/manifest provenance');
-            }
+
+            const verifiedRef = (await github.rest.git.getRef({ owner, repo, ref: `tags/${tagName}` })).data;
+            const verifiedTag = (await github.rest.git.getTag({ owner, repo, tag_sha: verifiedRef.object.sha })).data;
+            if (verifiedRef.object.sha !== existingTagObjectSha || verifiedRef.object.type !== 'tag') throw new Error('Verified tag ref mismatch');
+            if (verifiedTag.object.sha !== archiveSha || verifiedTag.object.type !== 'commit') throw new Error('Verified peeled target mismatch');
+            if (!verifiedTag.message.includes(freezeSha256) || !verifiedTag.message.includes('archive/recovery-manifest.json')) throw new Error('Verified annotation mismatch');
 
             const after = await branches();
-            if (JSON.stringify(after) !== JSON.stringify(before)) {
-              throw new Error('Branch namespace changed while creating tag witness');
-            }
-
-            const correctTagNoop = await github.graphql(mutation, {
-              input: {
-                repositoryId,
-                clientMutationId: 'tag-retained-noop-proof',
-                refUpdates: [{ name: tagRef, beforeOid: tagObject.sha, afterOid: tagObject.sha }],
-              },
-            });
-            let staleTagRejected = false;
-            let staleTagError = null;
-            try {
-              await github.graphql(mutation, {
-                input: {
-                  repositoryId,
-                  clientMutationId: 'tag-stale-noop-must-reject',
-                  refUpdates: [{ name: tagRef, beforeOid: archiveSha, afterOid: tagObject.sha }],
-                },
-              });
-            } catch (error) {
-              staleTagRejected = true;
-              staleTagError = { message: error.message, errors: error.errors || null };
-            }
-            if (!staleTagRejected) throw new Error('Annotated tag stale beforeOid no-op was incorrectly accepted');
+            const branchNamespaceUnchanged = JSON.stringify(after) === JSON.stringify(before);
+            if (!branchNamespaceUnchanged) throw new Error('Branch namespace changed during additive tag repair');
 
             const evidence = {
               tagName,
               tagRef,
-              tagObjectSha: tagObject.sha,
-              peeledArchiveCommitSha: fetchedTag.object.sha,
+              tagObjectSha: verifiedRef.object.sha,
+              tagObjectType: verifiedRef.object.type,
+              peeledArchiveCommitSha: verifiedTag.object.sha,
+              peeledType: verifiedTag.object.type,
               archiveSha,
               canonicalSha: manifest.canonicalSha,
               helperSha,
               freezeSha256,
               recoveryManifest: 'archive/recovery-manifest.json',
-              historical: { exactLive: exactHistorical, expectedAbsent },
-              rehearsalAliases: rehearsalAliases.map((name) => ({ name, oid: byName.get(name) })),
+              historicalExactLive: exactHistorical,
+              historicalExpectedAbsent: expectedAbsent,
               branchCountBefore: before.length,
               branchCountAfter: after.length,
-              guardedTransactionEntries: transaction.length,
-              branchNamespaceUnchanged: JSON.stringify(after) === JSON.stringify(before),
-              correctTagNoopAccepted: !!correctTagNoop,
-              staleTagRejected,
-              staleTagError,
-              tagMessage: fetchedTag.message,
+              retainedHeadGuardEntries: retainedHeads.length,
+              branchNamespaceUnchanged,
+              refCreationMechanism: 'REST createRef after successful 95-head GraphQL retained-state guard; additive repair only',
+              transactionBoundary: 'Annotated TAG object OIDs are rejected by updateRefs; tag ref is therefore verified outside the future branch-delete transaction.',
+              tagMessage: verifiedTag.message,
             };
             fs.writeFileSync('pre-prune-archive-tag-witness.json', JSON.stringify(evidence, null, 2));
-            core.info(`PRE_PRUNE_TAG_WITNESS tagObject=${tagObject.sha} peeled=${fetchedTag.object.sha} branches=${after.length} historicalExact=${exactHistorical} historicalAbsent=${expectedAbsent} transactionEntries=${transaction.length} staleTagRejected=${staleTagRejected}`);
+            core.info(`PRE_PRUNE_TAG_WITNESS tagObject=${verifiedRef.object.sha} peeled=${verifiedTag.object.sha} branches=${after.length} historicalExact=${exactHistorical} absent=${expectedAbsent} retainedGuard=${retainedHeads.length} unchanged=${branchNamespaceUnchanged}`);
 
       - name: Upload tag witness evidence
         uses: actions/upload-artifact@v4
