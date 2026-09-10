@@ -332,8 +332,7 @@ async function main() {
     followCamera.snap(character.position);
   }
 
-  function aimForHand(hand) {
-    const basis = followCamera.basis();
+  function aimForHand(hand, basis = followCamera.basis()) {
     const rightVector = basis.right;
     hand.origin = [
       character.position[0] + rightVector[0] * SHOULDER_SIDE * hand.side,
@@ -354,8 +353,8 @@ async function main() {
     return hand.aim;
   }
 
-  function updateReachAndAcquire(hand) {
-    const aim = aimForHand(hand);
+  function updateReachAndAcquire(hand, basis) {
+    const aim = aimForHand(hand, basis);
     if (!hand.held || hand.grip) {
       hand.previewHit = null;
       return;
@@ -384,11 +383,11 @@ async function main() {
     if (resetQueued) resetAll();
     playground.preStep(dt);
 
-    const basis = followCamera.basis();
+    const basis = followCamera.controlBasis();
     const intent = playerInput.sample(basis);
     character.preStep(dt, intent);
 
-    for (const hand of hands) updateReachAndAcquire(hand);
+    for (const hand of hands) updateReachAndAcquire(hand, basis);
     const activeHands = hands.filter((hand) => hand.grip);
     character.setGripConstraintActive(activeHands.length > 0);
 
@@ -429,6 +428,7 @@ async function main() {
 
     b3.b3World_Step(playground.world, dt, SUBSTEPS);
     character.postStep(dt);
+    followCamera.advanceControl(dt);
 
     if (character.position[1] < -10 || Math.hypot(character.position[0], character.position[2]) > 45) {
       resetCharacterOnly();
