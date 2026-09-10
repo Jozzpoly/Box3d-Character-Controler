@@ -75,6 +75,20 @@ jobs:
             --manifest=evidence/repo-cleanup/provenance-snapshot/recovery-manifest.json \
             --out=evidence/repo-cleanup/provenance-snapshot
 
+      - name: Build exact real-graph source bundle for closure rehearsal
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUNDLE=evidence/repo-cleanup/provenance-snapshot/pre-closure-source.bundle
+          git bundle create "$BUNDLE" \
+            HEAD \
+            refs/remotes/origin/main \
+            "refs/remotes/origin/${ARCHIVE_BRANCH}"
+          git bundle verify "$BUNDLE" > evidence/repo-cleanup/provenance-snapshot/pre-closure-source-bundle-verify.txt 2>&1
+          git bundle list-heads "$BUNDLE" > evidence/repo-cleanup/provenance-snapshot/pre-closure-source-bundle-heads.txt
+          sha256sum "$BUNDLE" > evidence/repo-cleanup/provenance-snapshot/pre-closure-source-bundle.sha256
+          stat --printf='%s\n' "$BUNDLE" > evidence/repo-cleanup/provenance-snapshot/pre-closure-source-bundle-size.txt
+
       - name: Hash portable snapshot
         shell: bash
         run: |
@@ -84,6 +98,7 @@ jobs:
             evidence/repo-cleanup/provenance-snapshot/github-provenance-summary.md \
             evidence/repo-cleanup/provenance-snapshot/github-provenance-snapshot-v2.json \
             evidence/repo-cleanup/provenance-snapshot/github-provenance-summary-v2.md \
+            evidence/repo-cleanup/provenance-snapshot/pre-closure-source.bundle \
             > evidence/repo-cleanup/provenance-snapshot/SHA256SUMS.txt
 
       - name: Upload provenance snapshot
