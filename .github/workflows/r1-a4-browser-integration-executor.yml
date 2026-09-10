@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   integrate:
-    if: github.event.head_commit.message == 'Install one-shot R1 browser integration executor'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout exact branch
@@ -23,7 +22,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          expected_parent='809bb0dead9b065fbd83e31d5913e4a0f689c055'
+          expected_parent='b3a9025b90bfa84766bf2ef7011310e8e8b31618'
           actual_parent="$(git rev-parse HEAD^)"
           test "$actual_parent" = "$expected_parent"
           python - <<'PY'
