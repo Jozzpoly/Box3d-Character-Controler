@@ -10,8 +10,6 @@ on:
 permissions:
   contents: write
 
-actions: {}
-
 jobs:
   proof:
     runs-on: ubuntu-latest
