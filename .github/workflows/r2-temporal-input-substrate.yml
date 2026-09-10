@@ -17,7 +17,7 @@ on:
       - scripts/r2-frame-epoch-mapper-crucible.mjs
       - scripts/r2-browser-delivery-specimen.mjs
       - scripts/r2-late-delivery-policy-crucible.mjs
-      - scripts/r2-late-intent-forward-placement-crucible.mjs
+      - scripts/r2-intent-age-semantics-crucible.mjs
       - .github/workflows/r2-temporal-input-substrate.yml
   workflow_dispatch:
 
@@ -54,5 +54,5 @@ jobs:
         run: node scripts/r2-browser-delivery-specimen.mjs
       - name: Falsify late delivery policy candidates
         run: node scripts/r2-late-delivery-policy-crucible.mjs
-      - name: Probe forward placement of fresh late intent
-        run: node scripts/r2-late-intent-forward-placement-crucible.mjs
+      - name: Verify semantic intent age preservation
+        run: node scripts/r2-intent-age-semantics-crucible.mjs
