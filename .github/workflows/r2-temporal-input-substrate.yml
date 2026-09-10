@@ -10,6 +10,7 @@ on:
       - src/temporal-frame-epoch.js
       - src/temporal-intent-policy.js
       - src/temporal-input-shadow.js
+      - src/temporal-input-timeline-probe.js
       - scripts/r2-temporal-input-buffer-contract.mjs
       - scripts/r2-temporal-input-buffer-stress.mjs
       - scripts/r2-temporal-intent-boundary-crucible.mjs
@@ -23,6 +24,7 @@ on:
       - scripts/r2-context-dependent-late-edge-crucible.mjs
       - scripts/r2-temporal-intent-policy-crucible.mjs
       - scripts/r2-real-input-shadow-contract.mjs
+      - scripts/r2-real-input-timeline-probe-crucible.mjs
       - .github/workflows/r2-temporal-input-substrate.yml
   workflow_dispatch:
 
@@ -67,3 +69,5 @@ jobs:
         run: node scripts/r2-temporal-intent-policy-crucible.mjs
       - name: Verify read-only real input shadow
         run: node scripts/r2-real-input-shadow-contract.mjs
+      - name: Relate delivered real input to physics timeline
+        run: node scripts/r2-real-input-timeline-probe-crucible.mjs
