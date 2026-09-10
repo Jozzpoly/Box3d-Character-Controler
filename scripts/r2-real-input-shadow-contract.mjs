@@ -21,7 +21,7 @@ windowTarget.emit('keydown', { key: ' ', code: 'Space', repeat: false, timeStamp
 t += 0.003;
 windowTarget.emit('keyup', { key: 'w', code: 'KeyW', timeStamp: 10005 });
 const beforeCut = shadow.drain();
-assert.deepEqual(beforeCut.map((e) => [e.control, e.kind, e.epoch]), [['w','down',0],['jump','down',0],['w','up',0]]);
+assert.deepEqual(beforeCut.map((e) => [e.control, e.kind, e.lifecycleEpoch]), [['w','down',0],['jump','down',0],['w','up',0]]);
 assert.deepEqual(beforeCut.map((e) => e.occurrenceTime), [9.998, 10.001, 10.005]);
 assert.deepEqual(beforeCut.map((e) => Number(e.deliveryTime.toFixed(3))), [10, 10.004, 10.007]);
 assert.deepEqual(beforeCut.map((e) => Number((e.deliveryDelay * 1000).toFixed(3))), [2, 3, 2]);
@@ -30,7 +30,8 @@ windowTarget.emit('blur', { timeStamp: 10006 });
 const cut = shadow.drain();
 assert.equal(cut.length, 1);
 assert.equal(cut[0].kind, 'cut');
-assert.equal(cut[0].epoch, 1);
+assert.equal(cut[0].source, 'lifecycle');
+assert.equal(cut[0].lifecycleEpoch, 1);
 assert.equal(cut[0].control, 'blur');
 assert.equal(Number(cut[0].occurrenceTime.toFixed(3)), 10.006);
 
@@ -43,4 +44,5 @@ assert.equal(shadow.drain()[0].control, 'd');
 
 shadow.destroy();
 assert.equal(shadow.summary().pending, 0);
+assert.equal(shadow.summary().lifecycleEpoch, 1);
 console.log('R2 real input shadow contract PASS');
