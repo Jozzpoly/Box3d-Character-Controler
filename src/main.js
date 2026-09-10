@@ -9,6 +9,7 @@ import { createFreePlayCapture } from './free-play-capture.js';
 import { installVelocityOnlyContactMemoryProbe } from './momentum-semantics-probe.js';
 import { PlayerInput } from './player-input.js';
 import { createPlayground } from './playground.js';
+import { TemporalRuntimeShadowObserver } from './temporal-runtime-shadow-observer.js';
 import { createWorldRenderer } from './world-renderer.js';
 import './style.css';
 
@@ -28,6 +29,7 @@ const EMBODIMENT_MODE = requestedMode === 'solver'
           ? 'controller'
           : 'current';
 const CAPTURE_MODE = EMBODIMENT_MODE === 'causal' && urlParams.get('capture') === '1';
+const TEMPORAL_SHADOW_MODE = urlParams.get('temporalShadow') === '1';
 const forceTouch = urlParams.get('touch') === '1'
   ? true
   : urlParams.get('touch') === '0'
@@ -258,6 +260,7 @@ async function main() {
   } else {
     baseStatus = `History only · A Foundation 02.1 · ${counts.dynamicCount} playground bodies`;
   }
+  if (TEMPORAL_SHADOW_MODE) baseStatus += ' · R2 temporal shadow';
 
   function refreshStatus(note = '') {
     if (!capture) {
@@ -296,6 +299,24 @@ async function main() {
   let previous = performance.now();
   let accumulator = 0;
   let hudAccumulator = 0;
+  let temporalShadowObserver = TEMPORAL_SHADOW_MODE
+    ? new TemporalRuntimeShadowObserver({
+      fixedDt: FIXED_DT,
+      maxFrameDt: 0.1,
+      startWallTime: previous / 1000,
+      touchRoot,
+    })
+    : null;
+
+  if (temporalShadowObserver) {
+    window.__R2_TEMPORAL_SHADOW__ = temporalShadowObserver.publicApi();
+  }
+
+  function disableTemporalShadow(error) {
+    console.warn('R2 temporal shadow disabled after observer failure', error);
+    temporalShadowObserver?.destroy();
+    temporalShadowObserver = null;
+  }
 
   function physicsTick(dt) {
     if (resetQueued) resetAll();
@@ -346,13 +367,33 @@ async function main() {
   }
 
   function frame(now) {
+    let temporalAudit = null;
+    if (temporalShadowObserver) {
+      try {
+        temporalAudit = temporalShadowObserver.beginFrame(now / 1000);
+      } catch (error) {
+        disableTemporalShadow(error);
+      }
+    }
+
     const frameDt = Math.min((now - previous) / 1000, 0.1);
     previous = now;
     accumulator += frameDt;
+    let physicsTicksThisFrame = 0;
     while (accumulator >= FIXED_DT) {
       physicsTick(FIXED_DT);
       accumulator -= FIXED_DT;
+      physicsTicksThisFrame += 1;
     }
+
+    if (temporalShadowObserver && temporalAudit) {
+      try {
+        temporalShadowObserver.endFrame(temporalAudit.frame, { actualTicks: physicsTicksThisFrame });
+      } catch (error) {
+        disableTemporalShadow(error);
+      }
+    }
+
     updateVisuals(frameDt);
     updateHud(frameDt);
     renderer.render(scene, camera);
