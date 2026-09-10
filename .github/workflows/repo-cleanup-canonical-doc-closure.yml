@@ -1,0 +1,113 @@
+name: Repo cleanup canonical documentation closure
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - .github/workflows/repo-cleanup-canonical-doc-closure.yml
+
+permissions:
+  contents: write
+
+jobs:
+  close-canonical-docs:
+    runs-on: ubuntu-latest
+    env:
+      EXPECTED_MAIN_SHA: b0eac372035ca12a63f808eb3201edd3605a163c
+    steps:
+      - name: Checkout exact canonical main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Verify exact main and apply bounded documentation closure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          git fetch origin main
+          test "$(git rev-parse refs/remotes/origin/main)" = "$EXPECTED_MAIN_SHA"
+
+          python <<'PY'
+          from pathlib import Path
+
+          p = Path('README.md')
+          s = p.read_text()
+          old = """## Maintenance boundary
+
+          Repository branch hygiene is intentionally pending after the E19 closure. Historical branches must not be deleted ad hoc. The next maintenance campaign will first import/review the dedicated cleanup workflow used in `jv_web`, adapt it to this repository's provenance needs, and only then classify branches for retention or deletion.
+          """
+          new = """## Maintenance / archive boundary
+
+          The audited repository-hygiene campaign reached its destructive branch-prune boundary on **2026-09-10**. Historical experiment/publication/maintenance branch names are no longer expected to remain as live refs. Their exact pre-prune identities remain preserved through:
+
+          - archive branch `archive/pre-cleanup-2026-09-09-dca388f4`;
+          - immutable annotated tag `archive/pre-cleanup-2026-09-09-dca388f4`;
+          - `archive/recovery-manifest.json`, which maps the frozen 86 historical branch identities to exact commit SHAs.
+
+          The cleanup helper may exist temporarily while administrative closure finishes; it is not research or publication authority. Historical stage documents may still say `Branch: ...` as provenance labels. Recover those states by exact SHA through the archive manifest/catalog rather than assuming the old branch name is still live.
+          """
+          if old not in s: raise SystemExit('README maintenance boundary drift')
+          p.write_text(s.replace(old, new))
+
+          p = Path('docs/PROJECT_STATE.md')
+          s = p.read_text()
+          replacements = [
+            ('Grounded: **2026-09-09 — post-E19 stage closure / pre-repository-hygiene checkpoint**', 'Grounded: **2026-09-10 — post-E19 / post-bulk repository-hygiene closure checkpoint**'),
+            ('- Repository branch hygiene is intentionally **pending**. Do not delete historical branches ad hoc; a dedicated cleanup workflow will be applied separately.', '- The audited repository-hygiene campaign completed the historical branch prune on **2026-09-10**. Historical branch names are now archival provenance labels; exact identities remain recoverable through the frozen archive manifest and immutable pre-prune tag.'),
+            ('5. Historical branches/conversations/recommendations — context only.', '5. Archived branch identities/history, conversations and recommendations — context/provenance only.'),
+            ('- delete historical research branches before repository-hygiene review.', '- treat archived historical branch names as if they must still exist as live refs;'),
+          ]
+          for old, new in replacements:
+            if old not in s: raise SystemExit(f'PROJECT_STATE drift: {old}')
+            s = s.replace(old, new)
+          old = """Repository branch cleanup is the **next maintenance campaign after this closure**, but its deletion policy is intentionally not invented here. First import/review the dedicated `jv_web` cleanup workflow package, adapt it to this repo, inventory evidence/provenance, then delete only what that explicit process qualifies as safe.
+          """
+          new = """Repository branch cleanup has now passed its audited destructive phase. The frozen historical identity contract is retained on `archive/pre-cleanup-2026-09-09-dca388f4` and by the annotated tag of the same name; `archive/recovery-manifest.json` remains the machine-readable mapping from historical branch names to exact SHAs. The cleanup helper is temporary administrative infrastructure and must not be treated as the next research frontier.
+
+          Cleanup execution provenance:
+
+          - one-ref canary run `34412321168` — success;
+          - owner-authorized atomic bulk-delete run `34464748439` — success;
+          - post-bulk provenance/platform snapshot run `34465088280` — success;
+          - post-bulk namespace at the execution checkpoint: `main`, archive, and temporary cleanup helper.
+          """
+          if old not in s: raise SystemExit('PROJECT_STATE cleanup paragraph drift')
+          p.write_text(s.replace(old, new))
+
+          p = Path('docs/README.md')
+          s = p.read_text()
+          old = """The repository currently has a large historical branch forest. **No branch deletion is authorized by this closure.** Branch cleanup is a separate maintenance campaign: first review/adapt the dedicated `jv_web` cleanup workflow package, classify provenance and retention needs, then perform deletion under that explicit process.
+          """
+          new = """The historical branch forest was pruned under the audited repository-hygiene campaign on **2026-09-10**. Old branch names appearing in stage documents are now provenance labels, not promises that those refs remain live. Exact identities are preserved by the archive branch and immutable annotated tag `archive/pre-cleanup-2026-09-09-dca388f4`; the machine-readable mapping is `archive/recovery-manifest.json` on that archive.
+
+          The cleanup helper may remain temporarily during administrative closure. It is not project authority and should disappear only after its final evidence has been captured by the archive closure.
+          """
+          if old not in s: raise SystemExit('docs/README hygiene drift')
+          p.write_text(s.replace(old, new))
+
+          p = Path('docs/E16_CAPABILITY_YARD_2026-09-04.md')
+          s = p.read_text()
+          old = 'Research provenance is preserved on branch `experiment/e16-active-contact-organ`; the publication candidate is intentionally narrower than that branch.'
+          new = 'Research provenance was originally recorded under `experiment/e16-active-contact-organ` (exact archived tip `cf93b5c2da2cbf181887ee1c4a8cd4250a1926e0`). After the 2026-09-10 repository cleanup, recover that historical state through `archive/recovery-manifest.json` on `archive/pre-cleanup-2026-09-09-dca388f4`; the publication candidate remains intentionally narrower than that archived research line.'
+          if old not in s: raise SystemExit('E16 provenance wording drift')
+          p.write_text(s.replace(old, new))
+          PY
+
+          git diff --check
+          test "$(git diff --name-only | sort)" = "$(printf '%s\n' README.md docs/E16_CAPABILITY_YARD_2026-09-04.md docs/PROJECT_STATE.md docs/README.md | sort)"
+
+      - name: Commit and publish canonical documentation closure
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Repository Hygiene Closure"
+          git config user.email "100104127+Jozzpoly@users.noreply.github.com"
+          git add README.md docs/PROJECT_STATE.md docs/README.md docs/E16_CAPABILITY_YARD_2026-09-04.md
+          git commit -m "Close repository hygiene documentation state"
+          git fetch origin main
+          test "$(git rev-parse refs/remotes/origin/main)" = "$EXPECTED_MAIN_SHA"
+          git push origin HEAD:refs/heads/main
+          echo "CANONICAL_CLOSURE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
