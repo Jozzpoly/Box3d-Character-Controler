@@ -6,8 +6,10 @@ on:
       - research/temporal-input-substrate-r2-2026-09-10
     paths:
       - src/temporal-input-buffer.js
+      - src/temporal-player-intent.js
       - scripts/r2-temporal-input-buffer-contract.mjs
       - scripts/r2-temporal-input-buffer-stress.mjs
+      - scripts/r2-temporal-intent-boundary-crucible.mjs
       - .github/workflows/r2-temporal-input-substrate.yml
   workflow_dispatch:
 
@@ -30,3 +32,5 @@ jobs:
         run: node scripts/r2-temporal-input-buffer-contract.mjs
       - name: Stress temporal input buffer against reference model
         run: node scripts/r2-temporal-input-buffer-stress.mjs
+      - name: Verify temporal Donor intent boundary
+        run: node scripts/r2-temporal-intent-boundary-crucible.mjs
