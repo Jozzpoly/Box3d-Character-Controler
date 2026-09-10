@@ -51,6 +51,24 @@ const atBoundary = probe.classifyDelivered(event(1.000, 1.001, 1), mapper);
 assert.equal(atBoundary.classification, 'epoch-boundary');
 assert.equal(atBoundary.frameKind, 'hard-cut');
 
+// Mirror the real browser order around a long visible stall:
+// input handlers have already run when RAF resumes, then all catch-up ticks execute.
+const catchupMapper = new TemporalFrameEpochMapper({ fixedDt: DT, maxFrameDt: 0.1, startWallTime: 0 });
+const catchupProbe = new TemporalInputTimelineProbe();
+const warmup = catchupMapper.advanceFrame(0.100);
+catchupProbe.observeFrame(warmup);
+const resume = catchupMapper.advanceFrame(0.600);
+catchupProbe.registerFrame(resume);
+assert.equal(resume.kind, 'tail-window');
+assert.equal(resume.ticks.length, 6);
+
+const nearResumeInput = event(0.590, 0.599);
+const earlyAudit = catchupProbe.auditCurrentFrameApplication(nearResumeInput, resume, catchupMapper);
+assert.equal(earlyAudit.classification, 'would-apply-too-early');
+assert.equal(earlyAudit.prematureTicks, 5);
+assert.ok(earlyAudit.earliestEligibleTick > earlyAudit.firstCatchupTick);
+catchupProbe.consumeFrame(resume);
+
 console.log('R2 REAL INPUT TIMELINE PROBE CRUCIBLE PASS');
 console.log(JSON.stringify({
   missedFirstEligibleTick: {
@@ -73,5 +91,12 @@ console.log(JSON.stringify({
     oldEvent: beforeHardCut.classification,
     boundaryEvent: atBoundary.classification,
   },
-  interpretation: 'HANDLER_DELAY_AND_MISSED_PHYSICS_OPPORTUNITIES_ARE_DISTINCT_MEASUREMENTS; FRAME_HISTORY_IS_REQUIRED_TO_CLASSIFY_REAL_DELIVERED_INPUT',
+  resumedCatchup: {
+    catchupTicks: resume.ticks.length,
+    occurrenceMs: nearResumeInput.occurrenceTime * 1000,
+    firstCatchupTickMs: earlyAudit.firstCatchupTick * 1000,
+    earliestEligibleTickMs: earlyAudit.earliestEligibleTick * 1000,
+    prematureTicksIfMutableStateIsSampledImmediately: earlyAudit.prematureTicks,
+  },
+  interpretation: 'REAL_INPUT_CAN_BE_BOTH_LATE_AFTER_AN_ELIGIBLE_TICK_AND_TOO_EARLY_INSIDE_A_CATCHUP_BATCH; OCCURRENCE_TIME_MUST_SURVIVE_DELIVERY_TO_PREVENT_BOTH',
 }, null, 2));
