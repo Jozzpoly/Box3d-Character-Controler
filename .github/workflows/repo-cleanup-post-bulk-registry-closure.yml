@@ -1,0 +1,106 @@
+name: Repo cleanup post-bulk workflow registry closure
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - .github/workflows/repo-cleanup-post-bulk-registry-closure.yml
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  close-registry-residue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disable exact registry-only residues
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const fs = require('fs');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const helperRef = context.sha;
+            const expectedResidues = new Map([
+              [350365375, '.github/workflows/dependency-lock-probe.yml'],
+              [350338331, '.github/workflows/e17-one-point-depth.yml'],
+              [350377729, '.github/workflows/e17-refactor-qualification.yml'],
+              [350804369, '.github/workflows/e18-diagnostics.yml'],
+              [354416726, '.github/workflows/repo-cleanup-archive-materialize.yml'],
+              [354433306, '.github/workflows/repo-cleanup-canary-delete.yml'],
+            ]);
+
+            async function listWorkflows() {
+              return await github.paginate(github.rest.actions.listRepoWorkflows, { owner, repo, per_page: 100 });
+            }
+            async function workflowFiles(ref) {
+              const response = await github.rest.repos.getContent({ owner, repo, path: '.github/workflows', ref });
+              if (!Array.isArray(response.data)) throw new Error(`Workflow directory is not a directory at ${ref}`);
+              return new Set(response.data.filter(x => x.type === 'file').map(x => x.path));
+            }
+
+            const before = await listWorkflows();
+            const mainFiles = await workflowFiles('main');
+            const helperFiles = await workflowFiles(helperRef);
+            const registryOnly = before
+              .filter(w => !mainFiles.has(w.path) && !helperFiles.has(w.path))
+              .map(w => ({ id: w.id, name: w.name, path: w.path, state: w.state }))
+              .sort((a,b) => a.id - b.id);
+
+            const actualKey = registryOnly.map(x => `${x.id}:${x.path}`).sort();
+            const expectedKey = [...expectedResidues.entries()].map(([id,path]) => `${id}:${path}`).sort();
+            if (JSON.stringify(actualKey) !== JSON.stringify(expectedKey)) {
+              throw new Error(`Registry-only residue set drifted. expected=${JSON.stringify(expectedKey)} actual=${JSON.stringify(actualKey)}`);
+            }
+            for (const item of registryOnly) {
+              if (item.state !== 'active') throw new Error(`Residue ${item.id} not active before closure: ${item.state}`);
+            }
+
+            fs.mkdirSync('registry-closure-evidence', { recursive: true });
+            fs.writeFileSync('registry-closure-evidence/before.json', JSON.stringify({
+              helperSha: helperRef,
+              workflowCount: before.length,
+              mainWorkflowFiles: [...mainFiles].sort(),
+              helperWorkflowFiles: [...helperFiles].sort(),
+              registryOnly,
+            }, null, 2) + '\n');
+
+            for (const [workflow_id, path] of expectedResidues) {
+              core.info(`Disabling registry-only workflow ${workflow_id} ${path}`);
+              await github.request('PUT /repos/{owner}/{repo}/actions/workflows/{workflow_id}/disable', {
+                owner, repo, workflow_id,
+                headers: { 'X-GitHub-Api-Version': '2026-03-10' },
+              });
+            }
+
+            const after = await listWorkflows();
+            const afterById = new Map(after.map(w => [w.id, w]));
+            for (const [id, path] of expectedResidues) {
+              const w = afterById.get(id);
+              if (!w || w.path !== path || w.state !== 'disabled_manually') {
+                throw new Error(`Post-disable mismatch ${id}: ${JSON.stringify(w)}`);
+              }
+            }
+            for (const w of after) {
+              if (!expectedResidues.has(w.id) && w.state !== 'active') {
+                throw new Error(`Unexpected non-active workflow ${w.id} ${w.path}: ${w.state}`);
+              }
+            }
+
+            fs.writeFileSync('registry-closure-evidence/after.json', JSON.stringify({
+              status: 'PASS_EXACT_SIX_REGISTRY_RESIDUES_DISABLED',
+              disabled: [...expectedResidues.entries()].map(([id,path]) => ({ id, path, state: afterById.get(id)?.state })),
+              preservedActive: after.filter(w => !expectedResidues.has(w.id)).map(w => ({ id: w.id, path: w.path, state: w.state })),
+            }, null, 2) + '\n');
+            core.info('REGISTRY_CLOSURE PASS disabled=6 preservedActive=' + (after.length - expectedResidues.size));
+
+      - name: Upload registry closure evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-cleanup-post-bulk-registry-closure
+          path: registry-closure-evidence/
+          if-no-files-found: error
+          retention-days: 90
