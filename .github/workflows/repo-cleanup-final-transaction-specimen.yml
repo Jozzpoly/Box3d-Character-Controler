@@ -114,7 +114,7 @@ jobs:
           const refUpdates = [...historicalDeletes, ...aliasDeletes, ...retained]
             .sort((a,b) => a.name.localeCompare(b.name));
           if (refUpdates.length !== 95) throw new Error(`Transaction entry count mismatch ${refUpdates.length}`);
-          const executable = refUpdates.map(({class, ...x}) => x);
+          const executable = refUpdates.map(({ class: _classification, ...x }) => x);
           const body = JSON.stringify({
             schema: 'box3d-repo-cleanup-final-branch-transaction-v1',
             repositoryId: 'R_kgDOUHjIFQ',
