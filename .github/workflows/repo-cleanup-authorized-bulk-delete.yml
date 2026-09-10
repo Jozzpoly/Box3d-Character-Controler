@@ -1,0 +1,262 @@
+name: Repo cleanup authorized atomic bulk delete
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - .github/workflows/repo-cleanup-authorized-bulk-delete.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repo-cleanup-authorized-bulk-delete
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    env:
+      ARCHIVE_BRANCH: archive/pre-cleanup-2026-09-09-dca388f4
+      ARCHIVE_SHA: fd5cae330fb80280617ce7b241347f1edafdb875
+      TAG_NAME: archive/pre-cleanup-2026-09-09-dca388f4
+      TAG_OBJECT_SHA: 7423e25ed9532f410a35cc4f7c3ff9c492a7fbc3
+      REHEARSAL_SHA: 452f7b51a7e1b46b08ea74a21affeec33dbe0216
+      HELPER_BRANCH: maintenance/repo-cleanup-adaptation-2026-09-09
+      FREEZE_SHA256: dca388f456480489492ea2069c2ce8ecd5930d3ab41028cda88f25fe72cc9584
+      CANONICAL_SHA: b0eac372035ca12a63f808eb3201edd3605a163c
+    steps:
+      - name: Exact preflight and atomic 92-ref deletion
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const crypto = require('crypto');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const repositoryId = 'R_kgDOUHjIFQ';
+            const zero = '0000000000000000000000000000000000000000';
+            const archiveBranch = process.env.ARCHIVE_BRANCH;
+            const archiveRef = `refs/heads/${archiveBranch}`;
+            const helperBranch = process.env.HELPER_BRANCH;
+            const helperRef = `refs/heads/${helperBranch}`;
+            const mainRef = 'refs/heads/main';
+            const tagName = process.env.TAG_NAME;
+            const tagRefName = `refs/tags/${tagName}`;
+            const rehearsalAliases = [
+              'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10',
+              'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-backup',
+              'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-final',
+              'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-run',
+              'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-v2',
+              'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-v3',
+              'maintenance/repo-cleanup-shadow-rehearsal-2026-09-10-v4',
+            ];
+
+            async function listBranches() {
+              const rows = await github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 });
+              return rows.map(b => ({ name: b.name, oid: b.commit.sha })).sort((a,b) => a.name.localeCompare(b.name));
+            }
+
+            fs.mkdirSync('bulk-delete-evidence', { recursive: true });
+
+            const manifestResponse = await github.rest.repos.getContent({
+              owner, repo, path: 'archive/recovery-manifest.json', ref: archiveBranch,
+            });
+            if (Array.isArray(manifestResponse.data) || !manifestResponse.data.content) throw new Error('Recovery manifest missing');
+            const manifestText = Buffer.from(manifestResponse.data.content, 'base64').toString('utf8');
+            const manifest = JSON.parse(manifestText);
+            fs.writeFileSync('bulk-delete-evidence/recovery-manifest.json', manifestText);
+
+            if (manifest.historicalArchiveFreezeSha256 !== process.env.FREEZE_SHA256) throw new Error('Freeze hash mismatch');
+            if (manifest.canonicalSha !== process.env.CANONICAL_SHA) throw new Error('Canonical manifest SHA mismatch');
+            if (manifest.historicalBranchCount !== 86 || manifest.historicalBranches.length !== 86) throw new Error('Historical manifest count mismatch');
+
+            const before = await listBranches();
+            const byName = new Map(before.map(b => [b.name, b.oid]));
+            if (before.length !== 95) throw new Error(`Expected 95 live branches, got ${before.length}`);
+            if (byName.get('main') !== process.env.CANONICAL_SHA) throw new Error(`main drift: ${byName.get('main')}`);
+            if (byName.get(archiveBranch) !== process.env.ARCHIVE_SHA) throw new Error(`archive drift: ${byName.get(archiveBranch)}`);
+            if (byName.get(helperBranch) !== context.sha) throw new Error(`helper drift: expected ${context.sha}, got ${byName.get(helperBranch)}`);
+
+            const historicalDeletes = [];
+            const historicalNames = new Set();
+            let absentCanary = 0;
+            for (const entry of manifest.historicalBranches) {
+              if (!entry.ref.startsWith('refs/heads/')) throw new Error(`Unexpected historical ref ${entry.ref}`);
+              const name = entry.ref.slice('refs/heads/'.length);
+              historicalNames.add(name);
+              if (name === 'tmp-noop') {
+                if (byName.has(name)) throw new Error(`tmp-noop unexpectedly exists at ${byName.get(name)}`);
+                absentCanary++;
+                continue;
+              }
+              if (byName.get(name) !== entry.expectedSha) {
+                throw new Error(`Historical drift ${name}: expected ${entry.expectedSha}, got ${byName.get(name) || 'ABSENT'}`);
+              }
+              historicalDeletes.push({ name: entry.ref, beforeOid: entry.expectedSha, afterOid: zero, force: true });
+            }
+            if (historicalDeletes.length !== 85 || absentCanary !== 1) throw new Error(`Historical disposition mismatch deletes=${historicalDeletes.length} absent=${absentCanary}`);
+
+            const aliasDeletes = rehearsalAliases.map(name => {
+              const oid = byName.get(name);
+              if (oid !== process.env.REHEARSAL_SHA) throw new Error(`Rehearsal alias drift ${name}: ${oid || 'ABSENT'}`);
+              return { name: `refs/heads/${name}`, beforeOid: process.env.REHEARSAL_SHA, afterOid: zero, force: true };
+            });
+
+            const retained = [
+              { name: mainRef, beforeOid: process.env.CANONICAL_SHA, afterOid: process.env.CANONICAL_SHA },
+              { name: archiveRef, beforeOid: process.env.ARCHIVE_SHA, afterOid: process.env.ARCHIVE_SHA },
+              { name: helperRef, beforeOid: context.sha, afterOid: context.sha },
+            ];
+
+            const expectedNames = new Set([
+              ...historicalDeletes.map(x => x.name.slice('refs/heads/'.length)),
+              ...rehearsalAliases,
+              'main', archiveBranch, helperBranch,
+            ]);
+            const unknownHeads = before.filter(b => !expectedNames.has(b.name));
+            const missingHeads = [...expectedNames].filter(n => !byName.has(n));
+            if (expectedNames.size !== 95 || unknownHeads.length || missingHeads.length) {
+              throw new Error(`Namespace mismatch expected=${expectedNames.size} unknown=${JSON.stringify(unknownHeads)} missing=${JSON.stringify(missingHeads)}`);
+            }
+
+            const tagRef = (await github.rest.git.getRef({ owner, repo, ref: `tags/${tagName}` })).data;
+            if (tagRef.object.type !== 'tag' || tagRef.object.sha !== process.env.TAG_OBJECT_SHA) {
+              throw new Error(`Tag ref mismatch: ${JSON.stringify(tagRef.object)}`);
+            }
+            const tagObj = (await github.rest.git.getTag({ owner, repo, tag_sha: tagRef.object.sha })).data;
+            if (tagObj.object.type !== 'commit' || tagObj.object.sha !== process.env.ARCHIVE_SHA) throw new Error(`Tag peel mismatch: ${JSON.stringify(tagObj.object)}`);
+            if (!tagObj.message.includes(process.env.FREEZE_SHA256) || !tagObj.message.includes('archive/recovery-manifest.json')) throw new Error('Tag provenance mismatch');
+
+            const refUpdates = [...historicalDeletes, ...aliasDeletes, ...retained].sort((a,b) => a.name.localeCompare(b.name));
+            if (refUpdates.length !== 95) throw new Error(`Transaction entry count mismatch ${refUpdates.length}`);
+            const transactionBody = JSON.stringify({
+              schema: 'box3d-repo-cleanup-owner-authorized-branch-transaction-v1',
+              repositoryId,
+              expectedHeadCountBefore: 95,
+              expectedHeadCountAfter: 3,
+              deleteCount: 92,
+              retainCount: 3,
+              helperSha: context.sha,
+              annotatedTag: { ref: tagRefName, objectSha: process.env.TAG_OBJECT_SHA, peeledCommitSha: process.env.ARCHIVE_SHA },
+              refUpdates,
+            }, null, 2) + '\n';
+            const transactionSha256 = crypto.createHash('sha256').update(transactionBody).digest('hex');
+            fs.writeFileSync('bulk-delete-evidence/executed-transaction.json', transactionBody);
+            fs.writeFileSync('bulk-delete-evidence/executed-transaction.sha256', `${transactionSha256}  executed-transaction.json\n`);
+            fs.writeFileSync('bulk-delete-evidence/preflight.json', JSON.stringify({
+              status: 'PASS_EXACT_PRE_DELETE',
+              ownerAuthorization: 'explicit in ChatGPT conversation on 2026-09-10',
+              branchCount: before.length,
+              historicalDeletes: historicalDeletes.length,
+              rehearsalAliasDeletes: aliasDeletes.length,
+              retainedHeads: retained.length,
+              absentCanary,
+              unknownHeads,
+              missingHeads,
+              canonicalSha: process.env.CANONICAL_SHA,
+              archiveSha: process.env.ARCHIVE_SHA,
+              helperSha: context.sha,
+              tagObjectSha: process.env.TAG_OBJECT_SHA,
+              tagPeeledSha: tagObj.object.sha,
+              transactionSha256,
+            }, null, 2) + '\n');
+
+            core.info(`AUTHORIZED_BULK_PRECHECK PASS heads=95 deletes=92 retained=3 transactionSha256=${transactionSha256}`);
+
+            const mutation = `mutation AuthorizedBulkDelete($input: UpdateRefsInput!) { updateRefs(input: $input) { clientMutationId } }`;
+            const mutationResult = await github.graphql(mutation, {
+              input: {
+                repositoryId,
+                clientMutationId: `owner-authorized-bulk-delete-${context.runId}`,
+                refUpdates,
+              },
+            });
+
+            const after = await listBranches();
+            const afterMap = new Map(after.map(b => [b.name, b.oid]));
+            const expectedAfter = [archiveBranch, 'main', helperBranch].sort();
+            if (after.length !== 3 || JSON.stringify(after.map(b => b.name)) !== JSON.stringify(expectedAfter)) {
+              throw new Error(`Post-delete namespace mismatch: ${JSON.stringify(after)}`);
+            }
+            if (afterMap.get('main') !== process.env.CANONICAL_SHA) throw new Error('Post-delete main drift');
+            if (afterMap.get(archiveBranch) !== process.env.ARCHIVE_SHA) throw new Error('Post-delete archive drift');
+            if (afterMap.get(helperBranch) !== context.sha) throw new Error('Post-delete helper drift');
+
+            for (const d of [...historicalDeletes, ...aliasDeletes]) {
+              if (afterMap.has(d.name.slice('refs/heads/'.length))) throw new Error(`Deleted ref still present: ${d.name}`);
+            }
+
+            const postTagRef = (await github.rest.git.getRef({ owner, repo, ref: `tags/${tagName}` })).data;
+            const postTagObj = (await github.rest.git.getTag({ owner, repo, tag_sha: postTagRef.object.sha })).data;
+            if (postTagRef.object.sha !== process.env.TAG_OBJECT_SHA || postTagRef.object.type !== 'tag') throw new Error('Post-delete tag ref drift');
+            if (postTagObj.object.sha !== process.env.ARCHIVE_SHA || postTagObj.object.type !== 'commit') throw new Error('Post-delete tag peel drift');
+
+            fs.writeFileSync('bulk-delete-evidence/postflight.json', JSON.stringify({
+              status: 'PASS_ATOMIC_92_REF_DELETE',
+              mutationResult,
+              transactionSha256,
+              branchCountBefore: before.length,
+              branchCountAfter: after.length,
+              deletedBranches: 92,
+              retained: after,
+              tagObjectSha: postTagRef.object.sha,
+              tagPeeledArchiveSha: postTagObj.object.sha,
+            }, null, 2) + '\n');
+            core.info(`AUTHORIZED_BULK_DELETE PASS heads_before=95 heads_after=3 deleted=92 transactionSha256=${transactionSha256}`);
+
+      - name: Fresh-clone preservation and recovery proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          POST="$RUNNER_TEMP/post-bulk.git"
+          git clone --bare "https://github.com/${GITHUB_REPOSITORY}.git" "$POST"
+          test "$(git --git-dir="$POST" for-each-ref --format='%(refname)' refs/heads | wc -l)" -eq 3
+          test "$(git --git-dir="$POST" rev-parse refs/heads/main)" = "$CANONICAL_SHA"
+          test "$(git --git-dir="$POST" rev-parse "refs/heads/${ARCHIVE_BRANCH}")" = "$ARCHIVE_SHA"
+          test "$(git --git-dir="$POST" rev-parse "refs/heads/${HELPER_BRANCH}")" = "$GITHUB_SHA"
+          test "$(git --git-dir="$POST" rev-parse "refs/tags/${TAG_NAME}")" = "$TAG_OBJECT_SHA"
+          test "$(git --git-dir="$POST" rev-parse "refs/tags/${TAG_NAME}^{}")" = "$ARCHIVE_SHA"
+          node <<'NODE'
+          const fs = require('fs');
+          const cp = require('child_process');
+          const manifest = JSON.parse(fs.readFileSync('bulk-delete-evidence/recovery-manifest.json','utf8'));
+          const post = process.env.RUNNER_TEMP + '/post-bulk.git';
+          let recovered = 0;
+          for (const entry of manifest.historicalBranches) {
+            if (entry.ref === 'refs/heads/tmp-noop') continue;
+            cp.execFileSync('git', [`--git-dir=${post}`, 'cat-file', '-e', `${entry.expectedSha}^{commit}`]);
+            cp.execFileSync('git', [`--git-dir=${post}`, 'merge-base', '--is-ancestor', entry.expectedSha, process.env.ARCHIVE_SHA]);
+            recovered++;
+          }
+          if (recovered !== 85) throw new Error(`Expected 85 recoverable historical mappings, got ${recovered}`);
+          cp.execFileSync('git', [`--git-dir=${post}`, 'merge-base', '--is-ancestor', process.env.REHEARSAL_SHA, process.env.GITHUB_SHA]);
+          fs.writeFileSync('bulk-delete-evidence/recovery-postflight.json', JSON.stringify({
+            status: 'PASS_FRESH_CLONE_POST_BULK_RECOVERY',
+            historicalMappingsRecovered: recovered,
+            rehearsalAliasTipReachableFromHelper: true,
+            branchCount: 3,
+            canonicalSha: process.env.CANONICAL_SHA,
+            archiveSha: process.env.ARCHIVE_SHA,
+            helperSha: process.env.GITHUB_SHA,
+            tagObjectSha: process.env.TAG_OBJECT_SHA,
+          }, null, 2) + '\n');
+          NODE
+          git --git-dir="$POST" fsck --full > bulk-delete-evidence/fresh-clone-fsck.txt 2>&1
+          echo "POST_BULK_RECOVERY PASS historical=85 heads=3"
+
+      - name: Hash evidence set
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd bulk-delete-evidence && sha256sum *.json *.sha256 fresh-clone-fsck.txt > EVIDENCE_SHA256SUMS.txt)
+
+      - name: Upload authorized bulk-delete evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-cleanup-authorized-bulk-delete-evidence
+          path: bulk-delete-evidence/
+          if-no-files-found: error
+          retention-days: 90
