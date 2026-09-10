@@ -1,5 +1,6 @@
 name: Repo cleanup GitHub provenance snapshot
 
+# Post-bulk closure snapshot trigger: re-run the existing preservation/platform audit on the real 3-branch namespace.
 on:
   push:
     branches:
