@@ -1,0 +1,40 @@
+name: A1 dynamic-support load crucible
+
+on:
+  push:
+    branches:
+      - research/donor-foundation-falsification-2026-09-10
+    paths:
+      - scripts/a1-dynamic-support-load-crucible.mjs
+      - .github/workflows/a1-dynamic-support-load-crucible.yml
+      - src/character.js
+      - src/constraint-velocity-character.js
+      - src/constraint-velocity.js
+      - src/donor/**
+      - package.json
+      - package-lock.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  characterize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run A1 characterization
+        run: node scripts/a1-dynamic-support-load-crucible.mjs
+      - name: Upload A1 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: a1-dynamic-support-load-evidence
+          path: tmp/a1/results.json
+          retention-days: 90
