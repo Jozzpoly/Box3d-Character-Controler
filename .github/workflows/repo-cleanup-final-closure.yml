@@ -1,0 +1,320 @@
+name: Repo cleanup final archive and helper closure
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - .github/workflows/repo-cleanup-final-closure.yml
+
+permissions:
+  contents: write
+  actions: write
+  issues: read
+  pull-requests: read
+  deployments: read
+  pages: read
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    env:
+      MAIN_SHA: e7a98beaca4c010e056c31db97b33c05b4610e38
+      MAIN_QUALIFICATION_RUN: '34465909309'
+      ARCHIVE_BRANCH: archive/pre-cleanup-2026-09-09-dca388f4
+      FROZEN_ARCHIVE_SHA: fd5cae330fb80280617ce7b241347f1edafdb875
+      TAG_NAME: archive/pre-cleanup-2026-09-09-dca388f4
+      TAG_OBJECT_SHA: 7423e25ed9532f410a35cc4f7c3ff9c492a7fbc3
+      FREEZE_SHA256: dca388f456480489492ea2069c2ce8ecd5930d3ab41028cda88f25fe72cc9584
+      MANIFEST_SHA256: beba606add09a9b60d9296acd75c42068e6859b24509e7b6426b3166d0992b60
+    steps:
+      - name: Checkout exact final helper tip
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch complete live and PR graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --prune origin \
+            '+refs/heads/*:refs/remotes/origin/*' \
+            '+refs/tags/*:refs/tags/*' \
+            '+refs/pull/*/head:refs/remotes/pull/*/head'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse refs/remotes/origin/main)" = "$MAIN_SHA"
+          test "$(git rev-parse refs/remotes/origin/$ARCHIVE_BRANCH)" = "$FROZEN_ARCHIVE_SHA"
+          test "$(git rev-parse refs/tags/$TAG_NAME)" = "$TAG_OBJECT_SHA"
+          test "$(git rev-parse refs/tags/$TAG_NAME^{})" = "$FROZEN_ARCHIVE_SHA"
+          test "$(git for-each-ref --format='%(refname)' refs/remotes/origin | grep -v '/HEAD$' | wc -l)" -eq 3
+
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+
+      - name: Build fresh historical catalog and provenance snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANONICAL_REF: refs/heads/main
+          ARCHIVE_REF: refs/heads/archive/pre-cleanup-2026-09-09-dca388f4
+          EXPECTED_HISTORICAL_BRANCHES: '86'
+          EXPECTED_DISTINCT_TIPS: '75'
+          EXPECTED_UNION_RUN_IDS: '73'
+          EXPECTED_UNION_ARTIFACT_IDS: '7'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p final-closure-evidence
+          git show "refs/remotes/origin/${ARCHIVE_BRANCH}:archive/recovery-manifest.json" > final-closure-evidence/recovery-manifest.json
+          test "$(sha256sum final-closure-evidence/recovery-manifest.json | cut -d' ' -f1)" = "$MANIFEST_SHA256"
+          node scripts/repo-cleanup-provenance-snapshot.mjs \
+            --manifest=final-closure-evidence/recovery-manifest.json \
+            --out=final-closure-evidence
+          node scripts/repo-cleanup-provenance-augment-v2.mjs \
+            --snapshot=final-closure-evidence/github-provenance-snapshot.json \
+            --manifest=final-closure-evidence/recovery-manifest.json \
+            --out=final-closure-evidence
+
+      - name: Close helper-only Actions registry and capture final platform state
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const fs = require('fs');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const canonicalPath = '.github/workflows/deploy-pages.yml';
+            const canonicalId = 345000233;
+
+            async function listWorkflows() {
+              return github.paginate(github.rest.actions.listRepoWorkflows, { owner, repo, per_page: 100 });
+            }
+            async function filesAt(ref) {
+              const r = await github.rest.repos.getContent({ owner, repo, path: '.github/workflows', ref });
+              if (!Array.isArray(r.data)) throw new Error(`workflow directory missing at ${ref}`);
+              return new Set(r.data.filter(x => x.type === 'file').map(x => x.path));
+            }
+
+            const branches = await github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 });
+            const branchMap = new Map(branches.map(b => [b.name, b.commit.sha]));
+            if (branches.length !== 3 || branchMap.get('main') !== process.env.MAIN_SHA || branchMap.get(process.env.ARCHIVE_BRANCH) !== process.env.FROZEN_ARCHIVE_SHA || branchMap.get('maintenance/repo-cleanup-adaptation-2026-09-09') !== context.sha) {
+              throw new Error(`live branch gate drift: ${JSON.stringify(branches.map(b => ({name:b.name,sha:b.commit.sha})))}`);
+            }
+
+            const mainFiles = await filesAt('main');
+            const helperFiles = await filesAt(context.sha);
+            if (mainFiles.size !== 1 || !mainFiles.has(canonicalPath)) throw new Error(`canonical workflow set drift: ${JSON.stringify([...mainFiles])}`);
+
+            const before = await listWorkflows();
+            const canonical = before.find(w => w.id === canonicalId);
+            if (!canonical || canonical.path !== canonicalPath || canonical.state !== 'active') throw new Error(`canonical workflow drift: ${JSON.stringify(canonical)}`);
+
+            const helperOnlyActive = [];
+            for (const w of before) {
+              if (w.id === canonicalId) continue;
+              if (w.state === 'active') {
+                if (!helperFiles.has(w.path) || !w.path.startsWith('.github/workflows/repo-cleanup-')) {
+                  throw new Error(`unexpected active non-canonical workflow: ${JSON.stringify({id:w.id,path:w.path,state:w.state})}`);
+                }
+                helperOnlyActive.push({ id: w.id, path: w.path });
+              } else if (w.state !== 'disabled_manually') {
+                throw new Error(`unexpected workflow state: ${JSON.stringify({id:w.id,path:w.path,state:w.state})}`);
+              }
+            }
+            if (helperOnlyActive.length < 1) throw new Error('expected helper-only cleanup workflows to close');
+
+            for (const w of helperOnlyActive) {
+              core.info(`Disabling helper-only cleanup workflow ${w.id} ${w.path}`);
+              await github.request('PUT /repos/{owner}/{repo}/actions/workflows/{workflow_id}/disable', {
+                owner, repo, workflow_id: w.id,
+                headers: { 'X-GitHub-Api-Version': '2026-03-10' },
+              });
+            }
+
+            const after = await listWorkflows();
+            const active = after.filter(w => w.state === 'active');
+            if (active.length !== 1 || active[0].id !== canonicalId || active[0].path !== canonicalPath) {
+              throw new Error(`final active workflow set mismatch: ${JSON.stringify(active.map(w => ({id:w.id,path:w.path,state:w.state})))}`);
+            }
+            const nonCanonicalNotDisabled = after.filter(w => w.id !== canonicalId && w.state !== 'disabled_manually');
+            if (nonCanonicalNotDisabled.length) throw new Error(`non-canonical workflow not disabled: ${JSON.stringify(nonCanonicalNotDisabled)}`);
+
+            const deployments = await github.paginate(github.rest.repos.listDeployments, { owner, repo, per_page: 100 });
+            let pages = null;
+            try {
+              pages = (await github.request('GET /repos/{owner}/{repo}/pages', { owner, repo })).data;
+            } catch (e) {
+              pages = { observable: false, status: e.status || null, message: e.message };
+            }
+
+            fs.writeFileSync('final-closure-evidence/final-platform-state.json', JSON.stringify({
+              status: 'PASS_HELPER_WORKFLOW_REGISTRY_CLOSED',
+              capturedAt: new Date().toISOString(),
+              branches: branches.map(b => ({ name: b.name, sha: b.commit.sha })).sort((a,b) => a.name.localeCompare(b.name)),
+              workflowRegistryCount: after.length,
+              activeWorkflowCount: active.length,
+              activeWorkflows: active.map(w => ({ id: w.id, path: w.path, state: w.state })),
+              disabledWorkflowCount: after.length - active.length,
+              disabledThisRun: helperOnlyActive,
+              deploymentCount: deployments.length,
+              deploymentRefs: [...new Set(deployments.map(d => d.ref))].sort(),
+              pages,
+            }, null, 2) + '\n');
+            core.info(`HELPER_REGISTRY_FINALIZED disabledThisRun=${helperOnlyActive.length} activeFinal=1 registry=${after.length}`);
+
+      - name: Generate durable archive catalog and closure documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p final-closure-tree/archive
+          node <<'NODE'
+          const fs = require('fs');
+          const snapshot = JSON.parse(fs.readFileSync('final-closure-evidence/github-provenance-snapshot.json','utf8'));
+          const v2 = JSON.parse(fs.readFileSync('final-closure-evidence/github-provenance-snapshot-v2.json','utf8'));
+          const platform = JSON.parse(fs.readFileSync('final-closure-evidence/final-platform-state.json','utf8'));
+          const manifest = JSON.parse(fs.readFileSync('final-closure-evidence/recovery-manifest.json','utf8'));
+          const entries = snapshot.historicalCatalog.map(e => ({
+            branch: e.branch,
+            exactSha: e.expectedSha,
+            tipSubject: e.tipSubject,
+            tipCommittedAt: e.tipCommittedAt,
+            proofClass: e.proofClass,
+            branchOnlyCommitCount: e.branchOnlyCommitCount,
+            exactPrHeadWitnesses: e.exactPrHeadWitnesses,
+            postCleanupStatus: e.branch === 'tmp-noop' ? 'CANARY_DELETED_BEFORE_BULK' : 'DELETED_IN_ATOMIC_BULK',
+          }));
+          if (entries.length !== 86) throw new Error(`catalog count ${entries.length}`);
+          const counts = entries.reduce((m,e) => (m[e.proofClass]=(m[e.proofClass]||0)+1,m),{});
+          if (counts.ANCESTOR_OF_CANONICAL !== 52 || counts.PR_HEAD_PRESERVED !== 21 || counts.DIVERGENT_UNIQUE !== 13) throw new Error(`proof counts ${JSON.stringify(counts)}`);
+
+          const catalogJson = {
+            schema: 'box3d-character-controller-post-cleanup-catalog-v1',
+            repository: 'Jozzpoly/Box3d-Character-Controler',
+            frozenArchiveAnchor: process.env.FROZEN_ARCHIVE_SHA,
+            immutableTag: process.env.TAG_NAME,
+            immutableTagObject: process.env.TAG_OBJECT_SHA,
+            historicalArchiveFreezeSha256: process.env.FREEZE_SHA256,
+            recoveryManifestSha256: process.env.MANIFEST_SHA256,
+            historicalBranchCount: entries.length,
+            historicalDistinctTipCount: manifest.historicalDistinctTipCount,
+            proofClassCounts: counts,
+            aliasGroups: snapshot.aliasGroups,
+            entries,
+          };
+          fs.writeFileSync('final-closure-tree/archive/catalog.json', JSON.stringify(catalogJson,null,2)+'\n');
+
+          function esc(x) { return String(x ?? '').replace(/\|/g,'\\|').replace(/\r?\n/g,' '); }
+          let md = '# Historical branch recovery catalog\n\n';
+          md += 'This catalog records the exact identities of the **86 historical branch names** frozen before repository cleanup. The names are provenance labels; they are not expected to remain live refs after the 2026-09-10 prune.\n\n';
+          md += `Frozen archive anchor: \`${process.env.FROZEN_ARCHIVE_SHA}\`  \nImmutable pre-prune tag: \`${process.env.TAG_NAME}\`  \nManifest SHA-256: \`${process.env.MANIFEST_SHA256}\`\n\n`;
+          md += 'Proof classes describe why the exact tip remained preservable when the live branch name was removed; they do not rank research value.\n\n';
+          md += '| Historical branch | Exact tip SHA | Preservation class | Tip subject |\n|---|---|---|---|\n';
+          for (const e of entries) md += `| \`${esc(e.branch)}\` | \`${e.exactSha}\` | ${e.proofClass} | ${esc(e.tipSubject)} |\n`;
+          fs.writeFileSync('final-closure-tree/archive/CATALOG.md', md);
+
+          const readme = `# Repository history archive — post-cleanup closure\n\nThis branch is the durable recovery surface for the Box3D Character Controller repository cleanup. It is **not canonical runtime/project authority**; live \`main\` remains that authority.\n\n## Two anchors with different jobs\n\n- Immutable annotated tag \`${process.env.TAG_NAME}\` points to the exact **pre-prune** archive anchor \`${process.env.FROZEN_ARCHIVE_SHA}\`. It must remain frozen.\n- The archive branch of the same name may advance beyond that anchor with post-prune closure documentation while retaining the anchor as its first-parent history.\n\nThe frozen identity source is \`archive/recovery-manifest.json\` (SHA-256 \`${process.env.MANIFEST_SHA256}\`). It maps all 86 historical branch names to exact commit SHAs. \`archive/CATALOG.md\` is the human-readable index; \`archive/catalog.json\` is the enriched machine-readable index.\n\n## Recovering an old branch state\n\n1. Find the historical branch name in \`archive/CATALOG.md\` or \`archive/recovery-manifest.json\`.\n2. Copy its exact SHA.\n3. Create a local recovery branch at that SHA, e.g. \`git switch -c recovered/<name> <sha>\`.\n4. Only recreate a remote historical branch if there is a concrete reason; the cleanup intentionally removed those live names.\n\nThe archive graph is intentionally self-contained enough to recover the frozen historical tips even after the original live branch refs are gone. See \`archive/CLOSURE.md\` for the audited prune and closure evidence.\n`;
+          fs.writeFileSync('final-closure-tree/README.md', readme);
+
+          const closure = `# Repository hygiene closure — 2026-09-10\n\n## Final authority boundary\n\n- Canonical/public main: \`${process.env.MAIN_SHA}\`.\n- Exact-main smoke/build/Pages qualification: run \`${process.env.MAIN_QUALIFICATION_RUN}\` — success.\n- Frozen pre-prune archive anchor: \`${process.env.FROZEN_ARCHIVE_SHA}\`.\n- Immutable annotated tag object: \`${process.env.TAG_OBJECT_SHA}\`, peeled to the frozen anchor.\n- Historical archive freeze SHA-256: \`${process.env.FREEZE_SHA256}\`.\n- Recovery manifest SHA-256: \`${process.env.MANIFEST_SHA256}\`.\n- Final cleanup-helper tip preserved as a parent of this closure commit: \`${process.env.GITHUB_SHA}\`.\n\n## Destructive execution evidence\n\n- one-ref canary: run \`34412321168\`, artifact \`10127711066\`, digest \`sha256:26f2e3100d177774e69e2ecfd586f91780d97e5afd609cc8b9720b2df53238b5\`;\n- aggressive-GC / exact-recovery rehearsal: run \`34416353700\`, artifact \`10129215137\`, current GitHub metadata digest \`sha256:9bb89e24869ac5b8347155dd6c37276b28e114f9662842a90d271eb4c23af14d\`;\n- final transaction specimen: run \`34431119947\`, artifact \`10134512857\`, digest \`sha256:bec336424ea7ba6707493492dcc41d0df2cbdf9673b86f62d80d2fd95007a149\`;\n- owner-authorized atomic bulk prune: run \`34464748439\`, artifact \`10147021517\`, digest \`sha256:28e76214ccaec8c3c6a23b5dd93fd850f48a3c3379fe77b6801ee079e8eb156f\`; transaction SHA-256 \`94f19b09125837d09c22a203f754bf5984a91ae4883a067cfca8a58aeb50d149\`;\n- post-bulk provenance/platform snapshot: run \`34465088280\`, artifact \`10147187125\`, digest \`sha256:af43223dadb18f43afd4be2cf1a6b6d8904640e77d939147d1443ee50ee0c259\`;\n- stale registry-only workflow closure: run \`34465295332\`, artifact \`10147238417\`, digest \`sha256:9cd117310e576ddd44e93083dd170704483c38d38fe1245ab1360bcc63f6f43d\`.\n\n## Preservation result\n\nThe frozen set contains **86 historical names / 75 distinct tips**. Classification at freeze: **52 ancestor-of-canonical, 21 exact PR-head preserved, 13 divergent unique**. The real bulk transaction deleted 85 still-live frozen historical refs plus 7 accidental rehearsal aliases in one atomic 92-delete transaction; \`tmp-noop\` had already been deleted as the one-ref canary.\n\nPost-bulk provenance re-scan still resolved **73/73 referenced Actions runs** and **7/7 referenced artifact records** with zero missing records (one historical artifact record was already expired).\n\n## GitHub platform closure\n\nAt final helper closure, the live Git branch namespace still contains exactly three refs: \`main\`, this archive branch, and the temporary cleanup helper. All non-canonical Actions workflow registry entries have been placed in \`disabled_manually\`; the only active workflow is canonical \`.github/workflows/deploy-pages.yml\`. Historical workflow runs are intentionally retained.\n\nObserved deployment refs at this checkpoint: ${platform.deploymentRefs.map(x=>`\`${x}\``).join(', ') || 'none'}; recorded deployment count: ${platform.deploymentCount}. Pages observation is stored in the final closure evidence for run \`${process.env.GITHUB_RUN_ID}\`.\n\nSome administration-scoped GitHub settings remained unobservable to the cleanup token (for example detailed Actions permissions/retention, webhooks and immutable-release administration). \`protected=true\` branch enumeration and repository ruleset enumeration were empty during the pre-prune audit; unobservable administration detail was never treated as proof of emptiness.\n\n## Remaining live helper boundary\n\nThe cleanup helper is deliberately **not deleted by this closure run**. This archive commit preserves its final tip as a parent, and its cleanup workflows are disabled. Deleting the helper is the final separate destructive namespace action and should occur only after an explicit Owner authorization and one last live revalidation.\n\nFull historical branch identities: [\`CATALOG.md\`](CATALOG.md) / [\`catalog.json\`](catalog.json).\n`;
+          fs.writeFileSync('final-closure-tree/archive/CLOSURE.md', closure);
+
+          fs.writeFileSync('final-closure-evidence/catalog-summary.json', JSON.stringify({
+            status: 'PASS_CATALOG_GENERATED',
+            entryCount: entries.length,
+            proofClassCounts: counts,
+            unionRunIds: v2.summary?.unionRunCount ?? v2.summary?.unionRunIdCount ?? 73,
+            unionArtifactIds: v2.summary?.unionArtifactCount ?? v2.summary?.unionArtifactIdCount ?? 7,
+          }, null, 2) + '\n');
+          NODE
+          test "$(node -e "console.log(JSON.parse(require('fs').readFileSync('final-closure-tree/archive/catalog.json')).entries.length)")" -eq 86
+
+      - name: Create and publish archive closure commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          WT="$RUNNER_TEMP/archive-closure"
+          git worktree add --detach "$WT" "$FROZEN_ARCHIVE_SHA"
+          cp final-closure-tree/README.md "$WT/README.md"
+          cp final-closure-tree/archive/CATALOG.md "$WT/archive/CATALOG.md"
+          cp final-closure-tree/archive/catalog.json "$WT/archive/catalog.json"
+          cp final-closure-tree/archive/CLOSURE.md "$WT/archive/CLOSURE.md"
+          test "$(sha256sum "$WT/archive/recovery-manifest.json" | cut -d' ' -f1)" = "$MANIFEST_SHA256"
+          git -C "$WT" add README.md archive/CATALOG.md archive/catalog.json archive/CLOSURE.md
+          git -C "$WT" diff --cached --check
+          TREE_SHA="$(git -C "$WT" write-tree)"
+          CLOSURE_SHA="$(printf '%s\n' \
+            'Close repository history archive after audited branch prune' \
+            '' \
+            "frozen-archive-anchor: $FROZEN_ARCHIVE_SHA" \
+            "final-main: $MAIN_SHA" \
+            "final-helper-tip: $GITHUB_SHA" \
+            "historical-archive-freeze-sha256: $FREEZE_SHA256" \
+            | git commit-tree "$TREE_SHA" -p "$FROZEN_ARCHIVE_SHA" -p "$GITHUB_SHA" -p "$MAIN_SHA")"
+          echo "$CLOSURE_SHA" > final-closure-evidence/archive-closure-sha.txt
+          echo "$TREE_SHA" > final-closure-evidence/archive-closure-tree-sha.txt
+          git fetch origin "$ARCHIVE_BRANCH"
+          test "$(git rev-parse refs/remotes/origin/$ARCHIVE_BRANCH)" = "$FROZEN_ARCHIVE_SHA"
+          git push --force-with-lease="refs/heads/$ARCHIVE_BRANCH:$FROZEN_ARCHIVE_SHA" origin "$CLOSURE_SHA:refs/heads/$ARCHIVE_BRANCH"
+          echo "ARCHIVE_CLOSURE_SHA=$CLOSURE_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fresh-clone exact recovery and closure proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLOSURE_SHA="$(cat final-closure-evidence/archive-closure-sha.txt)"
+          POST="$RUNNER_TEMP/final-post-closure.git"
+          git clone --bare "https://github.com/${GITHUB_REPOSITORY}.git" "$POST"
+          test "$(git --git-dir="$POST" for-each-ref --format='%(refname)' refs/heads | wc -l)" -eq 3
+          test "$(git --git-dir="$POST" rev-parse refs/heads/main)" = "$MAIN_SHA"
+          test "$(git --git-dir="$POST" rev-parse "refs/heads/$ARCHIVE_BRANCH")" = "$CLOSURE_SHA"
+          test "$(git --git-dir="$POST" rev-parse refs/heads/maintenance/repo-cleanup-adaptation-2026-09-09)" = "$GITHUB_SHA"
+          test "$(git --git-dir="$POST" rev-parse "refs/tags/$TAG_NAME")" = "$TAG_OBJECT_SHA"
+          test "$(git --git-dir="$POST" rev-parse "refs/tags/$TAG_NAME^{}")" = "$FROZEN_ARCHIVE_SHA"
+          git --git-dir="$POST" merge-base --is-ancestor "$FROZEN_ARCHIVE_SHA" "$CLOSURE_SHA"
+          git --git-dir="$POST" merge-base --is-ancestor "$GITHUB_SHA" "$CLOSURE_SHA"
+          git --git-dir="$POST" merge-base --is-ancestor "$MAIN_SHA" "$CLOSURE_SHA"
+          CLOSURE_SHA="$CLOSURE_SHA" POST="$POST" node <<'NODE'
+          const fs = require('fs');
+          const cp = require('child_process');
+          const manifest = JSON.parse(fs.readFileSync('final-closure-evidence/recovery-manifest.json','utf8'));
+          let recovered = 0;
+          for (const e of manifest.historicalBranches) {
+            cp.execFileSync('git', [`--git-dir=${process.env.POST}`, 'cat-file', '-e', `${e.expectedSha}^{commit}`]);
+            cp.execFileSync('git', [`--git-dir=${process.env.POST}`, 'merge-base', '--is-ancestor', e.expectedSha, process.env.CLOSURE_SHA]);
+            const localRef = `refs/recovered/${e.ref.slice('refs/heads/'.length)}`;
+            cp.execFileSync('git', [`--git-dir=${process.env.POST}`, 'update-ref', localRef, e.expectedSha]);
+            const got = cp.execFileSync('git', [`--git-dir=${process.env.POST}`, 'rev-parse', localRef], {encoding:'utf8'}).trim();
+            if (got !== e.expectedSha) throw new Error(`restore mismatch ${e.ref}`);
+            recovered++;
+          }
+          if (recovered !== 86) throw new Error(`recovered=${recovered}`);
+          fs.writeFileSync('final-closure-evidence/fresh-clone-recovery.json', JSON.stringify({
+            status: 'PASS_FINAL_ARCHIVE_CLOSURE_AND_86_EXACT_RECOVERIES',
+            recoveredMappings: recovered,
+            closureSha: process.env.CLOSURE_SHA,
+            mainSha: process.env.MAIN_SHA,
+            helperSha: process.env.GITHUB_SHA,
+            immutableTagObject: process.env.TAG_OBJECT_SHA,
+            immutableTagPeel: process.env.FROZEN_ARCHIVE_SHA,
+          }, null, 2) + '\n');
+          NODE
+          git --git-dir="$POST" fsck --full > final-closure-evidence/final-fsck.txt 2>&1
+          test ! -s final-closure-evidence/final-fsck.txt
+
+      - name: Hash and upload final closure evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp final-closure-tree/README.md final-closure-evidence/archive-README.md
+          cp final-closure-tree/archive/CATALOG.md final-closure-evidence/CATALOG.md
+          cp final-closure-tree/archive/catalog.json final-closure-evidence/catalog.json
+          cp final-closure-tree/archive/CLOSURE.md final-closure-evidence/CLOSURE.md
+          (cd final-closure-evidence && sha256sum *.json *.md *.txt > FINAL_SHA256SUMS.txt)
+      - name: Upload final closure evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-cleanup-final-closure-evidence
+          path: final-closure-evidence/
+          if-no-files-found: error
+          retention-days: 90
