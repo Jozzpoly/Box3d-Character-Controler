@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - research/donor-foundation-repair-a4-2026-09-10
+      - research/foundation-invariant-a4-generalization-2026-09-10
     paths:
       - scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
       - scripts/r1-a4-browser-integration-contract.mjs
+      - scripts/r1-a4-presentation-isolation-stress.mjs
       - .github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml
       - src/follow-camera.js
       - src/main.js
@@ -39,6 +41,8 @@ jobs:
         run: node scripts/r1-a4-browser-integration-contract.mjs
       - name: Run R1 A4 fixed-step camera basis crucible
         run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
+      - name: Stress presentation isolation invariant
+        run: node scripts/r1-a4-presentation-isolation-stress.mjs
       - name: Upload R1 A4 evidence
         uses: actions/upload-artifact@v4
         with:
