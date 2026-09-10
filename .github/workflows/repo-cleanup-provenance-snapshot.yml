@@ -7,6 +7,7 @@ on:
     paths:
       - scripts/repo-cleanup-provenance-snapshot.mjs
       - scripts/repo-cleanup-provenance-augment-v2.mjs
+      - scripts/repo-cleanup-platform-state-snapshot.mjs
       - .github/workflows/repo-cleanup-provenance-snapshot.yml
   workflow_dispatch:
 
@@ -15,6 +16,8 @@ permissions:
   actions: read
   issues: read
   pull-requests: read
+  deployments: read
+  pages: read
 
 concurrency:
   group: repo-cleanup-provenance-snapshot
@@ -75,6 +78,13 @@ jobs:
             --manifest=evidence/repo-cleanup/provenance-snapshot/recovery-manifest.json \
             --out=evidence/repo-cleanup/provenance-snapshot
 
+      - name: Snapshot broader GitHub platform state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/repo-cleanup-platform-state-snapshot.mjs \
+            --out=evidence/repo-cleanup/provenance-snapshot
+
       - name: Build exact real-graph source bundle for closure rehearsal
         shell: bash
         run: |
@@ -98,6 +108,8 @@ jobs:
             evidence/repo-cleanup/provenance-snapshot/github-provenance-summary.md \
             evidence/repo-cleanup/provenance-snapshot/github-provenance-snapshot-v2.json \
             evidence/repo-cleanup/provenance-snapshot/github-provenance-summary-v2.md \
+            evidence/repo-cleanup/provenance-snapshot/github-platform-state-snapshot.json \
+            evidence/repo-cleanup/provenance-snapshot/github-platform-state-summary.md \
             evidence/repo-cleanup/provenance-snapshot/pre-closure-source.bundle \
             > evidence/repo-cleanup/provenance-snapshot/SHA256SUMS.txt
 
