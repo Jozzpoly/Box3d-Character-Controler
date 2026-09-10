@@ -11,6 +11,7 @@ on:
       - scripts/r1-a4-presentation-isolation-stress.mjs
       - scripts/a4b-wall-clock-input-batching-crucible.mjs
       - scripts/a4c-input-temporal-contract-matrix.mjs
+      - scripts/r2-temporal-policy-design-crucible.mjs
       - .github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml
       - src/follow-camera.js
       - src/main.js
@@ -49,6 +50,8 @@ jobs:
         run: node scripts/a4b-wall-clock-input-batching-crucible.mjs
       - name: Characterize cross-input temporal batching
         run: node scripts/a4c-input-temporal-contract-matrix.mjs
+      - name: Compare R2 temporal policies
+        run: node scripts/r2-temporal-policy-design-crucible.mjs
       - name: Upload R1 A4 evidence
         uses: actions/upload-artifact@v4
         with:
