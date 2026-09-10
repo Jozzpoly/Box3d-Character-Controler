@@ -38,7 +38,7 @@ export class TemporalInputTimelineProbe {
 
     const fixedDt = mapper.fixedDt;
     const mechanicalLateness = Math.max(0, this.consumedSimTime - mapped.entitlement);
-    const missedTicks = mechanicalLateness <= 1e-12 ? 0 : Math.floor((mechanicalLateness + 1e-12) / fixedDt);
+    const missedTicks = mechanicalLateness <= 1e-12 ? 0 : Math.ceil((mechanicalLateness - 1e-12) / fixedDt);
     return {
       classification: missedTicks > 0 ? 'delivered-after-entitlement' : mapped.classification,
       originalClassification: mapped.classification,
