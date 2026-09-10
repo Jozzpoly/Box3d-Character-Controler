@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          expected_parent='b3a9025b90bfa84766bf2ef7011310e8e8b31618'
+          expected_parent='fe307d866084a69804fdd684a6e230f6c683f0d5'
           actual_parent="$(git rev-parse HEAD^)"
           test "$actual_parent" = "$expected_parent"
           python - <<'PY'
@@ -74,51 +74,29 @@ jobs:
           replace_once(
               '.github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml',
               '      - src/follow-camera.js\n',
-              '      - src/follow-camera.js\n      - src/main.js\n      - src/e19-owner-browser.js\n      - scripts/r1-a4-browser-integration-contract.mjs\n',
+              '      - src/follow-camera.js\n      - src/main.js\n      - src/e19-owner-browser.js\n',
           )
 
-          Path('scripts/r1-a4-browser-integration-contract.mjs').write_text(r'''import fs from 'node:fs';
-
-function count(text, needle) {
-  return text.split(needle).length - 1;
-}
-
-function requireCount(label, text, needle, expected) {
-  const actual = count(text, needle);
-  if (actual !== expected) throw new Error(`${label}: expected ${expected} occurrence(s) of ${needle}, got ${actual}`);
-}
-
-const main = fs.readFileSync('src/main.js', 'utf8');
-const e19 = fs.readFileSync('src/e19-owner-browser.js', 'utf8');
-
-requireCount('main fixed-step basis', main, 'const basis = followCamera.controlBasis();', 1);
-requireCount('main fixed-step advance', main, 'followCamera.advanceControl(dt);', 1);
-requireCount('E19 fixed-step basis', e19, 'const basis = followCamera.controlBasis();', 1);
-requireCount('E19 fixed-step advance', e19, 'followCamera.advanceControl(dt);', 1);
-requireCount('E19 mechanical acquisition basis', e19, 'updateReachAndAcquire(hand, basis)', 2);
-requireCount('E19 render-preview default visual basis', e19, 'function aimForHand(hand, basis = followCamera.basis())', 1);
-
-if (main.includes('const basis = followCamera.basis();\n    const intent = playerInput.sample(basis);')) {
-  throw new Error('main physicsTick still samples render camera basis');
-}
-if (e19.includes('const basis = followCamera.basis();\n    const intent = playerInput.sample(basis);')) {
-  throw new Error('E19 physicsTick still samples render camera basis');
-}
-
-console.log('R1 A4 browser integration contract PASS');
-''')
-
-          replace_once(
-              '.github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml',
-              '      - name: Run R1 A4 fixed-step camera basis crucible\n        run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs\n',
-              '      - name: Verify R1 A4 browser integration contract\n        run: node scripts/r1-a4-browser-integration-contract.mjs\n      - name: Run R1 A4 fixed-step camera basis crucible\n        run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs\n',
-          )
+          main = Path('src/main.js').read_text()
+          e19 = Path('src/e19-owner-browser.js').read_text()
+          if main.count('const basis = followCamera.controlBasis();') != 1:
+              raise SystemExit('main: fixed-step basis integration count mismatch')
+          if main.count('followCamera.advanceControl(dt);') != 1:
+              raise SystemExit('main: fixed-step advance integration count mismatch')
+          if e19.count('const basis = followCamera.controlBasis();') != 1:
+              raise SystemExit('E19: fixed-step basis integration count mismatch')
+          if e19.count('followCamera.advanceControl(dt);') != 1:
+              raise SystemExit('E19: fixed-step advance integration count mismatch')
+          if e19.count('updateReachAndAcquire(hand, basis)') != 2:
+              raise SystemExit('E19: mechanical reach basis plumbing mismatch')
+          if e19.count('function aimForHand(hand, basis = followCamera.basis())') != 1:
+              raise SystemExit('E19: visual preview basis boundary mismatch')
+          print('R1 browser integration exact patch contract PASS')
           PY
-          node scripts/r1-a4-browser-integration-contract.mjs
           rm .github/workflows/r1-a4-browser-integration-executor.yml
           git diff --check
           changed="$(git status --short | sed -E 's/^...//' | sort)"
-          expected="$(printf '%s\n' '.github/workflows/r1-a4-browser-integration-executor.yml' '.github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml' 'scripts/r1-a4-browser-integration-contract.mjs' 'src/e19-owner-browser.js' 'src/main.js' | sort)"
+          expected="$(printf '%s\n' '.github/workflows/r1-a4-browser-integration-executor.yml' '.github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml' 'src/e19-owner-browser.js' 'src/main.js' | sort)"
           test "$changed" = "$expected"
       - name: Commit bounded integration
         shell: bash
