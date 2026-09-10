@@ -12,6 +12,7 @@ on:
       - scripts/a4b-wall-clock-input-batching-crucible.mjs
       - scripts/a4c-input-temporal-contract-matrix.mjs
       - scripts/r2-temporal-policy-design-crucible.mjs
+      - scripts/r2b-temporal-policy-adversarial.mjs
       - .github/workflows/r1-a4-fixed-step-camera-basis-crucible.yml
       - src/follow-camera.js
       - src/main.js
@@ -52,6 +53,8 @@ jobs:
         run: node scripts/a4c-input-temporal-contract-matrix.mjs
       - name: Compare R2 temporal policies
         run: node scripts/r2-temporal-policy-design-crucible.mjs
+      - name: Adversarial R2 event-entitlement matrix
+        run: node scripts/r2b-temporal-policy-adversarial.mjs
       - name: Upload R1 A4 evidence
         uses: actions/upload-artifact@v4
         with:
