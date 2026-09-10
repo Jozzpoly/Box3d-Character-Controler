@@ -7,10 +7,11 @@ function bump(map, key) {
 }
 
 export class TemporalRuntimeShadowObserver {
-  constructor({ fixedDt, maxFrameDt, startWallTime, touchRoot = null, recentLimit = 64 } = {}) {
+  constructor({ fixedDt, maxFrameDt, startWallTime, touchRoot = null, recentLimit = 64, now = null, windowTarget = null } = {}) {
+    const target = windowTarget ?? window;
     this.mapper = new TemporalFrameEpochMapper({ fixedDt, maxFrameDt, startWallTime });
     this.probe = new TemporalInputTimelineProbe();
-    this.shadow = new TemporalInputShadow().install({ windowTarget: window, touchRoot });
+    this.shadow = new TemporalInputShadow(now ? { now } : {}).install({ windowTarget: target, touchRoot });
     this.recentLimit = recentLimit;
     this.recent = [];
     this.counts = { frames: 0, events: 0, lifecycleCuts: 0, missedTicks: 0, prematureTicks: 0 };
