@@ -4,7 +4,7 @@ export class TemporalInputShadow {
     this.now = now;
     this.events = [];
     this.sequence = 0;
-    this.epoch = 0;
+    this.lifecycleEpoch = 0;
     this.listeners = [];
     this.counts = { total: 0, key: 0, pointer: 0, cut: 0 };
   }
@@ -63,7 +63,7 @@ export class TemporalInputShadow {
       occurrenceTime,
       deliveryTime,
       deliveryDelay: Math.max(0, deliveryTime - occurrenceTime),
-      epoch: this.epoch,
+      lifecycleEpoch: this.lifecycleEpoch,
       ...payload,
     });
     this.events.push(event);
@@ -74,9 +74,9 @@ export class TemporalInputShadow {
   }
 
   cut(reason, occurrenceTime = this.now()) {
-    this.epoch += 1;
+    this.lifecycleEpoch += 1;
     this.counts.cut += 1;
-    return this.record({ source: 'epoch', kind: 'cut', control: reason, occurrenceTime });
+    return this.record({ source: 'lifecycle', kind: 'cut', control: reason, occurrenceTime });
   }
 
   drain() {
@@ -84,7 +84,7 @@ export class TemporalInputShadow {
   }
 
   summary() {
-    return { ...this.counts, pending: this.events.length, epoch: this.epoch };
+    return { ...this.counts, pending: this.events.length, lifecycleEpoch: this.lifecycleEpoch };
   }
 
   destroy() {
