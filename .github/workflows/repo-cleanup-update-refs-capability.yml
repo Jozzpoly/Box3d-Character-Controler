@@ -14,7 +14,7 @@ jobs:
   proof:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe updateRefs no-op preconditions without ref mutation
+      - name: Probe updateRefs transactional semantics
         id: probe
         uses: actions/github-script@v8
         with:
@@ -26,7 +26,10 @@ jobs:
             const helperName = 'maintenance/repo-cleanup-adaptation-2026-09-09';
             const helperRef = `refs/heads/${helperName}`;
             const helperSha = context.sha;
-            const knownOtherOid = 'b0eac372035ca12a63f808eb3201edd3605a163c';
+            const mainExpected = 'b0eac372035ca12a63f808eb3201edd3605a163c';
+            const zero = '0000000000000000000000000000000000000000';
+            const syntheticName = 'maintenance/repo-cleanup-update-refs-atomic-probe';
+            const syntheticRef = `refs/heads/${syntheticName}`;
 
             const mutation = `
               mutation UpdateRefsCapability($input: UpdateRefsInput!) {
@@ -65,10 +68,17 @@ jobs:
                 .sort((a, b) => a.name.localeCompare(b.name));
             }
 
-            const before = await inventory();
-            const helper = before.find((b) => b.name === helperName);
+            const baseline = await inventory();
+            const helper = baseline.find((b) => b.name === helperName);
+            const main = baseline.find((b) => b.name === 'main');
             if (!helper || helper.oid !== helperSha) {
               throw new Error(`Helper inventory mismatch: expected ${helperSha}, got ${helper?.oid}`);
+            }
+            if (!main || main.oid !== mainExpected) {
+              throw new Error(`Main drift: expected ${mainExpected}, got ${main?.oid}`);
+            }
+            if (baseline.some((b) => b.name === syntheticName)) {
+              throw new Error(`Synthetic probe ref unexpectedly exists before test: ${syntheticRef}`);
             }
 
             const correctNoop = await call('correct-noop', [{
@@ -79,51 +89,97 @@ jobs:
 
             const staleNoop = await call('stale-noop-must-reject', [{
               name: helperRef,
-              beforeOid: knownOtherOid,
+              beforeOid: mainExpected,
               afterOid: helperSha,
             }]);
 
-            const allNoopUpdates = before.map((b) => ({
+            const baselineNoops = baseline.map((b) => ({
               name: `refs/heads/${b.name}`,
               beforeOid: b.oid,
               afterOid: b.oid,
             }));
-            const allNoop = await call(`all-${allNoopUpdates.length}-heads-noop`, allNoopUpdates);
+            const allNoop = await call(`all-${baselineNoops.length}-heads-noop`, baselineNoops);
 
             let allNoopOneStale = null;
             if (allNoop.ok) {
-              const poisoned = allNoopUpdates.map((u) => ({ ...u }));
-              const main = before.find((b) => b.name === 'main');
+              const poisoned = baselineNoops.map((u) => ({ ...u }));
               const mainUpdate = poisoned.find((u) => u.name === 'refs/heads/main');
-              if (!main || !mainUpdate) throw new Error('main missing from inventory');
-              mainUpdate.beforeOid = helperSha === main.oid ? knownOtherOid : helperSha;
+              mainUpdate.beforeOid = helperSha;
               allNoopOneStale = await call(`all-${poisoned.length}-heads-one-stale`, poisoned);
             }
 
-            const after = await inventory();
-            const inventoryUnchanged = JSON.stringify(before) === JSON.stringify(after);
+            const createSynthetic = await call('create-synthetic-probe', [{
+              name: syntheticRef,
+              beforeOid: zero,
+              afterOid: helperSha,
+            }]);
+            const afterCreate = await inventory();
+            const syntheticAfterCreate = afterCreate.find((b) => b.name === syntheticName);
+
+            const guardedDeleteBase = baselineNoops.map((u) => ({ ...u }));
+            guardedDeleteBase.push({
+              name: syntheticRef,
+              beforeOid: helperSha,
+              afterOid: zero,
+              force: true,
+            });
+
+            const poisonedDelete = guardedDeleteBase.map((u) => ({ ...u }));
+            const poisonedMain = poisonedDelete.find((u) => u.name === 'refs/heads/main');
+            poisonedMain.beforeOid = helperSha;
+            const guardedDeleteMustReject = await call(
+              `guarded-delete-${poisonedDelete.length}-one-stale`,
+              poisonedDelete,
+            );
+            const afterRejectedDelete = await inventory();
+            const syntheticSurvivedRejectedDelete = afterRejectedDelete.some(
+              (b) => b.name === syntheticName && b.oid === helperSha,
+            );
+            const retainedUnchangedAfterReject = baseline.every((b) =>
+              afterRejectedDelete.some((a) => a.name === b.name && a.oid === b.oid)
+            );
+
+            const guardedDeleteSuccess = await call(
+              `guarded-delete-${guardedDeleteBase.length}-valid`,
+              guardedDeleteBase,
+            );
+            const finalInventory = await inventory();
+            const finalMatchesBaseline = JSON.stringify(finalInventory) === JSON.stringify(baseline);
 
             const result = {
               repositoryId,
               helperRef,
               helperSha,
-              headCount: before.length,
+              baselineHeadCount: baseline.length,
               correctNoop,
               staleNoop,
               allNoop,
               allNoopOneStale,
-              inventoryUnchanged,
-              before,
-              after,
+              createSynthetic,
+              syntheticAfterCreate,
+              guardedDeleteEntryCount: guardedDeleteBase.length,
+              guardedDeleteMustReject,
+              syntheticSurvivedRejectedDelete,
+              retainedUnchangedAfterReject,
+              guardedDeleteSuccess,
+              finalMatchesBaseline,
+              baseline,
+              finalInventory,
             };
             fs.writeFileSync('update-refs-capability-proof.json', JSON.stringify(result, null, 2));
 
-            core.info(`UPDATE_REFS_PROOF heads=${before.length} correctNoop=${correctNoop.ok} staleRejected=${!staleNoop.ok} allNoop=${allNoop.ok} allStaleRejected=${allNoopOneStale ? !allNoopOneStale.ok : 'not-run'} unchanged=${inventoryUnchanged}`);
+            core.info(`UPDATE_REFS_PROOF baseline=${baseline.length} correctNoop=${correctNoop.ok} staleRejected=${!staleNoop.ok} allNoop=${allNoop.ok} allStaleRejected=${allNoopOneStale ? !allNoopOneStale.ok : 'not-run'} syntheticCreated=${createSynthetic.ok && syntheticAfterCreate?.oid === helperSha} guardedEntries=${guardedDeleteBase.length} poisonedDeleteRejected=${!guardedDeleteMustReject.ok} syntheticSurvivedReject=${syntheticSurvivedRejectedDelete} retainedUnchanged=${retainedUnchangedAfterReject} validDelete=${guardedDeleteSuccess.ok} restored=${finalMatchesBaseline}`);
 
-            if (!correctNoop.ok) throw new Error(`Correct no-op was rejected: ${correctNoop.message}`);
-            if (staleNoop.ok) throw new Error('Stale beforeOid no-op was incorrectly accepted');
-            if (!inventoryUnchanged) throw new Error('Ref inventory changed during nominally zero-mutation proof');
-            if (allNoop.ok && allNoopOneStale?.ok) throw new Error('Bulk no-op with one stale beforeOid was incorrectly accepted');
+            if (!correctNoop.ok) throw new Error(`Correct no-op rejected: ${correctNoop.message}`);
+            if (staleNoop.ok) throw new Error('Stale no-op beforeOid was incorrectly accepted');
+            if (!allNoop.ok) throw new Error(`Bulk retained no-op rejected: ${allNoop.message}`);
+            if (allNoopOneStale?.ok) throw new Error('Bulk retained set with one stale beforeOid was incorrectly accepted');
+            if (!createSynthetic.ok || syntheticAfterCreate?.oid !== helperSha) throw new Error('Synthetic probe creation failed');
+            if (guardedDeleteMustReject.ok) throw new Error('Guarded delete with stale retained witness was incorrectly accepted');
+            if (!syntheticSurvivedRejectedDelete) throw new Error('Synthetic probe did not survive rejected atomic delete');
+            if (!retainedUnchangedAfterReject) throw new Error('A retained ref changed during rejected atomic delete');
+            if (!guardedDeleteSuccess.ok) throw new Error(`Valid guarded delete failed: ${guardedDeleteSuccess.message}`);
+            if (!finalMatchesBaseline) throw new Error('Final ref inventory did not return exactly to baseline');
 
       - name: Upload capability evidence
         uses: actions/upload-artifact@v4
