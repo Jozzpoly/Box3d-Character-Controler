@@ -7,12 +7,14 @@ on:
     paths:
       - src/temporal-input-buffer.js
       - src/temporal-player-intent.js
+      - src/temporal-frame-epoch.js
       - scripts/r2-temporal-input-buffer-contract.mjs
       - scripts/r2-temporal-input-buffer-stress.mjs
       - scripts/r2-temporal-intent-boundary-crucible.mjs
       - scripts/r2-late-delivery-reality-crucible.mjs
       - scripts/r2-discontinuity-policy-crucible.mjs
       - scripts/r2-tail-window-phase-stress.mjs
+      - scripts/r2-frame-epoch-mapper-crucible.mjs
       - .github/workflows/r2-temporal-input-substrate.yml
   workflow_dispatch:
 
@@ -43,3 +45,5 @@ jobs:
         run: node scripts/r2-discontinuity-policy-crucible.mjs
       - name: Stress tail window across accumulator phases
         run: node scripts/r2-tail-window-phase-stress.mjs
+      - name: Falsify isolated frame epoch mapper
+        run: node scripts/r2-frame-epoch-mapper-crucible.mjs
