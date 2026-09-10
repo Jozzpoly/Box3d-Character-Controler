@@ -16,6 +16,7 @@ on:
       - scripts/r2-tail-window-phase-stress.mjs
       - scripts/r2-frame-epoch-mapper-crucible.mjs
       - scripts/r2-browser-delivery-specimen.mjs
+      - scripts/r2-late-delivery-policy-crucible.mjs
       - .github/workflows/r2-temporal-input-substrate.yml
   workflow_dispatch:
 
@@ -50,3 +51,5 @@ jobs:
         run: node scripts/r2-frame-epoch-mapper-crucible.mjs
       - name: Verify browser delivery seam specimen
         run: node scripts/r2-browser-delivery-specimen.mjs
+      - name: Falsify late delivery policy candidates
+        run: node scripts/r2-late-delivery-policy-crucible.mjs
