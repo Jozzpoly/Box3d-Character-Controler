@@ -1,0 +1,136 @@
+name: Repo cleanup updateRefs capability proof
+
+on:
+  push:
+    branches:
+      - maintenance/repo-cleanup-adaptation-2026-09-09
+    paths:
+      - .github/workflows/repo-cleanup-update-refs-capability.yml
+
+permissions:
+  contents: write
+
+actions: {}
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe updateRefs no-op preconditions without ref mutation
+        id: probe
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const repositoryId = 'R_kgDOUHjIFQ';
+            const helperName = 'maintenance/repo-cleanup-adaptation-2026-09-09';
+            const helperRef = `refs/heads/${helperName}`;
+            const helperSha = context.sha;
+            const knownOtherOid = 'b0eac372035ca12a63f808eb3201edd3605a163c';
+
+            const mutation = `
+              mutation UpdateRefsCapability($input: UpdateRefsInput!) {
+                updateRefs(input: $input) { clientMutationId }
+              }
+            `;
+
+            async function call(label, refUpdates) {
+              try {
+                const data = await github.graphql(mutation, {
+                  input: {
+                    repositoryId,
+                    clientMutationId: label,
+                    refUpdates,
+                  },
+                });
+                return { label, ok: true, data };
+              } catch (error) {
+                return {
+                  label,
+                  ok: false,
+                  message: error.message,
+                  errors: error.errors || null,
+                };
+              }
+            }
+
+            async function inventory() {
+              const branches = await github.paginate(github.rest.repos.listBranches, {
+                owner,
+                repo,
+                per_page: 100,
+              });
+              return branches
+                .map((b) => ({ name: b.name, oid: b.commit.sha }))
+                .sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            const before = await inventory();
+            const helper = before.find((b) => b.name === helperName);
+            if (!helper || helper.oid !== helperSha) {
+              throw new Error(`Helper inventory mismatch: expected ${helperSha}, got ${helper?.oid}`);
+            }
+
+            const correctNoop = await call('correct-noop', [{
+              name: helperRef,
+              beforeOid: helperSha,
+              afterOid: helperSha,
+            }]);
+
+            const staleNoop = await call('stale-noop-must-reject', [{
+              name: helperRef,
+              beforeOid: knownOtherOid,
+              afterOid: helperSha,
+            }]);
+
+            const allNoopUpdates = before.map((b) => ({
+              name: `refs/heads/${b.name}`,
+              beforeOid: b.oid,
+              afterOid: b.oid,
+            }));
+            const allNoop = await call(`all-${allNoopUpdates.length}-heads-noop`, allNoopUpdates);
+
+            let allNoopOneStale = null;
+            if (allNoop.ok) {
+              const poisoned = allNoopUpdates.map((u) => ({ ...u }));
+              const main = before.find((b) => b.name === 'main');
+              const mainUpdate = poisoned.find((u) => u.name === 'refs/heads/main');
+              if (!main || !mainUpdate) throw new Error('main missing from inventory');
+              mainUpdate.beforeOid = helperSha === main.oid ? knownOtherOid : helperSha;
+              allNoopOneStale = await call(`all-${poisoned.length}-heads-one-stale`, poisoned);
+            }
+
+            const after = await inventory();
+            const inventoryUnchanged = JSON.stringify(before) === JSON.stringify(after);
+
+            const result = {
+              repositoryId,
+              helperRef,
+              helperSha,
+              headCount: before.length,
+              correctNoop,
+              staleNoop,
+              allNoop,
+              allNoopOneStale,
+              inventoryUnchanged,
+              before,
+              after,
+            };
+            fs.writeFileSync('update-refs-capability-proof.json', JSON.stringify(result, null, 2));
+
+            core.info(`UPDATE_REFS_PROOF heads=${before.length} correctNoop=${correctNoop.ok} staleRejected=${!staleNoop.ok} allNoop=${allNoop.ok} allStaleRejected=${allNoopOneStale ? !allNoopOneStale.ok : 'not-run'} unchanged=${inventoryUnchanged}`);
+
+            if (!correctNoop.ok) throw new Error(`Correct no-op was rejected: ${correctNoop.message}`);
+            if (staleNoop.ok) throw new Error('Stale beforeOid no-op was incorrectly accepted');
+            if (!inventoryUnchanged) throw new Error('Ref inventory changed during nominally zero-mutation proof');
+            if (allNoop.ok && allNoopOneStale?.ok) throw new Error('Bulk no-op with one stale beforeOid was incorrectly accepted');
+
+      - name: Upload capability evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-cleanup-update-refs-capability-proof
+          path: update-refs-capability-proof.json
+          if-no-files-found: error
+          retention-days: 90
