@@ -164,6 +164,12 @@ Experiment-specific diagnostics belong to bounded research workflows/history rat
 - `R` / `RESET` — reset;
 - `H` — telemetry.
 
-## Maintenance boundary
+## Maintenance / archive boundary
 
-Repository branch hygiene is intentionally pending after the E19 closure. Historical branches must not be deleted ad hoc. The next maintenance campaign will first import/review the dedicated cleanup workflow used in `jv_web`, adapt it to this repository's provenance needs, and only then classify branches for retention or deletion.
+The audited repository-hygiene campaign reached its destructive branch-prune boundary on **2026-09-10**. Historical experiment/publication/maintenance branch names are no longer expected to remain as live refs. Their exact pre-prune identities remain preserved through:
+
+- archive branch `archive/pre-cleanup-2026-09-09-dca388f4`;
+- immutable annotated tag `archive/pre-cleanup-2026-09-09-dca388f4`;
+- `archive/recovery-manifest.json`, which maps the frozen 86 historical branch identities to exact commit SHAs.
+
+The cleanup helper may exist temporarily while administrative closure finishes; it is not research or publication authority. Historical stage documents may still say `Branch: ...` as provenance labels. Recover those states by exact SHA through the archive manifest/catalog rather than assuming the old branch name is still live.

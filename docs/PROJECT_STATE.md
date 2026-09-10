@@ -1,6 +1,6 @@
 # Project state — Embodied Player Laboratory
 
-Grounded: **2026-09-09 — post-E19 stage closure / pre-repository-hygiene checkpoint**
+Grounded: **2026-09-10 — post-E19 / post-bulk repository-hygiene closure checkpoint**
 
 This is the compact canonical orientation layer. Before any future write, re-fetch live `main`, exact SHA and relevant CI/Pages. Recorded SHAs below are provenance, not permission to assume the repository has not moved.
 
@@ -16,7 +16,7 @@ This is the compact canonical orientation layer. Before any future write, re-fet
 - E19 reciprocal mechanics and bounded swept-reach acquisition are **technically qualified and closed as a research stage**.
 - E19's public browser probe was successfully promoted to `main`, but **no confirmed post-publication Owner gameplay verdict is present in the grounded Character Controller record**. Therefore E19 gameplay/UX is not accepted by inference.
 - There is currently **no endorsed next manipulation architecture and no automatic E20**. The next research stage should start from a newly framed Owner/problem question.
-- Repository branch hygiene is intentionally **pending**. Do not delete historical branches ad hoc; a dedicated cleanup workflow will be applied separately.
+- The audited repository-hygiene campaign completed the historical branch prune on **2026-09-10**. Historical branch names are now archival provenance labels; exact identities remain recoverable through the frozen archive manifest and immutable pre-prune tag.
 
 Grounding provenance before this maintenance closure:
 
@@ -56,7 +56,7 @@ Mechanical/controller complexity must pay rent in agency, embodiment, causal rea
 2. **Live `main` + exact SHA + source + CI/Pages** — implementation/publication truth.
 3. Current project/frontier/closure docs — research intent, state and evidence boundary.
 4. Stage ledgers/docs — provenance and prior qualification.
-5. Historical branches/conversations/recommendations — context only.
+5. Archived branch identities/history, conversations and recommendations — context/provenance only.
 
 Machine PASS proves declared mechanics, not fun. Owner fun does not prove a causal claim.
 
@@ -225,7 +225,7 @@ Do not automatically:
 - build a full humanoid/ragdoll;
 - promote E19 controls to the default player;
 - infer Owner acceptance from green CI;
-- delete historical research branches before repository-hygiene review.
+- treat archived historical branch names as if they must still exist as live refs;
 
 A future execution stage should first ask:
 
@@ -246,7 +246,14 @@ Important rules:
 - Owner attention is reserved for qualitative gameplay deltas rather than subtle machine A/Bs;
 - documentation should keep this file, root `README.md` and `docs/README.md` synchronized when the frontier changes.
 
-Repository branch cleanup is the **next maintenance campaign after this closure**, but its deletion policy is intentionally not invented here. First import/review the dedicated `jv_web` cleanup workflow package, adapt it to this repo, inventory evidence/provenance, then delete only what that explicit process qualifies as safe.
+Repository branch cleanup has now passed its audited destructive phase. The frozen historical identity contract is retained on `archive/pre-cleanup-2026-09-09-dca388f4` and by the annotated tag of the same name; `archive/recovery-manifest.json` remains the machine-readable mapping from historical branch names to exact SHAs. The cleanup helper is temporary administrative infrastructure and must not be treated as the next research frontier.
+
+Cleanup execution provenance:
+
+- one-ref canary run `34412321168` — success;
+- owner-authorized atomic bulk-delete run `34464748439` — success;
+- post-bulk provenance/platform snapshot run `34465088280` — success;
+- post-bulk namespace at the execution checkpoint: `main`, archive, and temporary cleanup helper.
 
 ## 12. Conversation/repository boundary note
 

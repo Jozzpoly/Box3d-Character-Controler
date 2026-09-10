@@ -95,7 +95,9 @@ See [`WORKFLOW.md`](WORKFLOW.md) for the compact canonical policy.
 - Node is pinned by `.nvmrc` and CI currently uses Node `22.23.2` + `npm ci`;
 - do not introduce process ceremony without an observed failure mode it fixes.
 
-The repository currently has a large historical branch forest. **No branch deletion is authorized by this closure.** Branch cleanup is a separate maintenance campaign: first review/adapt the dedicated `jv_web` cleanup workflow package, classify provenance and retention needs, then perform deletion under that explicit process.
+The historical branch forest was pruned under the audited repository-hygiene campaign on **2026-09-10**. Old branch names appearing in stage documents are now provenance labels, not promises that those refs remain live. Exact identities are preserved by the archive branch and immutable annotated tag `archive/pre-cleanup-2026-09-09-dca388f4`; the machine-readable mapping is `archive/recovery-manifest.json` on that archive.
+
+The cleanup helper may remain temporarily during administrative closure. It is not project authority and should disappear only after its final evidence has been captured by the archive closure.
 
 ## Conversation/repository boundary
 

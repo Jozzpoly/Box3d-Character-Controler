@@ -66,7 +66,7 @@ The purpose of the first Owner session is not to validate an expected verb list.
 
 ## Machine evidence
 
-Research provenance is preserved on branch `experiment/e16-active-contact-organ`; the publication candidate is intentionally narrower than that branch.
+Research provenance was originally recorded under `experiment/e16-active-contact-organ` (exact archived tip `cf93b5c2da2cbf181887ee1c4a8cd4250a1926e0`). After the 2026-09-10 repository cleanup, recover that historical state through `archive/recovery-manifest.json` on `archive/pre-cleanup-2026-09-09-dca388f4`; the publication candidate remains intentionally narrower than that archived research line.
 
 The final publication boundary is represented by three qualifiers:
 
