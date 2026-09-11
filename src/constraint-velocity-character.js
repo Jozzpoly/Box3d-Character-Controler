@@ -38,7 +38,7 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
 
   preStep(dt, intent) {
     const support = this.currentSupport;
-    if (support && support.type !== 'STATIC' && !this.b3.b3Body_IsValid(support.body)) {
+    if (support && !this.b3.b3Body_IsValid(support.body)) {
       this.currentSupport = null;
       this._supportProbe = null;
     }
