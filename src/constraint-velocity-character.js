@@ -2,6 +2,7 @@ import { add3, dot3, scale3, sub3 } from './math.js';
 import { ControllerOwnedCharacter } from './character.js';
 import { DONOR_PROFILE_V0 } from './donor/profile.js';
 import { installVelocityOnlyDynamicContactMemory } from './donor/contact-memory.js';
+import { CURRENT_QUERY_SEMANTICS, QUERY_CHANNEL } from './query-semantics.js';
 import {
   applyIntentCappedRelativeConstraintVelocity,
   maxAbsVectorDelta,
@@ -9,6 +10,7 @@ import {
 } from './constraint-velocity.js';
 
 const SOLVE_EQUIVALENCE_TOLERANCE = 2e-5;
+const FLT_MAX = 3.4e38;
 
 export const E23D_BEHAVIOR = Object.freeze({
   specimen: 'A‴',
@@ -26,6 +28,7 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
       ...options,
       reciprocityMode: 'causal-components',
     });
+    this.querySemantics = options.querySemantics ?? CURRENT_QUERY_SEMANTICS;
     this.lastConstraintClips = 0;
     this.lastConstraintSolveError = 0;
   }
@@ -34,6 +37,39 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
     super.reset(position);
     this.lastConstraintClips = 0;
     this.lastConstraintSolveError = 0;
+  }
+
+  _allowsMoverShape(shapeId) {
+    return this.querySemantics.allowsShape(this.b3, QUERY_CHANNEL.MOVER_COLLISION, shapeId);
+  }
+
+  _collectPlanes(capsule) {
+    const planes = [];
+    const extras = [];
+    this.b3.b3World_CollideMover(this.world, this.position, capsule, this.queryFilter, (shapeId, buffer) => {
+      if (!this._allowsMoverShape(shapeId)) return false;
+      const count = this.b3.getNumPlaneResults(buffer);
+      for (let i = 0; i < count; i++) {
+        this.b3.getPlaneResultAt(this.planeScratch, buffer, i);
+        const normal = this.planeScratch.plane.normal;
+        planes.push({
+          plane: { normal: [normal[0], normal[1], normal[2]], offset: this.planeScratch.plane.offset },
+          pushLimit: FLT_MAX,
+          push: 0,
+          clipVelocity: true,
+        });
+        extras.push({
+          shapeId,
+          point: [
+            this.position[0] + this.planeScratch.point[0],
+            this.position[1] + this.planeScratch.point[1],
+            this.position[2] + this.planeScratch.point[2],
+          ],
+        });
+      }
+      return true;
+    });
+    return { planes, extras };
   }
 
   _solveMovement(dt) {
@@ -76,7 +112,7 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
         capsule,
         delta,
         this.queryFilter,
-        () => true,
+        (shapeId) => this._allowsMoverShape(shapeId),
       );
       delta = scale3(delta, fraction);
       this.position = add3(this.position, delta);
