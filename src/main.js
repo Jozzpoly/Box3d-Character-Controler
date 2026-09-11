@@ -300,13 +300,14 @@ async function main() {
   function physicsTick(dt) {
     if (resetQueued) resetAll();
     playground.preStep(dt);
-    const basis = followCamera.basis();
+    const basis = followCamera.controlBasis();
     const intent = playerInput.sample(basis);
 
     character.preStep(dt, intent);
     b3.b3World_Step(playground.world, dt, SUBSTEPS);
     character.postStep(dt);
     capture?.record(intent);
+    followCamera.advanceControl(dt);
 
     if (character.position[1] < -10 || Math.hypot(character.position[0], character.position[2]) > 45) {
       capture?.resetEpoch('player-auto-reset');
