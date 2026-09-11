@@ -1,4 +1,13 @@
-import { add3, dot3, scale3, sub3 } from './math.js';
+import {
+  add3,
+  dot3,
+  inverseRotateVecByQuat,
+  length3,
+  rotateVecByQuat,
+  scale3,
+  sub3,
+  transformPoint,
+} from './math.js';
 import { ControllerOwnedCharacter } from './character.js';
 import { DONOR_PROFILE_V0 } from './donor/profile.js';
 import { installVelocityOnlyDynamicContactMemory } from './donor/contact-memory.js';
@@ -34,6 +43,59 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
     super.reset(position);
     this.lastConstraintClips = 0;
     this.lastConstraintSolveError = 0;
+  }
+
+  _captureSupportTransport() {
+    this._supportProbe = null;
+    const support = this.currentSupport;
+    if (!support || support.type === 'STATIC' || !support.localPoint || !support.normal) return;
+
+    this.b3.b3Body_GetPosition(this._bodyPosition, support.body);
+    this.b3.b3Body_GetRotation(this._bodyRotation, support.body);
+    const before = transformPoint(this._bodyPosition, this._bodyRotation, support.localPoint);
+    const localNormal = inverseRotateVecByQuat(this._bodyRotation, support.normal);
+    this._supportProbe = {
+      body: support.body,
+      localPoint: [...support.localPoint],
+      localNormal,
+      before,
+    };
+  }
+
+  _applySupportTransport() {
+    this.supportTransportDistance = 0;
+    const probe = this._supportProbe;
+    this._supportProbe = null;
+    if (!probe) return;
+
+    this.b3.b3Body_GetPosition(this._bodyPosition, probe.body);
+    this.b3.b3Body_GetRotation(this._bodyRotation, probe.body);
+    const after = transformPoint(this._bodyPosition, this._bodyRotation, probe.localPoint);
+    const currentNormal = rotateVecByQuat(this._bodyRotation, probe.localNormal);
+    const normalLength = length3(currentNormal);
+    const normal = normalLength > 1e-9 ? scale3(currentNormal, 1 / normalLength) : [0, 1, 0];
+    const rawDelta = sub3(after, probe.before);
+    const normalDelta = dot3(rawDelta, normal);
+    const requested = normalDelta < 0
+      ? sub3(rawDelta, scale3(normal, normalDelta))
+      : rawDelta;
+
+    const capsule = {
+      center1: [0, -this.halfSegment, 0],
+      center2: [0, this.halfSegment, 0],
+      radius: this.radius,
+    };
+    const fraction = this.b3.b3World_CastMover(
+      this.world,
+      this.position,
+      capsule,
+      requested,
+      this.queryFilter,
+      (shapeId) => this.b3.b3Shape_GetBody(shapeId) !== probe.body,
+    );
+    const applied = scale3(requested, fraction);
+    this.position = add3(this.position, applied);
+    this.supportTransportDistance = length3(applied);
   }
 
   _solveMovement(dt) {
