@@ -24,6 +24,69 @@ function clonePlane(entry) {
   };
 }
 
+function horizontalFeasible(x, z, constraints) {
+  return constraints.every(({ nx, nz, minimumDot }) => (
+    x * nx + z * nz >= minimumDot - VELOCITY_EPSILON
+  ));
+}
+
+function horizontalDistanceSquared(x, z, sourceX, sourceZ) {
+  const dx = x - sourceX;
+  const dz = z - sourceZ;
+  return dx * dx + dz * dz;
+}
+
+function nearestFeasibleHorizontalVelocity(sourceX, sourceZ, desiredX, desiredZ, constraints) {
+  if (horizontalFeasible(sourceX, sourceZ, constraints)) return [sourceX, sourceZ];
+
+  let best = null;
+  let bestDistance = Infinity;
+  const consider = (x, z) => {
+    if (!horizontalFeasible(x, z, constraints)) return;
+    const distance = horizontalDistanceSquared(x, z, sourceX, sourceZ);
+    if (
+      distance < bestDistance - 1e-12
+      || (
+        Math.abs(distance - bestDistance) <= 1e-12
+        && (best === null || x < best[0] - 1e-12 || (Math.abs(x - best[0]) <= 1e-12 && z < best[1]))
+      )
+    ) {
+      best = [x, z];
+      bestDistance = distance;
+    }
+  };
+
+  for (const constraint of constraints) {
+    const sourceDot = sourceX * constraint.nx + sourceZ * constraint.nz;
+    const correction = constraint.minimumDot - sourceDot;
+    consider(
+      sourceX + correction * constraint.nx,
+      sourceZ + correction * constraint.nz,
+    );
+  }
+
+  for (let i = 0; i < constraints.length; i++) {
+    const a = constraints[i];
+    for (let j = i + 1; j < constraints.length; j++) {
+      const b = constraints[j];
+      const det = a.nx * b.nz - a.nz * b.nx;
+      if (Math.abs(det) < 1e-10) continue;
+      consider(
+        (a.minimumDot * b.nz - a.nz * b.minimumDot) / det,
+        (a.nx * b.minimumDot - a.minimumDot * b.nx) / det,
+      );
+    }
+  }
+
+  // Intent-capped bounds are min(surfaceDot, desiredDot), so desired velocity
+  // satisfies every individual constraint and guarantees a non-empty intersection.
+  consider(desiredX, desiredZ);
+  if (!best) {
+    throw new Error('constraint velocity policy lost its guaranteed feasible region');
+  }
+  return best;
+}
+
 export function maxAbsVectorDelta(a, b) {
   return Math.max(
     Math.abs(a[0] - b[0]),
@@ -74,7 +137,7 @@ export function applyIntentCappedRelativeConstraintVelocity({
   const out = [...velocity];
   const staticType = bodyTypeValue(b3.b3BodyType.b3_staticBody);
   const kinematicType = bodyTypeValue(b3.b3BodyType.b3_kinematicBody);
-  let clippedComponents = 0;
+  const constraints = [];
 
   for (let i = 0; i < planes.length; i++) {
     const plane = planes[i];
@@ -95,17 +158,31 @@ export function applyIntentCappedRelativeConstraintVelocity({
     const surfaceVelocity = type === staticType
       ? [0, 0, 0]
       : bodyPointVelocity(body, extra.point);
-    const relativeInward = (out[0] - surfaceVelocity[0]) * nx
-      + (out[2] - surfaceVelocity[2]) * nz;
-    const desiredRelativeInward = (desiredVelocity[0] - surfaceVelocity[0]) * nx
-      + (desiredVelocity[2] - surfaceVelocity[2]) * nz;
-    const allowedRelativeInward = Math.min(0, desiredRelativeInward);
+    const surfaceDot = surfaceVelocity[0] * nx + surfaceVelocity[2] * nz;
+    const desiredDot = desiredVelocity[0] * nx + desiredVelocity[2] * nz;
+    constraints.push({
+      nx,
+      nz,
+      minimumDot: Math.min(surfaceDot, desiredDot),
+    });
+  }
 
-    if (relativeInward >= allowedRelativeInward - VELOCITY_EPSILON) continue;
-    const excess = relativeInward - allowedRelativeInward;
-    out[0] -= excess * nx;
-    out[2] -= excess * nz;
-    clippedComponents += 1;
+  let clippedComponents = 0;
+  for (const constraint of constraints) {
+    const sourceDot = velocity[0] * constraint.nx + velocity[2] * constraint.nz;
+    if (sourceDot < constraint.minimumDot - VELOCITY_EPSILON) clippedComponents += 1;
+  }
+
+  if (clippedComponents > 0) {
+    const [x, z] = nearestFeasibleHorizontalVelocity(
+      velocity[0],
+      velocity[2],
+      desiredVelocity[0],
+      desiredVelocity[2],
+      constraints,
+    );
+    out[0] = x;
+    out[2] = z;
   }
 
   return { velocity: out, clippedComponents };
