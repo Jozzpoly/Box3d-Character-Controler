@@ -23,6 +23,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Characterize A2 plane-order behavior
         run: node scripts/r4-a2-plane-order-crucible.mjs
+      - name: Protect A2 feasible-region invariant
+        run: node scripts/r4-a2-feasible-region-contract.mjs
       - name: Reproduce A2 on real CollideMover planes
         run: node scripts/r4-a2-runtime-plane-order-witness.mjs
       - name: Canonical smoke
