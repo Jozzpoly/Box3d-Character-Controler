@@ -69,22 +69,18 @@ function applyCandidateCorrection({ policy, character, platform, wasDynamicSuppo
   const platformVelocityAfterLegacy = bodyVelocity(platform);
   const mass = b3.b3Body_GetMass(platform);
   const legacyImpulseY = mass * (platformVelocityAfterLegacy[1] - platformVelocityBeforePost[1]);
-  const isDynamicSupportNow = character.currentSupport?.type === 'DYNAMIC' && character.currentSupport?.body === platform;
+  // This fixture contains exactly one dynamic body: the support under test.
+  // Binding body IDs are value handles, so JS object identity is not authoritative.
+  const isDynamicSupportNow = character.currentSupport?.type === 'DYNAMIC';
   let extraImpulseY = 0;
 
   if (policy === 'clip-reciprocal' && isDynamicSupportNow) {
-    // The controller has already changed character velocity through dynamic-contact
-    // reaction plus constraint clipping. Give the support the opposite of that total
-    // vertical momentum change, minus what legacy reciprocity already transferred.
     const totalCharacterMomentumChangeY = PLAYER_MASS * (character.velocity[1] - characterVyBeforePost);
     const desiredSupportImpulseY = -totalCharacterMomentumChangeY;
     extraImpulseY = desiredSupportImpulseY - legacyImpulseY;
   }
 
   if (policy === 'gravity-load-topup' && wasDynamicSupport && isDynamicSupportNow) {
-    // Narrow candidate: only persistent support is entitled to the missing part of
-    // one tick of virtual player weight. Initial landing/impact is deliberately left
-    // to the existing effective-mass contact law.
     const desiredSupportImpulseY = -FULL_WEIGHT_IMPULSE;
     if (legacyImpulseY > desiredSupportImpulseY) {
       extraImpulseY = desiredSupportImpulseY - legacyImpulseY;
@@ -102,7 +98,7 @@ function applyCandidateCorrection({ policy, character, platform, wasDynamicSuppo
 }
 
 function step({ world, character, platform, policy, intent = neutralIntent() }) {
-  const wasDynamicSupport = character.currentSupport?.type === 'DYNAMIC' && character.currentSupport?.body === platform;
+  const wasDynamicSupport = character.currentSupport?.type === 'DYNAMIC';
   character.preStep(DT, intent);
   b3.b3World_Step(world, DT, SUBSTEPS);
   const platformVelocityBeforePost = bodyVelocity(platform);
@@ -240,12 +236,10 @@ for (const policy of POLICIES) {
   };
 }
 
-// Legacy control must reproduce the already-established reduced-mass property.
 assert.ok(results.legacy.standing[0].weightRatio > 0.24 && results.legacy.standing[0].weightRatio < 0.28);
 assert.ok(results.legacy.standing[1].weightRatio > 0.48 && results.legacy.standing[1].weightRatio < 0.52);
 assert.ok(results.legacy.standing[3].weightRatio > 0.78 && results.legacy.standing[3].weightRatio < 0.82);
 
-// Both candidate families should actually solve the narrow standing-load question.
 for (const policy of ['clip-reciprocal', 'gravity-load-topup']) {
   for (const sample of results[policy].standing) {
     assert.ok(sample.weightRatio > 0.97 && sample.weightRatio < 1.03,
@@ -253,12 +247,10 @@ for (const policy of ['clip-reciprocal', 'gravity-load-topup']) {
   }
 }
 
-// Gravity-only top-up is intentionally narrower: first landing impact remains legacy.
 assert.ok(Math.abs(
   results['gravity-load-topup'].landing.totalDownwardImpulse - results.legacy.landing.totalDownwardImpulse,
 ) < 1e-8, 'gravity-load-topup should not rewrite initial landing impact');
 
-// Non-support side push must remain identical because neither candidate is entitled there.
 for (const policy of ['clip-reciprocal', 'gravity-load-topup']) {
   const candidate = results[policy].sidePush;
   const legacy = results.legacy.sidePush;
