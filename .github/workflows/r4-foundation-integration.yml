@@ -1,0 +1,75 @@
+name: R4 foundation integration
+
+on:
+  push:
+    branches:
+      - research/donor-foundation-integration-2026-09-11
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  RAW: https://raw.githubusercontent.com/Jozzpoly/Box3d-Character-Controler
+  A1_SHA: aa98b87b65d1a36ff762d928567b2e023a5fa329
+  A2_H_SHA: bfaa20d37c51010a5b0c0d744359385eed8d961e
+  A2_V_SHA: b701f4795181f058ee3341b428ab419bbf10fa2a
+  A3_SHA: ca9f43c84b8cc2d6fc8b229deb4891284676df0a
+  A4_SHA: 1d79d7c453894440a3125a82937b1968d7c9b4fd
+  A5_LIFE_SHA: 0efe502503d0f8fc2520c15e2fa8f1690d796326
+  A5_QUERY_SHA: 2d4e3b93802921b261cc75b53348ec3e36be3664
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout combined specimen
+        uses: actions/checkout@v4
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Materialize exact qualified witnesses
+        shell: bash
+        run: |
+          set -euo pipefail
+          grab() { curl -fsSL "$RAW/$1/$2" -o "$2"; }
+          grab "$A1_SHA" scripts/r4-a1-runtime-repair-crucible.mjs
+          grab "$A2_H_SHA" scripts/r4-a2-runtime-repair-crucible.mjs
+          grab "$A2_V_SHA" scripts/r4-a2-vertical-runtime-crucible.mjs
+          grab "$A3_SHA" scripts/r3-a3-runtime-repair-crucible.mjs
+          grab "$A3_SHA" scripts/r3-a3-runtime-repair-stress.mjs
+          grab "$A3_SHA" scripts/r3-a3-ceiling-squeeze-characterization.mjs
+          grab "$A4_SHA" scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
+          grab "$A4_SHA" scripts/r1-a4-browser-integration-contract.mjs
+          grab "$A5_LIFE_SHA" scripts/r4-a5-support-lifecycle-repair-crucible.mjs
+          grab "$A5_QUERY_SHA" scripts/r4-a5-query-semantics-contract.mjs
+          grab "$A5_QUERY_SHA" scripts/r4-a5-query-runtime-crucible.mjs
+      - name: A1 load accounting witness
+        run: node scripts/r4-a1-runtime-repair-crucible.mjs
+      - name: A2 horizontal order witness
+        run: node scripts/r4-a2-runtime-repair-crucible.mjs
+      - name: A2 vertical blocked-velocity witness
+        run: node scripts/r4-a2-vertical-runtime-crucible.mjs
+      - name: A3 support transport witness
+        run: node scripts/r3-a3-runtime-repair-crucible.mjs
+      - name: A3 broader transport stress
+        run: node scripts/r3-a3-runtime-repair-stress.mjs
+      - name: Preserve separate crush characterization
+        run: node scripts/r3-a3-ceiling-squeeze-characterization.mjs
+      - name: A4 fixed-step control-basis witness
+        run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
+      - name: A4 browser integration contract
+        run: node scripts/r1-a4-browser-integration-contract.mjs
+      - name: A5 support lifecycle witness
+        run: node scripts/r4-a5-support-lifecycle-repair-crucible.mjs
+      - name: A5 query contract
+        run: node scripts/r4-a5-query-semantics-contract.mjs
+      - name: A5 runtime query witness
+        run: node scripts/r4-a5-query-runtime-crucible.mjs
+      - name: Canonical smoke
+        run: npm run smoke
+      - name: Build runtime
+        run: npm run build
