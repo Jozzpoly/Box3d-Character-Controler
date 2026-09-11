@@ -36,6 +36,15 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
     this.lastConstraintSolveError = 0;
   }
 
+  preStep(dt, intent) {
+    const support = this.currentSupport;
+    if (support && support.type !== 'STATIC' && !this.b3.b3Body_IsValid(support.body)) {
+      this.currentSupport = null;
+      this._supportProbe = null;
+    }
+    super.preStep(dt, intent);
+  }
+
   _solveMovement(dt) {
     const wasSupported = Boolean(this.currentSupport);
     const capsule = {
