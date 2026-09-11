@@ -1,0 +1,33 @@
+name: R4 A1 runtime repair
+
+on:
+  push:
+    branches:
+      - research/donor-foundation-repair-a1-2026-09-11
+    paths:
+      - src/constraint-velocity-character.js
+      - scripts/r4-a1-runtime-repair-crucible.mjs
+      - .github/workflows/r4-a1-runtime-repair.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup exact Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Qualify A1 runtime repair
+        run: node scripts/r4-a1-runtime-repair-crucible.mjs
+      - name: Canonical smoke
+        run: npm run smoke
+      - name: Build runtime
+        run: npm run build
