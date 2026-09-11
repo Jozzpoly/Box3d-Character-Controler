@@ -9,6 +9,7 @@ on:
       - scripts/r3-a3-runtime-repair-crucible.mjs
       - scripts/r3-a3-runtime-repair-stress.mjs
       - scripts/r3-a3-mover-ceiling-tolerance-characterization.mjs
+      - scripts/r3-a3-ceiling-squeeze-characterization.mjs
       - .github/workflows/r3-a3-runtime-repair.yml
   workflow_dispatch:
 
@@ -31,8 +32,10 @@ jobs:
         run: node scripts/r3-a3-runtime-repair-crucible.mjs
       - name: Characterize Box3D mover ceiling tolerance
         run: node scripts/r3-a3-mover-ceiling-tolerance-characterization.mjs
-      - name: Stress broader support motion envelope
+      - name: Stress broader support transport envelope
         run: node scripts/r3-a3-runtime-repair-stress.mjs
+      - name: Characterize post-carry ceiling squeeze separately
+        run: node scripts/r3-a3-ceiling-squeeze-characterization.mjs
       - name: Canonical smoke
         run: npm run smoke
       - name: Build runtime
