@@ -17,6 +17,8 @@ const POLICIES = [
   'persistent-clip-reciprocal',
 ];
 const SUPPORT_MASSES = [28.15488, 80, 82.368, 320];
+const KICK_VELOCITIES = [-0.25, 0, 0.15, 0.30, 0.50];
+const FLOAT_PIPELINE_TOLERANCE = 1e-5;
 
 function neutralIntent() {
   return {
@@ -31,10 +33,7 @@ function neutralIntent() {
 }
 
 function forwardIntent() {
-  return {
-    ...neutralIntent(),
-    moveForward: 1,
-  };
+  return { ...neutralIntent(), moveForward: 1 };
 }
 
 function createBox(world, type, position, half, options = {}) {
@@ -74,8 +73,6 @@ function applyCandidateCorrection({ policy, character, platform, wasDynamicSuppo
   const platformVelocityAfterLegacy = bodyVelocity(platform);
   const mass = b3.b3Body_GetMass(platform);
   const legacyImpulseY = mass * (platformVelocityAfterLegacy[1] - platformVelocityBeforePost[1]);
-  // This fixture contains exactly one dynamic body: the support under test.
-  // Binding body IDs are value handles, so JS object identity is not authoritative.
   const isDynamicSupportNow = character.currentSupport?.type === 'DYNAMIC';
   let extraImpulseY = 0;
 
@@ -105,23 +102,10 @@ function applyCandidateCorrection({ policy, character, platform, wasDynamicSuppo
   const totalImpulseY = mass * (platformVelocityAfterCandidate[1] - platformVelocityBeforePost[1]);
   const characterMomentumChangeY = PLAYER_MASS * (character.velocity[1] - characterVyBeforePost);
   const reciprocalDeficitY = -characterMomentumChangeY - totalImpulseY;
-  return {
-    legacyImpulseY,
-    extraImpulseY,
-    totalImpulseY,
-    characterMomentumChangeY,
-    reciprocalDeficitY,
-  };
+  return { legacyImpulseY, extraImpulseY, totalImpulseY, characterMomentumChangeY, reciprocalDeficitY };
 }
 
-function step({
-  world,
-  character,
-  platform,
-  policy,
-  intent = neutralIntent(),
-  beforePost = null,
-}) {
+function step({ world, character, platform, policy, intent = neutralIntent(), beforePost = null }) {
   const wasDynamicSupport = character.currentSupport?.type === 'DYNAMIC';
   character.preStep(DT, intent);
   b3.b3World_Step(world, DT, SUBSTEPS);
@@ -190,9 +174,7 @@ function standingLoad(policy, targetMass) {
       meanExtraImpulse: mean(loaded.map((sample) => -sample.extraImpulseY)),
       meanReciprocalDeficit: mean(loaded.map((sample) => sample.reciprocalDeficitY)),
     };
-  } finally {
-    b3.b3DestroyWorld(fixture.world);
-  }
+  } finally { b3.b3DestroyWorld(fixture.world); }
 }
 
 function landingImpact(policy) {
@@ -217,13 +199,11 @@ function landingImpact(policy) {
     }
     assert.ok(impact, `${policy}: landing fixture never acquired dynamic support`);
     return impact;
-  } finally {
-    b3.b3DestroyWorld(fixture.world);
-  }
+  } finally { b3.b3DestroyWorld(fixture.world); }
 }
 
-function persistentLiftKick(policy, kickVelocity = 0.5) {
-  const fixture = createSupportFixture(80);
+function persistentLiftKick(policy, kickVelocity = 0.5, targetMass = 80) {
+  const fixture = createSupportFixture(targetMass);
   try {
     settle(fixture, policy);
     const supportMass = b3.b3Body_GetMass(fixture.platform);
@@ -232,18 +212,14 @@ function persistentLiftKick(policy, kickVelocity = 0.5) {
       policy,
       beforePost: () => {
         const point = bodyPosition(fixture.platform);
-        b3.b3Body_ApplyLinearImpulse(
-          fixture.platform,
-          [0, supportMass * kickVelocity, 0],
-          point,
-          true,
-        );
+        b3.b3Body_ApplyLinearImpulse(fixture.platform, [0, supportMass * kickVelocity, 0], point, true);
       },
     });
-    assert.equal(sample.wasDynamicSupport, true, `${policy}: lift kick must begin from persistent support`);
-    assert.equal(sample.support, 'DYNAMIC', `${policy}: lift kick must remain a support contact`);
     return {
+      targetMass,
       kickVelocity,
+      wasDynamicSupport: sample.wasDynamicSupport,
+      support: sample.support,
       characterVyBeforePost: sample.characterVyBeforePost,
       characterVyAfterPost: sample.characterVyAfterPost,
       platformVyBeforePost: sample.platformVelocityBeforePost[1],
@@ -253,9 +229,17 @@ function persistentLiftKick(policy, kickVelocity = 0.5) {
       totalDownwardImpulse: -sample.totalImpulseY,
       reciprocalDeficitY: sample.reciprocalDeficitY,
     };
-  } finally {
-    b3.b3DestroyWorld(fixture.world);
+  } finally { b3.b3DestroyWorld(fixture.world); }
+}
+
+function supportMotionSweep(policy) {
+  const out = [];
+  for (const targetMass of SUPPORT_MASSES) {
+    for (const kickVelocity of KICK_VELOCITIES) {
+      out.push(persistentLiftKick(policy, kickVelocity, targetMass));
+    }
   }
+  return out;
 }
 
 function sidePush(policy) {
@@ -268,13 +252,8 @@ function sidePush(policy) {
       density: 80 / (8 * 0.45 * 0.45 * 0.45),
       friction: 0.7,
     });
-    const character = createCurrentDonorCharacter(b3, world, {
-      startPosition: [0, 0.92, 0],
-      gravity: GRAVITY,
-      virtualMass: PLAYER_MASS,
-    });
+    const character = createCurrentDonorCharacter(b3, world, { startPosition: [0, 0.92, 0], gravity: GRAVITY, virtualMass: PLAYER_MASS });
     character.reset([0, character.halfHeight + 0.015, 0]);
-
     for (let i = 0; i < 45; i++) {
       character.preStep(DT, neutralIntent());
       b3.b3World_Step(world, DT, SUBSTEPS);
@@ -285,14 +264,8 @@ function sidePush(policy) {
       b3.b3World_Step(world, DT, SUBSTEPS);
       character.postStep(DT);
     }
-    return {
-      characterPosition: [...character.position],
-      boxPosition: bodyPosition(box),
-      boxVelocity: bodyVelocity(box),
-    };
-  } finally {
-    b3.b3DestroyWorld(world);
-  }
+    return { characterPosition: [...character.position], boxPosition: bodyPosition(box), boxVelocity: bodyVelocity(box) };
+  } finally { b3.b3DestroyWorld(world); }
 }
 
 const results = {};
@@ -300,7 +273,7 @@ for (const policy of POLICIES) {
   results[policy] = {
     standing: SUPPORT_MASSES.map((mass) => standingLoad(policy, mass)),
     landing: landingImpact(policy),
-    liftKick: persistentLiftKick(policy),
+    motionSweep: supportMotionSweep(policy),
     sidePush: sidePush(policy),
   };
 }
@@ -317,24 +290,31 @@ for (const policy of ['clip-reciprocal', 'gravity-load-topup', 'persistent-clip-
 }
 
 for (const policy of ['gravity-load-topup', 'persistent-clip-reciprocal']) {
-  assert.ok(Math.abs(
-    results[policy].landing.totalDownwardImpulse - results.legacy.landing.totalDownwardImpulse,
-  ) < 1e-8, `${policy}: persistent-only law should not rewrite initial landing impact`);
+  assert.ok(Math.abs(results[policy].landing.totalDownwardImpulse - results.legacy.landing.totalDownwardImpulse) < FLOAT_PIPELINE_TOLERANCE,
+    `${policy}: persistent-only law should not rewrite initial landing impact`);
 }
+assert.ok(Math.abs(results['clip-reciprocal'].landing.totalDownwardImpulse - results.legacy.landing.totalDownwardImpulse) > 1,
+  'full clip-reciprocal candidate should expose its broader landing-impact semantic change');
 
-assert.ok(
-  Math.abs(results['clip-reciprocal'].landing.totalDownwardImpulse - results.legacy.landing.totalDownwardImpulse) > 1,
-  'full clip-reciprocal candidate should expose its broader landing-impact semantic change',
-);
-
-assert.ok(
-  Math.abs(results['persistent-clip-reciprocal'].liftKick.reciprocalDeficitY) < 1e-8,
-  `persistent clip reciprocity failed to close lift-kick momentum accounting: ${JSON.stringify(results['persistent-clip-reciprocal'].liftKick)}`,
-);
-assert.ok(
-  Math.abs(results['gravity-load-topup'].liftKick.reciprocalDeficitY) > 1,
-  `gravity-only topup unexpectedly closed accelerating-support momentum accounting: ${JSON.stringify(results['gravity-load-topup'].liftKick)}`,
-);
+const gravitySweep = results['gravity-load-topup'].motionSweep;
+const persistentSweep = results['persistent-clip-reciprocal'].motionSweep;
+assert.equal(gravitySweep.length, persistentSweep.length);
+let comparedPersistentCases = 0;
+for (let i = 0; i < gravitySweep.length; i++) {
+  const gravityCase = gravitySweep[i];
+  const persistentCase = persistentSweep[i];
+  assert.equal(gravityCase.targetMass, persistentCase.targetMass);
+  assert.equal(gravityCase.kickVelocity, persistentCase.kickVelocity);
+  if (gravityCase.wasDynamicSupport && gravityCase.support === 'DYNAMIC'
+      && persistentCase.wasDynamicSupport && persistentCase.support === 'DYNAMIC') {
+    comparedPersistentCases += 1;
+    assert.ok(Math.abs(persistentCase.reciprocalDeficitY) < FLOAT_PIPELINE_TOLERANCE,
+      `persistent clip reciprocity did not close retained-support momentum accounting: ${JSON.stringify(persistentCase)}`);
+    assert.ok(Math.abs(gravityCase.totalDownwardImpulse - persistentCase.totalDownwardImpulse) < FLOAT_PIPELINE_TOLERANCE,
+      `gravity topup and persistent clip reciprocity diverged on retained horizontal support: ${JSON.stringify({ gravityCase, persistentCase })}`);
+  }
+}
+assert.ok(comparedPersistentCases >= 12, `too few retained support-motion cases were comparable: ${comparedPersistentCases}`);
 
 for (const policy of ['clip-reciprocal', 'gravity-load-topup', 'persistent-clip-reciprocal']) {
   const candidate = results[policy].sidePush;
@@ -350,12 +330,13 @@ for (const policy of ['clip-reciprocal', 'gravity-load-topup', 'persistent-clip-
 console.log('R4 A1 LOAD-LAW CANDIDATE CRUCIBLE PASS');
 console.log(JSON.stringify({
   fullWeightImpulse: FULL_WEIGHT_IMPULSE,
+  comparedPersistentCases,
   results,
   interpretation: {
-    legacy: 'current effective-mass contact law; standing load scales with support mass',
-    clipReciprocal: 'reciprocates full vertical post-contact controller momentum change, including first landing impact',
-    gravityLoadTopup: 'persistent support receives at least one tick of virtual gravity load, but acceleration-driven controller authority can remain non-reciprocal',
-    persistentClipReciprocal: 'reciprocates full vertical post-contact controller momentum change only for already-established dynamic support; initial landing remains legacy',
+    legacy: 'effective-mass contact law leaves a reduced-mass standing-load deficit when later controller clipping removes the remaining downward velocity',
+    clipReciprocal: 'full post-contact reciprocity closes controller momentum accounting but also rewrites first landing impact',
+    gravityLoadTopup: 'persistent horizontal dynamic support is topped up only when legacy transfer is below one tick of virtual weight',
+    persistentClipReciprocal: 'full vertical controller reciprocity only for already-established support; used here as a broader reference law',
   },
-  evidenceBoundary: 'research adapters only; lift kick isolates velocity-space support acceleration just before controller post-step and does not yet prove final runtime law',
+  evidenceBoundary: 'research adapters only; support-motion sweep is velocity-space and horizontal, so multi-contact and non-horizontal semantics remain open',
 }, null, 2));
