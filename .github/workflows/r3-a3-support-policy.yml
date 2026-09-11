@@ -6,6 +6,7 @@ on:
       - research/donor-foundation-repair-a3-design-2026-09-11
     paths:
       - scripts/r3-a3-support-policy-crucible.mjs
+      - scripts/r3-a3-adversarial-support-frame-crucible.mjs
       - .github/workflows/r3-a3-support-policy.yml
   workflow_dispatch:
 
@@ -19,13 +20,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup exact Node
-        uses: actions/setup-node@v4
+        uses:
+          actions/setup-node@v4
         with:
           node-version: 22.23.2
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
       - name: Compare support transport policies
         run: node scripts/r3-a3-support-policy-crucible.mjs
+      - name: Attack rotating support frame and ceiling cases
+        run: node scripts/r3-a3-adversarial-support-frame-crucible.mjs
       - name: Canonical smoke
         run: npm run smoke
       - name: Build runtime
