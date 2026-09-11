@@ -61,12 +61,20 @@ function tick(setup, position) {
   }, DT, true);
   setup.character.preStep(DT, neutralIntent());
   b3.b3World_Step(setup.world, DT, SUBSTEPS);
-  setup.character.postStep(DT);
+
+  // Split postStep only inside this research witness so A3 support-transport
+  // authority is measured separately from the later general movement/crush solve.
+  setup.character._applySupportTransport();
+  const afterCarryPosition = [...setup.character.position];
+  const afterCarryTransport = setup.character.supportTransportDistance;
+  setup.character._solveMovement(DT);
+
   return {
     position: [...setup.character.position],
+    afterCarryPosition,
     velocity: [...setup.character.velocity],
     support: setup.character.currentSupport?.type ?? 'AIR',
-    transport: setup.character.supportTransportDistance,
+    transport: afterCarryTransport,
   };
 }
 
@@ -169,10 +177,19 @@ for (const magnitude of ceilingMoves) {
   try {
     settle(setup);
     const state = tick(setup, [0, platformY + magnitude, 0]);
-    const top = state.position[1] + setup.character.halfHeight;
-    ceilingResults.push({ magnitude, top, ceilingBottom, penetration: top - ceilingBottom, transport: state.transport });
-    assert.ok(top <= ceilingBottom + 0.015,
-      `upward carry penetrated ceiling: ${JSON.stringify(ceilingResults.at(-1))}`);
+    const afterCarryTop = state.afterCarryPosition[1] + setup.character.halfHeight;
+    const finalTop = state.position[1] + setup.character.halfHeight;
+    ceilingResults.push({
+      magnitude,
+      afterCarryTop,
+      finalTop,
+      ceilingBottom,
+      carryOvershoot: afterCarryTop - ceilingBottom,
+      finalOvershoot: finalTop - ceilingBottom,
+      transport: state.transport,
+    });
+    assert.ok(afterCarryTop <= ceilingBottom + 0.011,
+      `support carry itself escaped characterized mover envelope: ${JSON.stringify(ceilingResults.at(-1))}`);
   } finally { b3.b3DestroyWorld(setup.world); }
 }
 
@@ -190,5 +207,6 @@ console.log(JSON.stringify({
     wallCases: wallResults.length,
     ceilingCases: ceilingResults.length,
   },
-  classification: 'UNILATERAL_SWEPT_CURRENT_V1_SURVIVES_BROADER_SUPPORT_MOTION_ENVELOPE',
+  classification: 'UNILATERAL_SWEPT_CURRENT_V1_SURVIVES_BROADER_SUPPORT_TRANSPORT_ENVELOPE',
+  evidenceBoundary: 'CEILING_ASSERTION_STOPS_AFTER_SUPPORT_CARRY; POST_CARRY_CRUSH_RESOLUTION_IS_CHARACTERIZED_SEPARATELY',
 }, null, 2));
