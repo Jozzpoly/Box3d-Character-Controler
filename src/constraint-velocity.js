@@ -2,6 +2,7 @@ const LINEAR_SLOP = 0.005;
 const FLT_MAX = 3.4e38;
 const MAX_SOLVE_ITERATIONS = 20;
 const HORIZONTAL_NORMAL_MIN = 0.35;
+const VERTICAL_NORMAL_MIN = 0.9;
 const VELOCITY_EPSILON = 1e-7;
 
 function bodyTypeValue(type) {
@@ -109,4 +110,52 @@ export function applyIntentCappedRelativeConstraintVelocity({
   }
 
   return { velocity: out, clippedComponents };
+}
+
+// A2a: vertical collision response is deliberately separate from the horizontal
+// intent-capped policy. It only owns active, near-vertical static/kinematic planes.
+// Such a surface may push the character away, but a receding surface never pulls it.
+export function applyUnilateralVerticalConstraintVelocity({
+  b3,
+  velocity,
+  planes,
+  extras,
+  recoveredPushes,
+  bodyPointVelocity,
+}) {
+  const out = [...velocity];
+  const staticType = bodyTypeValue(b3.b3BodyType.b3_staticBody);
+  const kinematicType = bodyTypeValue(b3.b3BodyType.b3_kinematicBody);
+  let minVy = Number.NEGATIVE_INFINITY;
+  let maxVy = Number.POSITIVE_INFINITY;
+  let activeConstraints = 0;
+
+  for (let i = 0; i < planes.length; i++) {
+    const plane = planes[i];
+    if (!((recoveredPushes?.[i] ?? 0) > 0) || plane.clipVelocity === false) continue;
+    const normal = plane.plane.normal;
+    if (Math.abs(normal[1]) < VERTICAL_NORMAL_MIN) continue;
+
+    const extra = extras[i];
+    if (!extra?.shapeId) continue;
+    const body = b3.b3Shape_GetBody(extra.shapeId);
+    const type = bodyTypeValue(b3.b3Body_GetType(body));
+    if (type !== staticType && type !== kinematicType) continue;
+
+    const surfaceVy = type === staticType ? 0 : bodyPointVelocity(body, extra.point)[1];
+    if (normal[1] > 0) minVy = Math.max(minVy, surfaceVy);
+    else maxVy = Math.min(maxVy, surfaceVy);
+    activeConstraints += 1;
+  }
+
+  // Opposing moving bounds are a crush/squeeze problem. A2a refuses to invent a
+  // resolution there; it only removes impossible stored velocity in feasible cases.
+  if (minVy > maxVy + VELOCITY_EPSILON) {
+    return { velocity: out, clippedComponents: 0, activeConstraints, conflict: true };
+  }
+
+  const nextVy = Math.min(maxVy, Math.max(minVy, out[1]));
+  const clippedComponents = Math.abs(nextVy - out[1]) > VELOCITY_EPSILON ? 1 : 0;
+  out[1] = nextVy;
+  return { velocity: out, clippedComponents, activeConstraints, conflict: false };
 }
