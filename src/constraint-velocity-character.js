@@ -10,6 +10,13 @@ import {
 
 const SOLVE_EQUIVALENCE_TOLERANCE = 2e-5;
 
+function sameBodyId(a, b) {
+  return Boolean(a && b)
+    && a.index1 === b.index1
+    && a.world0 === b.world0
+    && a.generation === b.generation;
+}
+
 export const E23D_BEHAVIOR = Object.freeze({
   specimen: 'A‴',
   base: 'A″ / Donor v0 mechanical constants',
@@ -28,16 +35,19 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
     });
     this.lastConstraintClips = 0;
     this.lastConstraintSolveError = 0;
+    this.lastPersistentSupportReactionY = 0;
   }
 
   reset(position = this.startPosition) {
     super.reset(position);
     this.lastConstraintClips = 0;
     this.lastConstraintSolveError = 0;
+    this.lastPersistentSupportReactionY = 0;
   }
 
   _solveMovement(dt) {
-    const wasSupported = Boolean(this.currentSupport);
+    const previousSupport = this.currentSupport;
+    const wasSupported = Boolean(previousSupport);
     const capsule = {
       center1: [0, -this.halfSegment, 0],
       center2: [0, this.halfSegment, 0],
@@ -54,6 +64,7 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
     let lastRecoveredPushes = [];
     this.lastConstraintClips = 0;
     this.lastConstraintSolveError = 0;
+    this.lastPersistentSupportReactionY = 0;
 
     const tolerance = 0.002;
     for (let iteration = 0; iteration < 5; iteration++) {
@@ -106,12 +117,31 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
 
     this.currentSupport = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
     if (this.currentSupport && this.velocity[1] < 0) this.velocity[1] = 0;
+    this._reciprocatePersistentDynamicSupportVerticalClip(previousSupport, preClipVelocity);
 
     if (!wasSupported && this.currentSupport && preClipVelocity[1] < -0.5) {
       this.justLanded = true;
       this.landingSpeed = -preClipVelocity[1];
     }
     if (this.currentSupport) this.coyoteRemaining = this.coyoteTime;
+  }
+
+  _reciprocatePersistentDynamicSupportVerticalClip(previousSupport, preClipVelocity) {
+    const support = this.currentSupport;
+    if (previousSupport?.type !== 'DYNAMIC' || support?.type !== 'DYNAMIC') return;
+    if (!sameBodyId(previousSupport.body, support.body)) return;
+
+    const upwardCorrection = this.velocity[1] - preClipVelocity[1];
+    if (!(upwardCorrection > 1e-10)) return;
+
+    const reactionY = -this.virtualMass * upwardCorrection;
+    this.b3.b3Body_ApplyLinearImpulse(
+      support.body,
+      [0, reactionY, 0],
+      support.point,
+      true,
+    );
+    this.lastPersistentSupportReactionY = reactionY;
   }
 
   _applyConstraintVelocityPolicy({ velocity, desiredVelocity, planes, extras, recoveredPushes }) {
@@ -131,6 +161,7 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
       ...super.telemetry(),
       constraintClips: this.lastConstraintClips,
       constraintSolveError: this.lastConstraintSolveError,
+      persistentSupportReactionY: this.lastPersistentSupportReactionY,
     };
   }
 }
