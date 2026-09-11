@@ -1,3 +1,5 @@
+import { CURRENT_QUERY_SEMANTICS, QUERY_CHANNEL } from '../query-semantics.js';
+
 function finiteVec3(v) {
   return Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
 }
@@ -23,10 +25,9 @@ function idKey(id) {
  * constraint or pre-grip impulse. This is an E19.1d reach-representation experiment,
  * not a final hand architecture.
  *
- * The sweep is deliberately first-hit authoritative: farther geometry behind the first
- * obstruction cannot become a latch just because an aim/ranking heuristic preferred it.
- * A successful hit is therefore earned by a finite-volume, finite-distance collision
- * path rather than by a remote body picker.
+ * The sweep is deliberately first-hit authoritative among shapes allowed by the named
+ * grip-reach query policy. Farther allowed geometry behind the first allowed obstruction
+ * cannot become a latch just because an aim/ranking heuristic preferred it.
  */
 export function castE19GripReach({
   b3,
@@ -35,6 +36,7 @@ export function castE19GripReach({
   translation,
   radius = 0.14,
   queryFilter = null,
+  querySemantics = CURRENT_QUERY_SEMANTICS,
 }) {
   if (!b3 || !world) throw new Error('b3 and world are required');
   if (!finiteVec3(origin) || !finiteVec3(translation)) throw new Error('origin/translation must be finite vec3');
@@ -56,6 +58,7 @@ export function castE19GripReach({
     filter,
     (shapeId, point, normal, fraction, userMaterialId = 0, triangleIndex = -1, childIndex = -1) => {
       if (!shapeId || !Number.isFinite(fraction)) return bestFraction;
+      if (!querySemantics.allowsShape(b3, QUERY_CHANNEL.GRIP_REACH, shapeId)) return bestFraction;
       if (fraction < 0 || fraction > 1) return bestFraction;
       if (!finiteVec3(point) || !finiteVec3(normal)) return bestFraction;
       if (fraction >= bestFraction) return bestFraction;
@@ -82,9 +85,8 @@ export function castE19GripReach({
         triangleIndex,
         childIndex,
       });
-      // Clip the world query to the closest hit seen so far. Box3D may invoke callbacks
-      // out of order, so this preserves first-obstruction semantics without making
-      // callback enumeration order gameplay authority.
+      // Clip the world query to the closest allowed hit seen so far. Box3D may invoke
+      // callbacks out of order, so callback enumeration order is never gameplay authority.
       return fraction;
     },
   );
