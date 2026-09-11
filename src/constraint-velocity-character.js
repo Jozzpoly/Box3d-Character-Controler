@@ -4,6 +4,7 @@ import { DONOR_PROFILE_V0 } from './donor/profile.js';
 import { installVelocityOnlyDynamicContactMemory } from './donor/contact-memory.js';
 import {
   applyIntentCappedRelativeConstraintVelocity,
+  applyUnilateralVerticalConstraintVelocity,
   maxAbsVectorDelta,
   recoverSolvedPlanePushes,
 } from './constraint-velocity.js';
@@ -15,7 +16,7 @@ export const E23D_BEHAVIOR = Object.freeze({
   base: 'A″ / Donor v0 mechanical constants',
   reciprocity: 'causal-components',
   dynamicContactMemory: 'velocity-only-contact-consequence',
-  constraintVelocityPolicy: 'intent-capped surface-relative active horizontal static/kinematic normal velocity',
+  constraintVelocityPolicy: 'intent-capped horizontal + unilateral near-vertical static/kinematic relative velocity',
   status: 'Owner-qualified current-best mechanics; Donor v1 source behavior',
 });
 
@@ -28,12 +29,14 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
     });
     this.lastConstraintClips = 0;
     this.lastConstraintSolveError = 0;
+    this.lastVerticalConstraintConflict = false;
   }
 
   reset(position = this.startPosition) {
     super.reset(position);
     this.lastConstraintClips = 0;
     this.lastConstraintSolveError = 0;
+    this.lastVerticalConstraintConflict = false;
   }
 
   _solveMovement(dt) {
@@ -54,6 +57,7 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
     let lastRecoveredPushes = [];
     this.lastConstraintClips = 0;
     this.lastConstraintSolveError = 0;
+    this.lastVerticalConstraintConflict = false;
 
     const tolerance = 0.002;
     for (let iteration = 0; iteration < 5; iteration++) {
@@ -103,6 +107,7 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
     });
     this.velocity = constrained.velocity;
     this.lastConstraintClips = constrained.clippedComponents;
+    this.lastVerticalConstraintConflict = constrained.verticalConflict;
 
     this.currentSupport = this._findSupport(lastPlanes, lastExtras, preClipVelocity);
     if (this.currentSupport && this.velocity[1] < 0) this.velocity[1] = 0;
@@ -115,7 +120,7 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
   }
 
   _applyConstraintVelocityPolicy({ velocity, desiredVelocity, planes, extras, recoveredPushes }) {
-    return applyIntentCappedRelativeConstraintVelocity({
+    const horizontal = applyIntentCappedRelativeConstraintVelocity({
       b3: this.b3,
       velocity,
       desiredVelocity,
@@ -124,6 +129,19 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
       recoveredPushes,
       bodyPointVelocity: (body, point) => this._bodyPointVelocity(body, point),
     });
+    const vertical = applyUnilateralVerticalConstraintVelocity({
+      b3: this.b3,
+      velocity: horizontal.velocity,
+      planes,
+      extras,
+      recoveredPushes,
+      bodyPointVelocity: (body, point) => this._bodyPointVelocity(body, point),
+    });
+    return {
+      velocity: vertical.velocity,
+      clippedComponents: horizontal.clippedComponents + vertical.clippedComponents,
+      verticalConflict: vertical.conflict,
+    };
   }
 
   telemetry() {
@@ -131,6 +149,7 @@ export class ConstraintVelocityCharacter extends ControllerOwnedCharacter {
       ...super.telemetry(),
       constraintClips: this.lastConstraintClips,
       constraintSolveError: this.lastConstraintSolveError,
+      verticalConstraintConflict: this.lastVerticalConstraintConflict,
     };
   }
 }
