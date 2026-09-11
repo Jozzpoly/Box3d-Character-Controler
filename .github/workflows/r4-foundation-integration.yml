@@ -63,10 +63,10 @@ jobs:
         run: node scripts/r1-a4-fixed-step-camera-basis-crucible.mjs
       - name: A4 browser integration contract
         run: node scripts/r1-a4-browser-integration-contract.mjs
-      - name: Diagnose combined dynamic-support lifecycle fixture
+      - name: Characterize historical A5 dynamic-fixture drift under A3b
         run: node scripts/r4-integration-a5-dynamic-lifecycle-diagnostic.mjs
-      - name: A5 support lifecycle historical witness
-        run: node scripts/r4-a5-support-lifecycle-repair-crucible.mjs
+      - name: A5 lifecycle integration contract
+        run: node scripts/r4-integration-a5-lifecycle-contract.mjs
       - name: A5 query contract
         run: node scripts/r4-a5-query-semantics-contract.mjs
       - name: A5 runtime query witness
