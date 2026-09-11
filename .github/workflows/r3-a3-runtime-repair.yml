@@ -8,6 +8,7 @@ on:
       - src/constraint-velocity-character.js
       - scripts/r3-a3-runtime-repair-crucible.mjs
       - scripts/r3-a3-runtime-repair-stress.mjs
+      - scripts/r3-a3-mover-ceiling-tolerance-characterization.mjs
       - .github/workflows/r3-a3-runtime-repair.yml
   workflow_dispatch:
 
@@ -28,6 +29,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Qualify A3 and A3b repair against historical v0 witness
         run: node scripts/r3-a3-runtime-repair-crucible.mjs
+      - name: Characterize Box3D mover ceiling tolerance
+        run: node scripts/r3-a3-mover-ceiling-tolerance-characterization.mjs
       - name: Stress broader support motion envelope
         run: node scripts/r3-a3-runtime-repair-stress.mjs
       - name: Canonical smoke
