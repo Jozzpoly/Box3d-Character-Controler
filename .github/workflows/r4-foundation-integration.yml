@@ -18,6 +18,7 @@ env:
   A4_SHA: 1d79d7c453894440a3125a82937b1968d7c9b4fd
   A5_LIFE_SHA: 0efe502503d0f8fc2520c15e2fa8f1690d796326
   A5_QUERY_SHA: 2d4e3b93802921b261cc75b53348ec3e36be3664
+  E19_V_SHA: 8e5707f7218c641c95795ac3132806e2db1b5718
 
 jobs:
   qualify:
@@ -35,6 +36,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p scripts/e19
           grab() { curl -fsSL "$RAW/$1/$2" -o "$2"; }
           grab "$A1_SHA" scripts/r4-a1-runtime-repair-crucible.mjs
           grab "$A2_H_SHA" scripts/r4-a2-runtime-repair-crucible.mjs
@@ -47,6 +49,7 @@ jobs:
           grab "$A5_LIFE_SHA" scripts/r4-a5-support-lifecycle-repair-crucible.mjs
           grab "$A5_QUERY_SHA" scripts/r4-a5-query-semantics-contract.mjs
           grab "$A5_QUERY_SHA" scripts/r4-a5-query-runtime-crucible.mjs
+          grab "$E19_V_SHA" scripts/e19/e19-0e-grip-aware-donor-vertical-constraint.mjs
       - name: A1 load accounting witness
         run: node scripts/r4-a1-runtime-repair-crucible.mjs
       - name: A2 horizontal order witness
@@ -71,6 +74,10 @@ jobs:
         run: node scripts/r4-a5-query-semantics-contract.mjs
       - name: A5 runtime query witness
         run: node scripts/r4-a5-query-runtime-crucible.mjs
+      - name: Historical E19 grip vertical witness
+        run: node scripts/e19/e19-0e-grip-aware-donor-vertical-constraint.mjs
+      - name: Decompose E19 vertical repair against A2a
+        run: node scripts/r4-integration-e19-vertical-policy-decomposition.mjs
       - name: Canonical smoke
         run: npm run smoke
       - name: Build runtime
